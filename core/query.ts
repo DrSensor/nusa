@@ -55,6 +55,15 @@ export default (
   return [module, attrs];
 };
 
+/** start index for slicing attribute name into normal form */
+export const enum Colon {
+  None = 0,
+  /** \<tag :attribute\> ->  attribute="" */
+  Single = 1,
+  /** \<tag on:event\> -> on:event="" */
+  StartWith_on = 3,
+}
+
 export const enum Bind {
   Accessor = 1,
   Method,
@@ -82,10 +91,7 @@ function* getBindableAttrs(host: Element): Generator<Attribute> {
     >
   ) {
     if (bind) {
-      yield attr = (host.getAttributeNode(
-        name = name.slice(bind === Bind.Accessor ? 1 : 0),
-      ) ?? (newattr = document.createAttribute(name))) as Attribute;
-
+      yield attr = host.getAttributeNode(name) as Attribute;
       attr._bind = [bind, value.split(" ")];
       attr._set = function (value) {
         this.value = value as string;
