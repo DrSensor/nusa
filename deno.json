@@ -4,5 +4,14 @@
     "lume": "deno eval \"import 'lume/task.ts'\" --",
     "build": "deno task lume",
     "serve": "deno task lume -s"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "deno.ns",
+      "deno.unstable"
+    ]
   }
 }
