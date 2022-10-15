@@ -1,9 +1,10 @@
 {
   "importMap": "./import_map.json",
   "tasks": {
-    "lume": "deno eval \"import 'lume/task.ts'\" --",
+    "lume": "echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run --lock=lock.json -",
     "build": "deno task lume",
-    "serve": "deno task lume -s"
+    "serve": "deno task lume -s",
+    "update": "deno cache --unstable --lock=lock.json --lock-write --reload _config.ts && echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run --lock=lock.json --lock-write --reload - --version"
   },
   "compilerOptions": {
     "lib": [
