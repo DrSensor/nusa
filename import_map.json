@@ -1,5 +1,6 @@
 {
   "imports": {
+    "drsensor/lume-plugins/": "https://raw.githubusercontent.com/drsensor/lume-plugins/community/",
     "lume/": "https://deno.land/x/lume/"
   }
 }

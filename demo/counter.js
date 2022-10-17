@@ -1,8 +1,7 @@
 export default class {
-  #count = 0
-  set count(value) { this.#count = value }
+  accessor count = 0
 
-  increment() { this.count = this.#count + 1 }
+  increment() { this.count++ }
 
   set(value) {
     this.count =
