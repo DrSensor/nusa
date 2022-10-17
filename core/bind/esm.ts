@@ -18,6 +18,7 @@ const descriptor = new WeakMap<
   ReturnType<typeof Object.getOwnPropertyDescriptors<Prototype>>
 >();
 /*== --- ==*/
+const mark = Symbol();
 
 function bind(pc: Prototype, attrs: Attribute[]) {
   const script = new pc.constructor();
@@ -54,30 +55,33 @@ function bind(pc: Prototype, attrs: Attribute[]) {
               targetName = attr.name.slice(Colon.Single),
             ) ?? [targetElement, targetName],
           );
-          desc.set = function (value) {
-            set!.call(this, value); // not memoized because setter in class should be predictable
-            // 👆 run setter first so dev can detect if attribute is empty or not
-            if (cached[Reactor.Value] !== value) {
-              cached[Reactor.Targets].forEach((target, index) => {
-                let attr: Attr | undefined;
-                if (target instanceof Attr || target instanceof Text) {
-                  target.nodeValue = value;
-                  if (target instanceof Attr) attr = target;
-                } else {
-                  const [el, attrName] = target;
-                  el.setAttribute(attrName, value);
-                  attr = cached[Reactor.Targets][index] = el
-                    .getAttributeNode(attrName)!; // make Reactor.Targets uniform when all attributes all set...
-                }
-                if (attr?.name === "text") { // ...or not! 😂
-                  const text = new Text(value);
-                  attr.ownerElement!.replaceChildren(text);
-                  cached[Reactor.Targets].push(text);
-                }
-              });
-            }
-            cached[Reactor.Value] = value;
-          };
+          // @ts-ignore avoid double override
+          if (desc.set![mark]) {
+            desc.set = function (value) {
+              set!.call(this, value); // not memoized because setter in class should be predictable
+              // 👆 run setter first so dev can detect if attribute is empty or not
+              if (cached[Reactor.Value] !== value) {
+                cached[Reactor.Targets].forEach((target, index) => {
+                  if (target instanceof Node) { // @ts-ignore if Attr
+                    if (target.ownerElement) target.ownerElement.value = value; // WARNING(browser): binding just Attr of <input value> is buggy 😩 
+                    target.nodeValue = value;
+                  } else {
+                    const [el, attrName] = target;
+                    el.setAttribute(attrName, value);
+                    const attr = cached[Reactor.Targets][index] = el
+                      .getAttributeNode(attrName)!; // make Reactor.Targets uniform when all attributes all set...
+                    if (attrName === "text") { // ...or not! 😂
+                      const text = new Text(value);
+                      attr.ownerElement!.replaceChildren(text);
+                      cached[Reactor.Targets].push(text);
+                    }
+                  }
+                });
+              }
+              cached[Reactor.Value] = value;
+            };
+          } // @ts-ignore marked
+          desc.set![mark] = true;
         });
         break;
     }
