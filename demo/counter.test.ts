@@ -1,25 +1,27 @@
 import { it } from "deno/testing/bdd.ts";
 import { assertEquals } from "deno/testing/asserts.ts";
 
-import { disableBrowserConsole, page, testPage } from "../core/testing.ts";
+import { testPage } from "../core/testing.ts";
 import type { ElementHandle } from "pupetter";
 
-const counter_page = testPage("demo/counter.html");
-disableBrowserConsole("log");
+const test = testPage("demo/counter.html", {
+  incognito: true,
+  muteConsole: "log",
+});
 
 it(
-  counter_page,
+  test.suite,
   "click button 7x",
   async () => {
-    await page.waitForSelector("render-scope:defined");
+    await test.page.waitForSelector("render-scope:defined");
 
-    const button: ElementHandle<HTMLButtonElement> | null = await page.$(
+    const button: ElementHandle<HTMLButtonElement> | null = await test.page.$(
       "aria/0[role='button']",
     );
     const span: ElementHandle<HTMLSpanElement> | null = await button!.$(
       "span",
     );
-    const input: ElementHandle<HTMLInputElement> | null = await page.$(
+    const input: ElementHandle<HTMLInputElement> | null = await test.page.$(
       "aria/[role='spinbutton']",
     );
 
@@ -52,18 +54,18 @@ it(
 );
 
 it(
-  counter_page,
+  test.suite,
   "input random number 7x",
   async () => {
-    await page.waitForSelector("render-scope:defined");
+    await test.page.waitForSelector("render-scope:defined");
 
-    const button: ElementHandle<HTMLButtonElement> | null = await page.$(
+    const button: ElementHandle<HTMLButtonElement> | null = await test.page.$(
       "aria/0[role='button']",
     );
     const span: ElementHandle<HTMLSpanElement> | null = await button!.$(
       "span",
     );
-    const input: ElementHandle<HTMLInputElement> | null = await page.$(
+    const input: ElementHandle<HTMLInputElement> | null = await test.page.$(
       "aria/[role='spinbutton']",
     );
 
@@ -101,18 +103,18 @@ it(
 );
 
 it(
-  counter_page,
+  test.suite,
   "click button then input random number alternatively 7x",
   async () => {
-    await page.waitForSelector("render-scope:defined");
+    await test.page.waitForSelector("render-scope:defined");
 
-    const button: ElementHandle<HTMLButtonElement> | null = await page.$(
+    const button: ElementHandle<HTMLButtonElement> | null = await test.page.$(
       "aria/0[role='button']",
     );
     const span: ElementHandle<HTMLSpanElement> | null = await button!.$(
       "span",
     );
-    const input: ElementHandle<HTMLInputElement> | null = await page.$(
+    const input: ElementHandle<HTMLInputElement> | null = await test.page.$(
       "aria/[role='spinbutton']",
     );
 

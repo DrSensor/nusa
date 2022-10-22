@@ -5,33 +5,59 @@ import type { Browser, BrowserContext, Page } from "pupetter";
 import type { ConsoleMessage, ConsoleMessageType } from "pupetter";
 import type { TestSuite } from "deno/testing/bdd.ts";
 
-export let browser: Browser, page: Page, incognito: BrowserContext;
+export let browser: Browser, incognito: BrowserContext;
 const site = "http://localhost:3000";
-
-let disabledConsoleTypes: ConsoleMessageType[] = [];
-export const disableBrowserConsole = (...args: ConsoleMessageType[]) =>
-  disabledConsoleTypes = args;
 
 export const testPage = <T = unknown>(
   path: string,
+  opts?: {
+    fn?: () => void;
+    incognito?: true;
+    muteConsole?: ConsoleMessageType[] | ConsoleMessageType | true;
+  },
   fn?: () => void,
-): TestSuite<T> =>
-  describe(path, {
-    fn,
+) => {
+  const test = {} as {
+    suite: TestSuite<T>;
+    page: Page;
+    console: ConsoleMessage;
+  };
+
+  test.suite = describe(path, {
+    fn: opts?.fn ?? fn,
+
     async beforeEach() {
-      page = await incognito.newPage();
-      page.on("console", onConsole);
-      await page.goto(`${site}/${path}`, {
+      const { muteConsole, incognito: priv } = opts ?? {};
+      test.page = await (priv ? incognito : browser).newPage();
+      test.page.on("console", (message) => test.console = message);
+
+      if (muteConsole !== true) {
+        test.page.on("console", (message) => {
+          const type = message.type();
+          if (
+            typeof muteConsole === "string"
+              ? muteConsole !== type
+              : !muteConsole?.some((it) => it === type)
+          ) onConsole(message);
+        });
+      }
+
+      await test.page.goto(`${site}/${path}`, {
         waitUntil: "domcontentloaded",
       });
-      await page.waitForNetworkIdle();
+      await test.page.waitForNetworkIdle();
     },
+
     async afterEach() {
-      page.off("console", onConsole);
-      await page.close();
+      test.page.off("console", onConsole);
+      await test.page.close();
     },
+
     sanitizeOps: false,
   });
+
+  return test;
+};
 
 beforeAll(async () => {
   browser = await pupetter.launch();
@@ -45,7 +71,6 @@ afterAll(async () => {
 
 function onConsole(event: ConsoleMessage) {
   const type = event.type(), text = event.text();
-  if (disabledConsoleTypes.some((it) => it === type)) return;
   switch (type) {
     case "warning":
       console.warn(text);
