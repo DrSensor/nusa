@@ -4,7 +4,7 @@
     "lume": "echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run --lock=lock.json -",
     "build": "deno task lume",
     "serve": "deno task lume -s",
-    "test": "PUPPETEER_PRODUCT=chrome deno test --parallel --allow-env --allow-write --allow-read --allow-net --allow-run",
+    "test": "PUPPETEER_PRODUCT=chrome deno test --parallel --shuffle=7 --allow-env --allow-write --allow-read --allow-net --allow-run",
     "update": "rm -rf .lock && mkdir .lock && deno cache --unstable --lock=.lock/config.json --lock-write --reload _config.ts && echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run --lock=.lock/lume.json --lock-write --reload - --version && deno eval 'Deno.writeTextFile(\"lock.json\", JSON.stringify(Object.assign(...await Promise.all([\"config\", \"lume\"].map( async l => (await import(`./.lock/${l}.json`, {assert:{type:\"json\"}})).default )))))' && rm -r .lock && deno fmt lock.json"
   },
   "compilerOptions": {
