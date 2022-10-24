@@ -5,7 +5,7 @@ import type { Browser, BrowserContext, Page } from "pupetter";
 import type { ConsoleMessage, ConsoleMessageType } from "pupetter";
 import type { TestSuite } from "deno/testing/bdd.ts";
 
-export let browser: Browser, incognito: BrowserContext;
+export let browser: Browser, incognito: BrowserContext, hasIncognito = false;
 const site = "http://localhost:3000";
 
 export const testPage = <T = unknown>(
@@ -22,6 +22,7 @@ export const testPage = <T = unknown>(
     page: Page;
     console: ConsoleMessage;
   };
+  if (opts?.incognito) hasIncognito = true;
 
   test.suite = describe(path, {
     fn: opts?.fn ?? fn,
@@ -60,12 +61,12 @@ export const testPage = <T = unknown>(
 };
 
 beforeAll(async () => {
-  browser = await pupetter.launch();
-  incognito = await browser.createIncognitoBrowserContext();
+  browser ??= await pupetter.launch();
+  if (hasIncognito) incognito ??= await browser.createIncognitoBrowserContext();
 });
 
 afterAll(async () => {
-  await incognito.close();
+  await incognito?.close();
   await browser.close();
 });
 
