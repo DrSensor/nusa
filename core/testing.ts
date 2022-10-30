@@ -5,7 +5,9 @@ import type { Browser, BrowserContext, Page } from "pupetter";
 import type { ConsoleMessage, ConsoleMessageType } from "pupetter";
 import type { TestSuite } from "deno/testing/bdd.ts";
 
-export let browser: Browser, incognito: BrowserContext, hasIncognito = false;
+export let browser: Browser, incognito: BrowserContext;
+let hasIncognito = false;
+
 const site = "http://localhost:3000";
 
 export const testPage = <T = unknown>(
@@ -43,9 +45,19 @@ export const testPage = <T = unknown>(
         });
       }
 
-      await test.page.goto(`${site}/${path}`, {
-        waitUntil: "domcontentloaded",
-      });
+      for (let retry = 30, timeout = .1, n = retry; retry--;) {
+        try {
+          await test.page.goto(`${site}/${path}`, {
+            waitUntil: "domcontentloaded",
+          });
+          break;
+        } catch {
+          if (!retry) {
+            throw `Can't open ${site} after ${n} retries in ${n * timeout}s.`;
+          }
+          await new Promise((resolve) => setTimeout(resolve, timeout * 1e3));
+        }
+      }
       await test.page.waitForNetworkIdle();
     },
 
