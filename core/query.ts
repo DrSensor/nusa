@@ -36,7 +36,7 @@ export default (
     attrs: Return[EnumReturn.attrNodes] = [];
 
   if (!isFastMode || (isFastMode && host.hasAttribute(primaryAttribute))) {
-    attrs.push(...getBindableAttrs(host));
+    registerBindable(attrs, host);
   }
   for (const element of elements) {
     if (excludes.some((E) => element instanceof E)) continue;
@@ -49,7 +49,7 @@ export default (
           : null;
       if (type != null) module[type].push(element.href);
     }
-    attrs.push(...getBindableAttrs(element));
+    registerBindable(attrs, element);
   }
 
   return [module, attrs];
@@ -69,34 +69,28 @@ export const enum Bind {
   Method,
 }
 
-export type Attribute = Attr & {
-  _bind: [type: Bind, values: string[]];
-  _set(value: unknown): void;
-};
+export interface Attribute extends Attr {
+  _bind: Bind;
+}
 
-function* getBindableAttrs(host: Element): Generator<Attribute> {
+function registerBindable(
+  attrs: Attribute[],
+  host: Element,
+) {
   for (
-    let {
+    const {
       name,
-      value,
-      0: newattr,
-      1: attr,
-      2: bind = name.startsWith(":")
+      _: bind = name.startsWith(":")
         ? Bind.Accessor
         : name.startsWith("on:")
         ? Bind.Method
         : 0,
-    } of host.attributes as Iterable<
-      Attr & { 0?: Attr; 1?: Attribute; 2?: Bind }
-    >
+    } of host.attributes as Iterable<Attr & { _?: Bind }>
   ) {
     if (bind) {
-      yield attr = host.getAttributeNode(name) as Attribute;
-      attr._bind = [bind, value.split(" ")];
-      attr._set = function (value) {
-        this.value = value as string;
-        if (newattr) (host.setAttributeNode(newattr), newattr = undefined);
-      };
+      attrs[
+        attrs.push(host.getAttributeNode(name) as Attribute) - 1
+      ]._bind = bind;
     }
   }
 }

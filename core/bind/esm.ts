@@ -33,10 +33,9 @@ function bind(pc: Prototype, attrs: Attribute[]) {
   if (notCached) reactor.set(pc, cache);
 
   attrs.forEach((attr) => {
-    const [type, fields] = attr._bind;
-    switch (type) {
+    switch (attr._bind) {
       case Bind.Method:
-        fields.forEach((methodName) => {
+        attr.value.split(" ").forEach((methodName) => {
           attr.ownerElement!.addEventListener( // TODO:#22 centralize all listener
             attr.name.slice(Colon.StartWith_on),
             function (this: Element, ...$: unknown[]) { // @ts-ignore let it crash if field not a method
@@ -46,7 +45,7 @@ function bind(pc: Prototype, attrs: Attribute[]) {
         });
         break;
       case Bind.Accessor:
-        fields.forEach((accessorName) => {
+        attr.value.split(" ").forEach((accessorName) => {
           const desc = member[accessorName], { set } = desc;
           const cached = cache[accessorName] ??= [, []];
           let targetName: string, targetElement: Element;
