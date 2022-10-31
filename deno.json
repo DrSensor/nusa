@@ -5,7 +5,7 @@
     "build": "deno task lume",
     "serve": "deno task lume -s",
     "test": "deno task serve --quiet & PUPPETEER_PRODUCT=chrome deno test --no-check --parallel --shuffle=7 --unstable --allow-env --allow-write --allow-read --allow-net --allow-run",
-    "update": "rm -rf .lock && mkdir .lock && deno cache --unstable --lock=.lock/config.json --lock-write --reload _config.ts && echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run --lock=.lock/lume.json --lock-write --reload - --version && deno eval 'Deno.writeTextFile(\"lock.json\", JSON.stringify(Object.assign(...await Promise.all([\"config\", \"lume\"].map( async l => (await import(`./.lock/${l}.json`, {assert:{type:\"json\"}})).default )))))' && rm -r .lock && deno fmt lock.json"
+    "update": "mkdir .lock ; deno cache --unstable --lock=.lock/config.json --lock-write --reload _config.ts && echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run --lock=.lock/lume.json --lock-write --reload - --version && deno eval 'Deno.writeTextFile(\"lock.json\", JSON.stringify({ version: \"2\", remote: Object.assign(...await Promise.all([\"config\", \"lume\"].map( async l => (await import(`./.lock/${l}.json`, {assert:{type:\"json\"}})).default.remote ))) }))' && deno fmt lock.json"
   },
   "compilerOptions": {
     "lib": [
