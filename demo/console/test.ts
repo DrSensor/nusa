@@ -1,10 +1,10 @@
 import { it } from "deno/testing/bdd.ts";
 import { assertEquals } from "deno/testing/asserts.ts";
 
-import { testPage } from "../core/testing.ts";
+import * as tester from "../tester.ts";
 import type { ConsoleMessageType } from "pupetter";
 
-const test = testPage("demo/console.html", {
+const test = tester.page("demo/console", {
   incognito: true,
   muteConsole: true,
 });

@@ -10,7 +10,7 @@ let hasIncognito = false;
 
 const site = "http://localhost:3000";
 
-export const testPage = <T = unknown>(
+export const page = <T = unknown>(
   path: string,
   opts?: {
     fn?: () => void;
@@ -45,7 +45,7 @@ export const testPage = <T = unknown>(
         });
       }
 
-      for (let retry = 30, timeout = .1, n = retry; retry--;) {
+      for (let retry = 20, timeout = .3, n = retry; retry--;) {
         try {
           await test.page.goto(`${site}/${path}`, {
             waitUntil: "domcontentloaded",
