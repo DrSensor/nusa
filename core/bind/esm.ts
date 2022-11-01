@@ -5,32 +5,26 @@ export default (attrs: Attribute[]) => (module: Module) => {
   bind(Class.prototype, attrs);
 };
 
-/*== bunch of cache registry ==*/
-const reactor = new WeakMap<
-  Prototype,
-  Record<
+const registry = new WeakMap<Prototype, [
+  descriptor: ReturnType<typeof Object.getOwnPropertyDescriptors<Prototype>>,
+  reactor: Record<
     string,
-    [value: unknown, targets: Array<Attr | [el: Element, attr: string] | Text>]
-  >
->();
-const descriptor = new WeakMap<
-  Prototype,
-  ReturnType<typeof Object.getOwnPropertyDescriptors<Prototype>>
->();
-/*== --- ==*/
+    [
+      value: unknown,
+      targets: Array<Attr | [el: Element, attrName: string] | Text>,
+    ]
+  >,
+]>();
+
 const mark = Symbol();
 
 function bind(pc: Prototype, attrs: Attribute[]) {
   const script = new pc.constructor();
 
   let notCached: unknown;
-  const member = descriptor.get(pc) ??
-    (notCached = Object.getOwnPropertyDescriptors(pc));
-  if (notCached) descriptor.set(pc, member);
-
-  notCached = undefined;
-  const cache = reactor.get(pc) ?? (notCached = {});
-  if (notCached) reactor.set(pc, cache);
+  const [member, cache] = registry.get(pc)! ??
+    (notCached = [Object.getOwnPropertyDescriptors(pc), {}]);
+  if (notCached) registry.set(pc, [member, cache]);
 
   attrs.forEach((attr) => {
     switch (attr._bind) {
