@@ -1,4 +1,4 @@
-import { Attribute, Bind, Colon } from "../query.ts";
+import { Attribute, Bind, ColonFor } from "../query.ts";
 
 export default (attrs: Attribute[]) => (module: Module) => {
   const Class = module.default as Class;
@@ -31,7 +31,7 @@ function bind(pc: Prototype, attrs: Attribute[]) {
       case Bind.Method:
         attr.value.split(" ").forEach((methodName) => {
           attr.ownerElement!.addEventListener( // TODO:#22 centralize all listener
-            attr.name.slice(Colon.StartWith_on),
+            attr.name.slice(ColonFor.Event),
             function (this: Element, ...$: unknown[]) { // @ts-ignore let it crash if field not a method
               script[methodName](...$);
             },
@@ -45,7 +45,7 @@ function bind(pc: Prototype, attrs: Attribute[]) {
           let targetName: string, targetElement: Element;
           cached[Reactor.Targets].push(
             (targetElement = attr.ownerElement!).getAttributeNode(
-              targetName = attr.name.slice(Colon.Single),
+              targetName = attr.name.slice(0, ColonFor.Attr),
             ) ?? [targetElement, targetName],
           );
           // @ts-ignore avoid double override
@@ -56,8 +56,8 @@ function bind(pc: Prototype, attrs: Attribute[]) {
               if (cached[Reactor.Value] !== value) {
                 cached[Reactor.Targets].forEach((target, index) => {
                   if (target instanceof Node) { // @ts-ignore if Attr
-                    if (target.ownerElement) target.ownerElement.value = value; // WARNING(browser): binding just Attr of <input value> is buggy 😩 
-                    target.nodeValue = value;
+                    if (target.ownerElement) target.ownerElement.value = value;
+                    target.nodeValue = value; // WARNING(browser): binding just Attr of <input value> is buggy 😩
                   } else {
                     const [el, attrName] = target;
                     el.setAttribute(attrName, value);

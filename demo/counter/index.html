@@ -3,8 +3,8 @@
 <render-scope>
   <link as=script href=module.js>
 
-  <button on:click=increment>
-    <span :text=count>0</span>
+  <button :: on:click=increment>
+    <span :: text:=count>0</span>
   </button>
-  <input inputmode="numeric" type=number :value=count on:change=set>
+  <input inputmode="numeric" type=number :: value:=count on:change=set>
 </render-scope>

@@ -14,30 +14,21 @@ export type Return = [
 /** Get bindable attribute nodes and url module paths
 @param host - query scope
 @param excludes - exclude element if it instance of Element
-@param isFastMode - enable fast hydration based on {@link primaryAttribute}
 @param primaryAttribute - if specified, make query faster by looking at that attribute as primary key
 @returns tuple of url modules (from <link as="script or style" href="...">) and {@link Attr} nodes
 */
 export default (
   host: Element,
   excludes: typeof Element[] = [Object.getPrototypeOf(host).constructor],
-  isFastMode = host.hasAttribute("data-fast-hydration"),
-  primaryAttribute = ":-",
+  primaryAttribute = "::",
 ): Return => {
-  const elements = isFastMode
-    ? host.querySelectorAll(
-      `:scope>link,[${
-        primaryAttribute.replaceAll(":", "\\:")
-      }]:not(${host.tagName},${host.tagName} *)`,
-    )
-    : host.getElementsByTagName("*");
+  const elements = host.getElementsByTagName("*");
 
   const module: Return[EnumReturn.modulePath] = [[], []],
     attrs: Return[EnumReturn.attrNodes] = [];
 
-  if (!isFastMode || (isFastMode && host.hasAttribute(primaryAttribute))) {
-    registerBindable(attrs, host);
-  }
+  registerBindable(host, primaryAttribute, attrs);
+
   for (const element of elements) {
     if (excludes.some((E) => element instanceof E)) continue;
     if (element instanceof HTMLLinkElement) {
@@ -49,19 +40,20 @@ export default (
           : null;
       if (type != null) module[type].push(element.href);
     }
-    registerBindable(attrs, element);
+
+    registerBindable(element, primaryAttribute, attrs);
   }
 
   return [module, attrs];
 };
 
 /** start index for slicing attribute name into normal form */
-export const enum Colon {
+export const enum ColonFor {
   None = 0,
-  /** \<tag :attribute\> ->  attribute="" */
-  Single = 1,
-  /** \<tag on:event\> -> on:event="" */
-  StartWith_on = 3,
+  /** \<tag attribute:=""\> ->  attribute="" */
+  Attr = -1,
+  /** \<tag on:event=""\> -> addEventListener(event) */
+  Event = 3,
 }
 
 export const enum Bind {
@@ -74,13 +66,16 @@ export interface Attribute extends Attr {
 }
 
 function registerBindable(
-  attrs: Attribute[],
   host: Element,
+  sep: string,
+  attrs: Attribute[],
 ) {
+  if (!host.hasAttribute(sep)) return;
   for (
     const {
       name,
-      _: bind = name.startsWith(":")
+      _: bind = name !== sep &&
+          name.endsWith(":")
         ? Bind.Accessor
         : name.startsWith("on:")
         ? Bind.Method
