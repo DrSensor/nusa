@@ -1,9 +1,9 @@
 import query from "./query.ts";
-import bind from "./bind/esm.ts";
+import bind from "./bind.ts";
 
-export default class extends HTMLElement implements CustomElement {
+export default class extends HTMLElement {
   #shadow = this.attachShadow({
-    mode: this.getAttribute("shadowroot") as ShadowRootMode ?? "closed",
+    mode: this.getAttribute("shadow-root") as ShadowRootMode ?? "closed",
   });
 
   constructor() {

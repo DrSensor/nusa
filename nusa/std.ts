@@ -1,1 +1,1 @@
-export { iterate } from "../core/accessor/array.ts";
+export { iterate } from "../core/iterate.ts";

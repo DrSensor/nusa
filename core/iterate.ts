@@ -1,83 +1,7 @@
-import type { Descriptors, ESclass, Instance, Prototype } from "../types.ts";
-import * as r from "../registry.ts";
-import * as task from "../task.ts";
-
-export const enum Registry {
-  descriptors,
-  members,
-}
-export const enum Member {
-  databank,
-  targets,
-  dedupe,
-}
-type DataBind = [
-  databank: unknown[],
-  targets: (Attr | [target: Element, attr: name] | Text)[][],
-  dedupe?: () => void,
-];
-export const registry = new WeakMap<Prototype, [
-  descriptors: Descriptors<Prototype>,
-  members: Record<string, DataBind>,
-]>();
-
-///////////////////////////////////////////////////////////////////////
-
-const mark = Symbol();
-
-export function patchSetter(
-  descs: PropertyDescriptorMap,
-  members: Record<string, DataBind>,
-  accessor: string,
-) {
-  const desc = descs[accessor], set = desc.set!;
-
-  // @ts-ignore avoid double override
-  if (set[mark]) return; // @ts-ignore!
-  set[mark] = true;
-
-  desc.set = function (this: Instance, value) {
-    set.call(this, value);
-
-    const index = this[r.index], cache = members[accessor];
-    const [databank, , dedupe] = members[accessor];
-    if (databank[index] !== value) {
-      dedupe?.();
-      cache[Member.dedupe] = task.render(() => {
-        update(members, accessor, index);
-        cache[Member.dedupe] = undefined;
-      });
-    }
-    databank[index] = value;
-  };
-}
-
-function update(
-  members: Record<string, DataBind>,
-  accessor: string,
-  index: number,
-) {
-  const [databank, targets] = members[accessor];
-  const value = databank[index] as string, targetAt = targets[index];
-  targetAt.forEach((target, i) => {
-    if (target instanceof Node) {
-      // @ts-ignore if target is Attr
-      if (target.ownerElement) target.ownerElement.value = value; // WARNING(browser): binding just Attr of <input value> is buggy since it treat the attribute as initial value, not current value
-      target.nodeValue = value; // target: Attr | Text
-    } else {
-      const [el, attrName] = target;
-      el.setAttribute(attrName, value);
-
-      const attr = targetAt[i] = el.getAttributeNode(attrName)!; // make members[,targets] uniform when all attributes all set
-
-      if (attrName === "text") { // but it break uniform structure when binding Text content
-        const text = new Text(value);
-        attr.ownerElement!.replaceChildren(text);
-        targetAt.push(text);
-      }
-    }
-  });
-}
+import type { ESclass, Prototype } from "./types.ts";
+import registry, { type DataBind, Member, Registry } from "./registry.ts";
+import { update } from "./accessor.ts";
+import * as task from "./task.ts";
 
 interface Iterate {
   /** iterate over class instances
@@ -214,8 +138,6 @@ const proxyAccess: SoA = new Proxy({}, {
 type SoA<
   T extends Prototype = Prototype,
 > = Omit<StructOfArray<T>, "constructor" | symbol>;
-
-type name = string;
 
 type currentIndex = number;
 
