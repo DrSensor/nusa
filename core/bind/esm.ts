@@ -1,7 +1,13 @@
+import type { ESclass, Module, Prototype } from "../types.ts";
+
 import { Attribute, Bind, ColonFor } from "../query.ts";
+import * as accessor from "../accessor/array.ts";
+import * as r from "../registry.ts";
+
+let count = 0;
 
 export default (attrs: Attribute[]) => (module: Module) => {
-  const Class = module.default as Class;
+  const Class = module.default as ESclass;
   bind(Class.prototype, attrs);
 };
 
@@ -20,11 +26,15 @@ const mark = Symbol();
 
 function bind(pc: Prototype, attrs: Attribute[]) {
   const script = new pc.constructor();
+  const cid = script[r.index] = count++;
 
   let notCached: unknown;
-  const [member, cache] = registry.get(pc)! ??
-    (notCached = [Object.getOwnPropertyDescriptors(pc), {}]);
-  if (notCached) registry.set(pc, [member, cache]);
+  const [descs, members] = accessor.registry.get(pc) ??
+    (notCached = [Object.getOwnPropertyDescriptors(pc), {}] as const);
+  if (notCached) accessor.registry.set(pc, [descs, members]);
+  // const [member, cache] = registry.get(pc)! ??
+  //   (notCached = [Object.getOwnPropertyDescriptors(pc), {}]);
+  // if (notCached) registry.set(pc, [member, cache]);
 
   attrs.forEach((attr) => {
     switch (attr._bind) {
@@ -40,6 +50,20 @@ function bind(pc: Prototype, attrs: Attribute[]) {
         break;
       case Bind.Accessor:
         attr.value.split(" ").forEach((accessorName) => {
+          const data = members[accessorName] ??= [[], []];
+          data[accessor.Member.targets][cid] ??= [];
+
+          // register initial bind-target
+          let targetName: string, targetElement: Element;
+          data[accessor.Member.targets][cid].push(
+            (targetElement = attr.ownerElement!).getAttributeNode(
+              targetName = attr.name.slice(0, ColonFor.Attr),
+            ) ?? [targetElement, targetName],
+          );
+
+          accessor.patchSetter(descs, members, accessorName);
+
+          /*
           const desc = member[accessorName], { set } = desc;
           const cached = cache[accessorName] ??= [, []];
           let targetName: string, targetElement: Element;
@@ -75,32 +99,16 @@ function bind(pc: Prototype, attrs: Attribute[]) {
             };
           } // @ts-ignore marked
           desc.set![mark] = true;
+          */
         });
         break;
     }
-    Object.defineProperties(pc, member);
+    // Object.defineProperties(pc, member);
+    Object.defineProperties(pc, descs);
   });
 }
 
 const enum Reactor {
   Value,
   Targets,
-}
-
-interface Instance {
-  [key: string | symbol]: unknown;
-}
-
-interface Prototype extends Instance {
-  constructor: Class;
-}
-
-interface Class extends Instance {
-  new (...args: unknown[]): Instance;
-  prototype: Prototype;
-}
-
-interface Module {
-  default: unknown;
-  [key: string]: unknown;
 }
