@@ -1,12 +1,30 @@
 import type { Instance } from "./types.ts";
-import { type DataBind, index, Member } from "./registry.ts";
+import { type Binder, Bound, index } from "./registry.ts";
+import { ColonFor } from "./query.ts";
 import * as task from "./task.ts";
 
 const mark = Symbol();
 
+export function init(
+  members: Record<string, Binder>,
+  accessor: string,
+  attr: Attr,
+  index: number,
+) {
+  const data = members[accessor] ??= [[], []];
+  data[Bound.targets][index] ??= [];
+
+  let targetName: string, targetElement: Element;
+  data[Bound.targets][index].push(
+    (targetElement = attr.ownerElement!).getAttributeNode(
+      targetName = attr.name.slice(0, ColonFor.Attr),
+    ) ?? [targetElement, targetName],
+  );
+}
+
 export function patchSetter(
   descs: PropertyDescriptorMap,
-  members: Record<string, DataBind>,
+  members: Record<string, Binder>,
   accessor: string,
 ) {
   const desc = descs[accessor], set = desc.set!;
@@ -22,9 +40,9 @@ export function patchSetter(
     const [databank, , dedupe] = members[accessor];
     if (databank[i] !== value) {
       dedupe?.();
-      cache[Member.dedupe] = task.render(() => {
+      cache[Bound.dedupe] = task.render(() => {
         update(members, accessor, i);
-        cache[Member.dedupe] = undefined;
+        cache[Bound.dedupe] = undefined;
       });
     }
     databank[i] = value;
@@ -32,7 +50,7 @@ export function patchSetter(
 }
 
 export function update(
-  members: Record<string, DataBind>,
+  members: Record<string, Binder>,
   accessor: string,
   index: number,
 ) {

@@ -2,7 +2,7 @@ import type { ESclass, Module, Prototype } from "./types.ts";
 
 import { Attribute, Bind, ColonFor } from "./query.ts";
 import * as accessor from "./accessor.ts";
-import registry, { index, Member } from "./registry.ts";
+import registry, { Bound, index } from "./registry.ts";
 
 let count = 0;
 
@@ -34,17 +34,7 @@ function bind(pc: Prototype, attrs: Attribute[]) {
         break;
       case Bind.Accessor:
         attr.value.split(" ").forEach((accessorName) => {
-          const data = members[accessorName] ??= [[], []];
-          data[Member.targets][cid] ??= [];
-
-          // register initial bind-target
-          let targetName: string, targetElement: Element;
-          data[Member.targets][cid].push(
-            (targetElement = attr.ownerElement!).getAttributeNode(
-              targetName = attr.name.slice(0, ColonFor.Attr),
-            ) ?? [targetElement, targetName],
-          );
-
+          accessor.init(members, accessorName, attr, cid);
           accessor.patchSetter(descs, members, accessorName);
         });
         break;
