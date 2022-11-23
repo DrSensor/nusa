@@ -1,27 +1,57 @@
 const { port1, port2 } = new MessageChannel();
 port2.start();
 
-export function macro(callback: VoidFunction): VoidFunction {
-  port2.addEventListener("message", callback);
-  port1.postMessage(undefined);
+function macro(
+  callback: VoidFunction,
+  options?: AddEventListenerOptions,
+): VoidFunction {
+  port2.addEventListener("message", callback, options);
+  port1.postMessage(null);
   return () => port2.removeEventListener("message", callback);
 }
 
-export function micro(callback: VoidFunction) {
+function micro(callback: VoidFunction) {
   let cancel: true | undefined;
   queueMicrotask(() => cancel ?? callback());
   return () => cancel = true;
 }
 
-export function prerender(callback: FrameRequestCallback) {
+let skipFrame = false;
+
+export function defer(
+  callback: VoidFunction,
+  options?: AddEventListenerOptions,
+) {
+  let abort: VoidFunction | undefined;
+  const cancel = macro(() => {
+    skipFrame = true;
+    const unlock = () => abort = micro(() => skipFrame = false);
+    ifAsync(callback(), unlock) || unlock();
+  }, options);
+  return () => {
+    cancel();
+    abort?.();
+    skipFrame = false;
+  };
+}
+
+function prerender(callback: FrameRequestCallback) {
   const id = requestAnimationFrame(callback);
   return () => cancelAnimationFrame(id);
 }
 
-// BUG: put callback in queue/array to avoid delay
+const queue = [] as FrameRequestCallback[];
 export function render(callback: FrameRequestCallback) {
   let abort: VoidFunction | undefined;
-  const cancel = postrender(() => prerender((t) => callback(t)));
+  queue.push(callback);
+  const cancel = skipFrame
+    ? prerender(callback)
+    : postrender(() =>
+      abort = prerender((t) => {
+        let callback; // deno-lint-ignore no-cond-assign
+        while (callback = queue.pop()) callback(t);
+      })
+    );
   return () => {
     cancel();
     abort?.();
@@ -29,12 +59,18 @@ export function render(callback: FrameRequestCallback) {
 }
 
 // TODO: replace with requestPostAnimationFrame
-// BUG: for now put callback in queue/array to avoid delay
-export function postrender(callback: FrameRequestCallback): VoidFunction {
+function postrender(callback: FrameRequestCallback): VoidFunction {
   let abort: VoidFunction | undefined;
   const cancel = prerender((t) => abort = macro(() => callback(t)));
   return () => {
     cancel();
     abort?.();
   };
+}
+
+function ifAsync(callbackReturn: unknown, resolve: () => void) {
+  if (callbackReturn instanceof Promise) {
+    callbackReturn.then(resolve);
+    return true;
+  }
 }
