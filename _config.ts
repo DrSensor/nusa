@@ -10,5 +10,7 @@ export default lume()
   .scopedUpdates((path) => path.endsWith(".ts") && !path.startsWith("_"))
   .use(modify_urls({ fn: (url) => url.startsWith("nusa") ? "/" + url : url }))
   .use(babel())
-  .use(esbuild({ options: { mangleProps: /^_/, minify: false } }))
+  .use(
+    esbuild({ options: { splitting: true, mangleProps: /^_/, minify: false } }),
+  )
   .use(minify_html());

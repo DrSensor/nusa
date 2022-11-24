@@ -35,6 +35,23 @@ export function defer(
   };
 }
 
+export function idle(
+  callback: IdleRequestCallback,
+  options?: IdleRequestOptions,
+) {
+  let abort: VoidFunction | undefined;
+  const id = requestIdleCallback((deadline) => {
+    skipFrame = true;
+    const unlock = () => abort = micro(() => skipFrame = false);
+    ifAsync(callback(deadline), unlock) || unlock();
+  }, options);
+  return () => {
+    cancelIdleCallback(id);
+    abort?.();
+    skipFrame = false;
+  };
+}
+
 function prerender(callback: FrameRequestCallback) {
   const id = requestAnimationFrame(callback);
   return () => cancelAnimationFrame(id);

@@ -14,7 +14,7 @@ export default class extends HTMLElement {
   connectedCallback() {
     if (!this.isConnected) return;
     const [[scripts], attrs] = query(this);
-    scripts.forEach((script) => import(script).then(bind(attrs)));
+    scripts.forEach((script) => import(script).then(bind(this.#shadow, attrs)));
     this.#shadow.replaceChildren(...this.children);
   }
 }

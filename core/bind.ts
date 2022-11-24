@@ -1,17 +1,18 @@
 import type { ESclass, Module, Prototype } from "./types.ts";
 
-import { Attribute, Bind, ColonFor } from "./query.ts";
+import { Attribute, Bind } from "./query.ts";
 import * as accessor from "./accessor.ts";
 import registry, { Bound, index } from "./registry.ts";
+import * as listener from "./listener.ts";
 
 let count = 0;
 
-export default (attrs: Attribute[]) => (module: Module) => {
+export default (scope: ShadowRoot, attrs: Attribute[]) => (module: Module) => {
   const Class = module.default as ESclass;
-  bind(Class.prototype, attrs);
+  bind(Class.prototype, scope, attrs);
 };
 
-function bind(pc: Prototype, attrs: Attribute[]) {
+function bind(pc: Prototype, scope: ShadowRoot, attrs: Attribute[]) {
   const script = new pc.constructor();
   const cid = script[index] = count++;
 
@@ -23,14 +24,7 @@ function bind(pc: Prototype, attrs: Attribute[]) {
   attrs.forEach((attr) => {
     switch (attr._bind) {
       case Bind.Method:
-        attr.value.split(" ").forEach((methodName) => {
-          attr.ownerElement!.addEventListener( // TODO:#22 centralize all listener
-            attr.name.slice(ColonFor.Event),
-            function (this: Element, ...$: unknown[]) { // @ts-ignore let it crash if field not a method
-              script[methodName](...$);
-            },
-          );
-        });
+        listener.queue(attr);
         break;
       case Bind.Accessor:
         attr.value.split(" ").forEach((accessorName) => {
@@ -42,4 +36,5 @@ function bind(pc: Prototype, attrs: Attribute[]) {
     // Object.defineProperties(pc, member);
     Object.defineProperties(pc, descs);
   });
+  listener.handledBy(scope, script);
 }
