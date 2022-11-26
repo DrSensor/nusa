@@ -16,19 +16,26 @@ export function queue(attr: Attr) {
 export let currentEvent: Event;
 
 export function handledBy(scope: ShadowRoot, script: Instance) {
-  events.forEach((targetMap, event) =>
+  events.forEach((targetMap, event) => {
+    let proto: Event, target: Element;
     scope.addEventListener(event, (e) => {
-      const methods = targetMap.get(e.target as Element);
+      target = e.target as Element;
+      const methods = targetMap.get(target as Element);
       if (methods) {
         e.stopImmediatePropagation();
-        task.idle(() =>
-          methods.forEach(
-            (methodName) => (script[methodName] as VoidFunction)(),
-          )
-        );
-        currentEvent = e;
+        task.idle(() => {
+          currentEvent = e;
+          methods.forEach((methodName) =>
+            (script[methodName] as VoidFunction)()
+          );
+        });
+        if (!proto) {
+          Object.defineProperty(proto = Object.getPrototypeOf(e), "target", {
+            get: () => target,
+          });
+        }
       }
-    }, { passive: true, capture: true })
-  );
+    }, { passive: true, capture: true });
+  });
   events.clear();
 }
