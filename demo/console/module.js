@@ -1,7 +1,9 @@
+import { get } from "/nusa/std.js"
+
 export default class {
-  log(e) { console.log(e) }
-  debug(e) { console.debug(e) }
-  info(e) { console.info(e) }
-  warn(e) { console.warn(e) }
-  error(e) { console.error(e) }
+  log() { console.log(get.event) }
+  debug() { console.debug(get.event) }
+  info() { console.info(get.event) }
+  warn() { console.warn(get.event) }
+  error() { console.error(get.event) }
 }
