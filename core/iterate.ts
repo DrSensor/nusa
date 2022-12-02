@@ -74,7 +74,7 @@ let access = {} as SoA,
 
 export const iterate = Object.defineProperties( // TODO: refactor as class which `this`/guard iterate.skip and iterate.stop from being destructured
   ((Class, callback) => {
-    dedupeUpdate();
+    dedupeUpdate?.();
 
     const members = registry.get(Class.prototype)![Registry.members];
     memberAccess = members;
@@ -128,10 +128,11 @@ export const iterate = Object.defineProperties( // TODO: refactor as class which
   },
 );
 
-let dedupeUpdate = () => {}, memberAccess: Record<string, DataBind> | undefined;
+let dedupeUpdate: VoidFunction | undefined,
+  memberAccess: Record<string, DataBind> | undefined;
 const proxyAccess: SoA = new Proxy({}, {
   get(_, accessor: string) {
-    access[accessor] = memberAccess![accessor][Member.databank];
+    access[accessor] = memberAccess![accessor][Bound.databank];
   },
 });
 

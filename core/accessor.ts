@@ -42,8 +42,9 @@ export function patchSetter(
       dedupe?.();
       cache[Bound.dedupe] = task.render(() => {
         update(members, accessor, i);
-        cache[Bound.dedupe] = undefined;
+        if (cache.length === 3) cache.pop();
       });
+      if (!cache[Bound.dedupe] && cache.length === 3) cache.pop();
     }
     databank[i] = value;
   };

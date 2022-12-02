@@ -17,23 +17,19 @@ export let currentEvent: Event;
 
 export function handledBy(scope: ShadowRoot, script: Instance) {
   events.forEach((targetMap, event) => {
-    let proto: Event, target: Element;
+    let cancel = () => {};
     scope.addEventListener(event, (e) => {
-      target = e.target as Element;
-      const methods = targetMap.get(target as Element);
+      const methods = targetMap.get(e.target as Element);
       if (methods) {
         e.stopImmediatePropagation();
-        task.idle(() => {
+        cancel();
+        const render = task.prepare(() => {
           currentEvent = e;
           methods.forEach((methodName) =>
             (script[methodName] as VoidFunction)()
           );
         });
-        if (!proto) {
-          Object.defineProperty(proto = Object.getPrototypeOf(e), "target", {
-            get: () => target,
-          });
-        }
+        cancel = render()!;
       }
     }, { passive: true, capture: true });
   });

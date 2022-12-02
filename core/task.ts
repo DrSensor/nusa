@@ -16,7 +16,19 @@ function micro(callback: VoidFunction) {
   return () => cancel = true;
 }
 
-let skipFrame = false;
+let skipFrame = false, prepareFrame = false;
+const queue = [] as FrameRequestCallback[];
+
+export function prepare(callback: VoidFunction) {
+  skipFrame = prepareFrame = true;
+  callback();
+  return () => {
+    skipFrame = false;
+    const cancel = render(() => {});
+    prepareFrame = false;
+    return cancel;
+  };
+}
 
 export function defer(
   callback: VoidFunction,
@@ -57,18 +69,22 @@ function prerender(callback: FrameRequestCallback) {
   return () => cancelAnimationFrame(id);
 }
 
-const queue = [] as FrameRequestCallback[];
 export function render(callback: FrameRequestCallback) {
-  let abort: VoidFunction | undefined;
-  queue.push(callback);
-  const cancel = skipFrame
-    ? prerender(callback)
-    : postrender(() =>
+  if (prepareFrame && skipFrame) {
+    queue.push(callback);
+    return;
+  }
+  let abort: VoidFunction | undefined, cancel: VoidFunction;
+  if (skipFrame) cancel = prerender(callback);
+  else {
+    if (!prepareFrame) queue.push(callback);
+    cancel = postrender(() =>
       abort = prerender((t) => {
         let callback; // deno-lint-ignore no-cond-assign
         while (callback = queue.pop()) callback(t);
       })
     );
+  }
   return () => {
     cancel();
     abort?.();
