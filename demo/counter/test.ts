@@ -9,6 +9,13 @@ const test = tester.page("demo/counter", {
   muteConsole: "log",
 });
 
+const waitToRender = () =>
+  test.page.waitForFunction(() =>
+    new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve))
+    )
+  );
+
 it(
   test.suite,
   "click button 7x",
@@ -32,6 +39,7 @@ it(
 
     for (let count = 1; count <= 7; count++) {
       await button!.click();
+      await waitToRender();
 
       assertEquals(
         await span!.evaluate((it) => it.textContent),
@@ -79,6 +87,7 @@ it(
 
       await input!.type(String(number));
       await input!.press("Enter");
+      await waitToRender();
 
       assertEquals(
         await input!.evaluate((it) => it.value),
@@ -126,6 +135,7 @@ it(
     for (let count = 0, number = count; count < 7; count++) {
       {
         await button!.click();
+        await waitToRender();
 
         assertEquals(
           await span!.evaluate((it) => it.textContent),
@@ -149,6 +159,7 @@ it(
         await Promise.all([input!.press("Control"), input!.press("a")]); // prepare for overwrite (select all)
         await input!.type(String(number));
         await input!.press("Enter");
+        await waitToRender();
 
         assertEquals(
           await input!.evaluate((it) => it.value),
