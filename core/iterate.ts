@@ -82,23 +82,18 @@ export const iterate = Object.defineProperties( // TODO: refactor as class which
     const length = Math.min(...Object.values(access).map((the) => the.length));
     while (++index < length && stopAt > index) callback(index, access);
 
-    const skips = [...skipAt]; // new Set(skipAt)
+    const accessors = Object.keys(access), skips = [...skipAt]; // new Set(skipAt)
     dedupeUpdate = task.render(() => {
-      for (const accessor in access) {
+      for (const accessor of accessors) {
         // if (skips.has(accessor)) continue; // TODO: skip render update of specific accessor
-        for (let i = length, limit = skips.pop() ?? 0; i--;) {
+        for (let i = length, limit = skips.pop(); i--;) {
           if (i === limit) {
-            i = limit = skips.pop() ?? 0;
+            limit = skips.pop();
             continue;
           }
           const [databank, targets] = members[accessor];
           update(databank, targets, i);
         }
-        /* Alternative
-        for (let i = length; i--;) {
-          if (skips.has(i)) continue;
-          update(members, accessor, i);
-        } */
       }
     });
 
@@ -133,9 +128,8 @@ let dedupeUpdate: VoidFunction | undefined,
   memberAccess: Record<string, Binder> | undefined;
 
 const proxyAccess: SoA = new Proxy({}, {
-  get(_, accessor: string) {
-    access[accessor] = memberAccess![accessor][Bound.databank];
-  },
+  get: (_, accessor: string) =>
+    access[accessor] = memberAccess![accessor][Bound.databank],
 });
 
 type SoA<
