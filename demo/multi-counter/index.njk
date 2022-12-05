@@ -1,0 +1,17 @@
+<script type=module src=nusa/render-scope.js async></script>
+
+{% for count in range(0, 10) %}
+<render-scope>
+  <link as=script href=module.js>
+
+  <button :: on:click=increment {% if count % 2 %} text:=count {% endif %}>
+    {% if count % 2 %}
+    {{ count }}
+    {% else %}
+    <span :: text:=count>{{ count }}</span>
+    {% endif %}
+  </button>
+  <input inputmode="numeric" type=number :: value:=count on:change=set>
+</render-scope>
+<br>
+{% endfor %}
