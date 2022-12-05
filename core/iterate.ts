@@ -1,5 +1,5 @@
 import type { ESclass, Prototype } from "./types.ts";
-import registry, { type DataBind, Member, Registry } from "./registry.ts";
+import registry, { type Binder, Bound, Registry } from "./registry.ts";
 import { update } from "./accessor.ts";
 import * as task from "./task.ts";
 
@@ -129,7 +129,8 @@ export const iterate = Object.defineProperties( // TODO: refactor as class which
 );
 
 let dedupeUpdate: VoidFunction | undefined,
-  memberAccess: Record<string, DataBind> | undefined;
+  memberAccess: Record<string, Binder> | undefined;
+
 const proxyAccess: SoA = new Proxy({}, {
   get(_, accessor: string) {
     access[accessor] = memberAccess![accessor][Bound.databank];
