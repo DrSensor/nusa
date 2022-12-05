@@ -22,40 +22,58 @@ export function init(
   );
 }
 
-export function patchSetter(
+export function infer(
+  accessors: string[],
+  members: Record<string, Binder>,
+  script: Instance,
+  index: number,
+) {
+  getFun = true;
+  accessors.forEach((accessor) =>
+    members[accessor][Bound.databank][index] = script[accessor]
+  );
+  getFun = false;
+}
+
+let getFun: boolean;
+
+export function patch(
   descs: PropertyDescriptorMap,
   members: Record<string, Binder>,
   accessor: string,
 ) {
-  const desc = descs[accessor], set = desc.set!;
+  const cache = members[accessor], [databank, targets] = cache;
+  const desc = descs[accessor], { set, get } = desc;
 
   // @ts-ignore avoid double override
   if (set[mark]) return; // @ts-ignore!
   set[mark] = true;
 
+  desc.get = function (this: Instance) {
+    const result = get!.call(this);
+    return getFun ? result : databank[this[index]];
+  };
   desc.set = function (this: Instance, value) {
-    set.call(this, value);
+    set!.call(this, value);
 
-    const i = this[index], cache = members[accessor];
-    const [databank, , dedupe] = members[accessor];
-    if (databank[i] !== value) {
-      dedupe?.();
+    const id = this[index];
+    if (databank[id] !== value) {
+      cache[Bound.dedupe]?.();
       cache[Bound.dedupe] = task.render(() => {
-        update(members, accessor, i);
+        update(databank, targets, id);
         if (cache.length === 3) cache.pop();
       });
       if (!cache[Bound.dedupe] && cache.length === 3) cache.pop();
     }
-    databank[i] = value;
+    databank[id] = value;
   };
 }
 
 export function update(
-  members: Record<string, Binder>,
-  accessor: string,
+  databank: Binder[Bound.databank],
+  targets: Binder[Bound.targets],
   index: number,
 ) {
-  const [databank, targets] = members[accessor];
   const value = databank[index] as string, targetAt = targets[index];
   targetAt.forEach((target, i) => {
     if (target instanceof Node) {

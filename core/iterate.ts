@@ -91,7 +91,8 @@ export const iterate = Object.defineProperties( // TODO: refactor as class which
             i = limit = skips.pop() ?? 0;
             continue;
           }
-          update(members, accessor, i);
+          const [databank, targets] = members[accessor];
+          update(databank, targets, i);
         }
         /* Alternative
         for (let i = length; i--;) {
