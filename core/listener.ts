@@ -1,5 +1,6 @@
 import type { Instance } from "./types.ts";
 import { ColonFor } from "./query.ts";
+import { setCurrentEvent } from "./registry.ts";
 import * as task from "./task.ts";
 
 /** @example
@@ -47,9 +48,7 @@ export function queue(attr: Attr) {
   }
 }
 
-export let currentEvent: Event;
-
-export function handledBy(scope: ShadowRoot, script: Instance) {
+export function listen(scope: ShadowRoot, script: Instance) {
   Object.entries(events).forEach(([event, targetMap]) => {
     const cancel = { _: () => {} };
     let holeyMap: Map<Element, Set<string>>;
@@ -93,7 +92,7 @@ function handle(
   e.stopImmediatePropagation();
   cancel._();
   const render = task.prepare(() => {
-    currentEvent = e;
+    setCurrentEvent(e);
     methods.forEach((methodName) =>
       (script[
         token ? methodName.slice(token.length) : methodName

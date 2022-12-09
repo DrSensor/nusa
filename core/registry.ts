@@ -1,5 +1,8 @@
 import type { Descriptors, Prototype } from "./types.ts";
 
+export let currentEvent: Event;
+export const setCurrentEvent = (event: Event) => currentEvent = event;
+
 export const index = Symbol();
 
 // TODO: consider using Attr or target Element or host Element as a key (maybe 🤔)
