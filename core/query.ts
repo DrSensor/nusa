@@ -19,7 +19,7 @@ export type Return = [
 */
 export default (
   host: Element,
-  excludes: typeof Element[] = [Object.getPrototypeOf(host).constructor],
+  excludes: typeof Element[],
   primaryAttribute = "::",
 ): Return => {
   const elements = host.getElementsByTagName("*");
