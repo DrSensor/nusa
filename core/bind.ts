@@ -1,4 +1,4 @@
-import type { ESclass, Instance, Module, Prototype } from "./types.ts";
+import type { ESclass, Module, Prototype } from "./types.ts";
 import type * as listener from "./listener.ts";
 
 import { Attribute, Bind } from "./query.ts";
@@ -14,25 +14,25 @@ export default (scope: ShadowRoot, attrs: Attribute[]) => (module: Module) => {
   bind(Class.prototype, scope, attrs);
 };
 
-function bind(pc: Prototype, scope: ShadowRoot, attrs: Attribute[]) {
+async function bind(pc: Prototype, scope: ShadowRoot, attrs: Attribute[]) {
   const cid = count++, access: string[] = [];
 
-  let notCached: unknown, script: Instance;
+  let notCached: unknown;
   const [descs, members] = registry.get(pc) ??
     (notCached = [Object.getOwnPropertyDescriptors(pc), {}] as const);
   if (notCached) registry.set(pc, [descs, members]);
 
-  attrs.forEach((attr) => {
+  for (const attr of attrs) {
     switch (attr._bind) {
-      case Bind.Method:
+      case Bind.Method: {
         if (listener_queue) listener_queue(attr);
         else {
-          import("./listener.ts").then(({ queue, listen }) => {
-            (listener_queue = queue)(attr);
-            (listener_listen = listen)(scope, script);
-          });
+          const { queue, listen } = await import("./listener.ts");
+          (listener_queue = queue)(attr);
+          listener_listen = listen;
         }
         break;
+      }
       case Bind.Accessor:
         attr.value.split(" ").forEach((accessorName) => {
           accessor.init(members, accessorName, attr, cid);
@@ -42,9 +42,9 @@ function bind(pc: Prototype, scope: ShadowRoot, attrs: Attribute[]) {
         break;
     }
     Object.defineProperties(pc, descs);
-  });
+  }
 
-  script = new pc.constructor();
+  const script = new pc.constructor();
   if (listener_listen) listener_listen(scope, script);
   accessor.infer(access, members, script, script[index] = cid);
 }
