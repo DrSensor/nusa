@@ -1,5 +1,5 @@
 import query, { type Attribute } from "./query.ts";
-import bind from "./bind.ts";
+import * as loadWhen from "./observer.ts";
 
 export default class RenderScope extends HTMLElement {
   constructor() {
@@ -24,9 +24,7 @@ export default class RenderScope extends HTMLElement {
       ) {
         slot.onslotchange = null;
         slot.remove();
-        allScripts.forEach((script) =>
-          import(script).then(bind(shadow, allAttrs))
-        );
+        loadWhen.inview(this, shadow, allScripts, allAttrs);
       }
     };
   }
