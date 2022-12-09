@@ -1,17 +1,27 @@
 import type { Attribute } from "./query.ts";
-import bind from "./bind.ts";
+import type bindFn from "./bind.ts";
 
 const registry = new WeakMap<
   Element,
   [shadow: ShadowRoot, scripts: string[], attrs: Attribute[]]
 >();
 
+let bind: typeof bindFn;
+async function lazyBind(
+  shadow: ShadowRoot,
+  scripts: string[],
+  attrs: Attribute[],
+) {
+  bind ??= (await import("./bind.ts")).default;
+  scripts.forEach((script) => import(script).then(bind(shadow, attrs)));
+}
+
 const viewport = new IntersectionObserver((entries) =>
   entries.forEach((scope) => {
     if (scope.isIntersecting) {
       const host = scope.target;
       const [shadow, scripts, attrs] = registry.get(host)!;
-      scripts.forEach((script) => import(script).then(bind(shadow, attrs)));
+      lazyBind(shadow, scripts, attrs);
       registry.delete(host);
       viewport.unobserve(host);
     }
@@ -33,7 +43,7 @@ const viewport = new IntersectionObserver((entries) =>
     rect.bottom <= innerHeight &&
     rect.right <= innerWidth
   ) { // is in viewport (sync)
-    scripts.forEach((script) => import(script).then(bind(shadow, attrs)));
+    lazyBind(shadow, scripts, attrs);
   } else {
     registry.set(host, [shadow, scripts, attrs]);
     viewport.observe(host); // async might reduce TTI when `rel=modulepreload`
