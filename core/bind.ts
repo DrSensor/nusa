@@ -44,7 +44,9 @@ async function bind(pc: Prototype, scope: ShadowRoot, attrs: Attribute[]) {
     Object.defineProperties(pc, descs);
   }
 
+  accessor.getter(true);
   const script = new pc.constructor();
   if (listener_listen) listener_listen(scope, script);
   accessor.infer(access, members, script, script[index] = cid);
+  accessor.getter(false);
 }

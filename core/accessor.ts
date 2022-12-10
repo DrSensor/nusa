@@ -28,14 +28,13 @@ export function infer(
   script: Instance,
   index: number,
 ) {
-  getFun = true;
   accessors.forEach((accessor) =>
     members[accessor][Bound.databank][index] = script[accessor]
   );
-  getFun = false;
 }
 
 let getFun: boolean;
+export const getter = (activate: boolean) => getFun = activate;
 
 export function patch(
   descs: PropertyDescriptorMap,
