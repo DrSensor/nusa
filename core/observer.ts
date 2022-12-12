@@ -7,13 +7,16 @@ const registry = new WeakMap<
 >();
 
 let bind: typeof bindFn;
-async function lazyBind(
+function lazyBind(
   shadow: ShadowRoot,
   scripts: string[],
   attrs: Attribute[],
 ) {
-  bind ??= (await import("./bind.ts")).default;
-  scripts.forEach((script) => import(script).then(bind(shadow, attrs)));
+  scripts.forEach(async (script) =>
+    import(script).then(
+      (bind ??= (await import("./bind.ts")).default)(shadow, attrs),
+    )
+  );
 }
 
 const viewport = new IntersectionObserver((entries) =>
