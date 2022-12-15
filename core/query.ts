@@ -1,14 +1,19 @@
-export const enum EnumReturn {
+export const enum ListOf {
   modulePath,
   attrNodes,
 }
-export const enum EnumModulePath {
+export const enum ModulePath {
   scripts,
   styles,
+}
+export const enum Flags {
+  hasBinding = 0b01,
+  hasListener = 0b10,
 }
 export type Return = [
   modulePath: [scripts: string[], styles: string[]],
   attrNodes: Attribute[],
+  flags: Flags,
 ];
 
 /** Get bindable attribute nodes and url module paths
@@ -21,30 +26,31 @@ export default (
   host: Element,
   excludes: typeof Element[],
   primaryAttribute = "::",
+  flags: Flags = 0,
 ): Return => {
   const elements = host.getElementsByTagName("*");
 
-  const module: Return[EnumReturn.modulePath] = [[], []],
-    attrs: Return[EnumReturn.attrNodes] = [];
+  const module: Return[ListOf.modulePath] = [[], []],
+    attrs: Return[ListOf.attrNodes] = [];
 
-  registerBindable(host, primaryAttribute, attrs);
+  flags |= registerBindable(host, primaryAttribute, attrs);
 
   for (const element of elements) {
     if (excludes.some((E) => element instanceof E)) continue;
     if (element instanceof HTMLLinkElement) {
       const as = element.getAttribute("as") as LinkAs,
         type = as === "script"
-          ? EnumModulePath.scripts
+          ? ModulePath.scripts
           : as === "style"
-          ? EnumModulePath.styles
+          ? ModulePath.styles
           : null;
       if (type != null) module[type].push(element.href);
     }
 
-    registerBindable(element, primaryAttribute, attrs);
+    flags |= registerBindable(element, primaryAttribute, attrs);
   }
 
-  return [module, attrs];
+  return [module, attrs, flags];
 };
 
 /** start index for slicing attribute name into normal form */
@@ -56,9 +62,17 @@ export const enum ColonFor {
   Event = 3,
 }
 
+export const enum Feature {
+  listener,
+}
+import type * as listener from "./listener.ts";
+export type Features = [
+  listener: [typeof listener.queue, typeof listener.listen] | 0,
+];
+
 export const enum Bind {
-  Accessor = 1,
-  Method,
+  Accessor = Flags.hasBinding,
+  Method = Flags.hasListener,
 }
 
 export interface Attribute extends Attr {
@@ -69,25 +83,28 @@ function registerBindable(
   host: Element,
   sep: string,
   attrs: Attribute[],
-) {
-  if (!host.hasAttribute(sep)) return;
-  for (
-    const {
-      name,
-      _: bind = name !== sep &&
-          name.endsWith(":")
-        ? Bind.Accessor
-        : name.startsWith("on:")
-        ? Bind.Method
-        : 0,
-    } of host.attributes as Iterable<Attr & { _?: Bind }>
-  ) {
-    if (bind) {
-      attrs[
-        attrs.push(host.getAttributeNode(name) as Attribute) - 1
-      ]._bind = bind;
+  flags: Flags = 0,
+): Flags {
+  if (host.hasAttribute(sep)) {
+    for (
+      const {
+        name,
+        _: bind = name !== sep &&
+            name.endsWith(":")
+          ? Bind.Accessor
+          : name.startsWith("on:")
+          ? Bind.Method
+          : 0,
+      } of host.attributes as Iterable<Attr & { _?: Bind }>
+    ) {
+      if (bind) {
+        flags |= attrs[
+          attrs.push(host.getAttributeNode(name) as Attribute) - 1
+        ]._bind = bind;
+      }
     }
   }
+  return flags;
 }
 
 /** @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link#attr-as */

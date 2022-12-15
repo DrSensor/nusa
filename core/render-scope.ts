@@ -1,10 +1,10 @@
-import query, { type Attribute } from "./query.ts";
+import query, { type Attribute, type Flags } from "./query.ts";
 import * as loadWhen from "./observer.ts";
 
 export default class RenderScope extends HTMLElement {
   constructor() {
     const allScripts: string[] = [], allAttrs: Attribute[] = [];
-
+    let featureFlags: Flags = 0;
     super();
     const shadow = this.attachShadow({
         mode: this.getAttribute("shadow-root") as ShadowRootMode ?? "closed",
@@ -13,9 +13,10 @@ export default class RenderScope extends HTMLElement {
     shadow.append(slot);
 
     slot.onslotchange = () => { // avoid glitch when html content is too big
-      const [[scripts], attrs] = query(this, [RenderScope]);
+      const [[scripts], attrs, flags] = query(this, [RenderScope]);
       allAttrs.push(...attrs);
       allScripts.push(...scripts);
+      featureFlags |= flags;
       slot.after(...this.childNodes);
 
       if (
@@ -24,7 +25,7 @@ export default class RenderScope extends HTMLElement {
       ) {
         slot.onslotchange = null;
         slot.remove();
-        loadWhen.inview(this, shadow, allScripts, allAttrs);
+        loadWhen.inview(shadow, allScripts, allAttrs, featureFlags);
       }
     };
   }
