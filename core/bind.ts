@@ -1,7 +1,6 @@
 import type { ESclass, Module, Prototype } from "./types.ts";
 import { type Attribute, Bind, Feature, type Features } from "./query.ts";
 
-import * as accessor from "./accessor.ts";
 import registry, { index } from "./registry.ts";
 
 let count = 0;
@@ -21,8 +20,9 @@ function bind(
   scope: ShadowRoot,
   get: Features,
 ) {
+  const [accessor_override, accessor_infer] = get[Feature.accessor] || [];
   const [listener_queue, listener_listen] = get[Feature.listener] || [];
-  const cid = count++, access: string[] = [];
+  const cid = count++, access = accessor_infer && [] as string[];
 
   let notCached: unknown;
   const [descs, members] = registry.get(pc) ??
@@ -37,18 +37,17 @@ function bind(
       }
       case Bind.Accessor:
         attr.value.split(" ").forEach((accessorName) => {
-          accessor.init(members, accessorName, attr, cid);
-          accessor.patch(descs, members, accessorName);
-          access.push(accessorName);
+          accessor_override!(accessorName, descs, members, attr, cid);
+          access!.push(accessorName);
         });
         break;
     }
     Object.defineProperties(pc, descs);
   }
 
-  accessor.getter(true);
+  const inferFrom = accessor_infer?.(access!, members, cid);
   const script = new pc.constructor();
-  accessor.infer(access, members, script, script[index] = cid);
-  accessor.getter(false);
+  script[index] = cid;
+  inferFrom?.(script);
   listener_listen?.(scope!, script);
 }

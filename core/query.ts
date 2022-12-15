@@ -63,10 +63,13 @@ export const enum ColonFor {
 }
 
 export const enum Feature {
+  accessor,
   listener,
 }
+import type * as accessor from "./accessor.ts";
 import type * as listener from "./listener.ts";
 export type Features = [
+  accessor: [typeof accessor.override, typeof accessor.infer] | 0,
   listener: [typeof listener.queue, typeof listener.listen] | 0,
 ];
 

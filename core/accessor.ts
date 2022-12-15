@@ -5,7 +5,18 @@ import * as task from "./task.ts";
 
 const mark = Symbol();
 
-export function init(
+export function override(
+  accessor: string,
+  descs: PropertyDescriptorMap,
+  members: Record<string, Binder>,
+  attr: Attr,
+  index: number,
+) {
+  init(members, accessor, attr, index);
+  patch(descs, members, accessor);
+}
+
+function init(
   members: Record<string, Binder>,
   accessor: string,
   attr: Attr,
@@ -25,18 +36,20 @@ export function init(
 export function infer(
   accessors: string[],
   members: Record<string, Binder>,
-  script: Instance,
   index: number,
 ) {
-  accessors.forEach((accessor) =>
-    members[accessor][Bound.databank][index] = script[accessor]
-  );
+  getFun = true;
+  return (script: Instance) => {
+    accessors.forEach((accessor) =>
+      members[accessor][Bound.databank][index] = script[accessor]
+    );
+    getFun = false;
+  };
 }
 
 let getFun: boolean;
-export const getter = (activate: boolean) => getFun = activate;
 
-export function patch(
+function patch(
   descs: PropertyDescriptorMap,
   members: Record<string, Binder>,
   accessor: string,

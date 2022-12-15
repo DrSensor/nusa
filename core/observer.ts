@@ -18,6 +18,8 @@ function lazyBind(
   module ??= Promise.all([ // tree-shake dynamic import https://parceljs.org/features/code-splitting/#tree-shaking
     import("./bind.ts")
       .then((module) => module.default),
+    (feature & Flags.hasBinding) && import("./accessor.ts")
+      .then((module) => [module.override, module.infer]),
     (feature & Flags.hasListener) && import("./listener.ts")
       .then((module) => [module.queue, module.listen]),
   ]).then(([_bind, ..._features]) => ({ _bind, _features }));
