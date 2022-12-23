@@ -1,4 +1,4 @@
-export { iterate } from "../core/iterate.ts";
+export * as iterate from "./std/iterate.ts";
 
 import { currentEvent } from "../core/registry.ts";
 export const get = {
