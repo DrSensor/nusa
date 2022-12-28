@@ -1,9 +1,9 @@
-import { get } from "/nusa/std.js"
+import * as current from "/nusa/std/current.js"
 
 export default class {
-  log() { console.log(get.event) }
-  debug() { console.debug(get.event) }
-  info() { console.info(get.event) }
-  warn() { console.warn(get.event) }
-  error() { console.error(get.event) }
+  log() { console.log(current.event) }
+  debug() { console.debug(current.event) }
+  info() { console.info(current.event) }
+  warn() { console.warn(current.event) }
+  error() { console.error(current.event) }
 }

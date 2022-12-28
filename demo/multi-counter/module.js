@@ -1,5 +1,5 @@
 import Counter from "../counter/module.js"
-import { iterate } from "/nusa/std.js"
+import * as iterate from "/nusa/std/iterate.js"
 
 setInterval(() => {
   iterate.for(Counter, (index, { count }) => {

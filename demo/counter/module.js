@@ -1,4 +1,4 @@
-import { get } from "/nusa/std.js"
+import * as current from "/nusa/std/current.js"
 
 export default class {
   accessor count = 0
@@ -6,6 +6,6 @@ export default class {
   increment() { this.count++ }
 
   set() {
-    this.count = +get.event.target.value
+    this.count = +current.event.target.value
   }
 }
