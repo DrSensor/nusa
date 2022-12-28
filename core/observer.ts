@@ -1,13 +1,21 @@
-import type bind from "./bind.ts";
+import type * as bind from "./bind.ts";
+import type * as accessor from "./accessor.ts";
+import type * as listener from "./listener.ts";
 import { type Attribute, Flags } from "./query.ts";
 
 type Args = Parameters<typeof lazyBind>;
 const registry = new WeakMap<Element, Args>();
 
 let module: Promise<{
-  _bind: typeof bind;
-  _features: Parameters<typeof bind>[1];
+  _bind: typeof bind.default;
+  _features: Parameters<typeof bind.default>[1];
 }>;
+
+const enum lazy {
+  "./bind.ts" = "./lazy/bind.js",
+  "./accessor.ts" = "./lazy/accessor.js",
+  "./listener.ts" = "./lazy/listener.js",
+}
 
 function lazyBind(
   shadow: ShadowRoot,
@@ -16,12 +24,12 @@ function lazyBind(
   feature: Flags,
 ) { //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
   module ??= Promise.all([ // tree-shake dynamic import https://parceljs.org/features/code-splitting/#tree-shaking
-    import("./bind.ts")
-      .then((module) => module.default),
-    (feature & Flags.hasBinding) && import("./accessor.ts")
-      .then((module) => [module.override, module.infer]),
-    (feature & Flags.hasListener) && import("./listener.ts")
-      .then((module) => [module.queue, module.listen]),
+    import(lazy["./bind.ts"])
+      .then((module: typeof bind) => module.default),
+    (feature & Flags.hasBinding) && import(lazy["./accessor.ts"])
+      .then((module: typeof accessor) => [module.override, module.infer]),
+    (feature & Flags.hasListener) && import(lazy["./listener.ts"])
+      .then((module: typeof listener) => [module.queue, module.listen]),
   ]).then(([_bind, ..._features]) => ({ _bind, _features }));
 
   // BUG(esbuild): can't bundle import() as single module
