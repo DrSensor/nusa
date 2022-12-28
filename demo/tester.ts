@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe } from "deno/testing/bdd.ts";
-import pupetter from "pupetter";
+import puppeteer from "puppeteer";
 
-import type { Browser, BrowserContext, Page } from "pupetter";
-import type { ConsoleMessage, ConsoleMessageType } from "pupetter";
+import type { Browser, BrowserContext, Page } from "puppeteer";
+import type { ConsoleMessage, ConsoleMessageType } from "puppeteer";
 import type { TestSuite } from "deno/testing/bdd.ts";
 
 export let browser: Browser, incognito: BrowserContext;
@@ -15,6 +15,7 @@ export const page = <T = unknown>(
   opts?: {
     fn?: () => void;
     incognito?: true;
+    only?: true;
     muteConsole?: ConsoleMessageType[] | ConsoleMessageType | true;
   },
   fn?: () => void,
@@ -26,7 +27,8 @@ export const page = <T = unknown>(
   };
   if (opts?.incognito) hasIncognito = true;
 
-  test.suite = describe(path, {
+  // BUG(deno): passing test descriptor of desribe.only doesn't ignore all tests
+  test.suite = (opts?.only ? describe.only : describe)(path, {
     fn: opts?.fn ?? fn,
 
     async beforeEach() {
@@ -73,7 +75,7 @@ export const page = <T = unknown>(
 };
 
 beforeAll(async () => {
-  browser ??= await pupetter.launch();
+  browser ??= await puppeteer.launch();
   if (hasIncognito) incognito ??= await browser.createIncognitoBrowserContext();
 });
 

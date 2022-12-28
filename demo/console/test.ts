@@ -2,7 +2,7 @@ import { it } from "deno/testing/bdd.ts";
 import { assertEquals } from "deno/testing/asserts.ts";
 
 import * as tester from "../tester.ts";
-import type { ConsoleMessageType } from "pupetter";
+import type { ConsoleMessageType } from "puppeteer";
 
 const test = tester.page("demo/console", {
   incognito: true,

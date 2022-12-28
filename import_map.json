@@ -2,7 +2,7 @@
   "imports": {
     "drsensor/lume-plugins/": "https://raw.githubusercontent.com/drsensor/lume-plugins/community/",
     "deno/": "https://deno.land/std/",
-    "pupetter": "https://deno.land/x/puppeteer/mod.ts",
+    "puppeteer": "https://deno.land/x/puppeteer/mod.ts",
     "lume/": "https://deno.land/x/lume/"
   }
 }

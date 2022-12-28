@@ -1,19 +1,20 @@
 {
   "importMap": "./import_map.json",
   "tasks": {
-    "lume": "echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run --lock=lock.json -",
+    "lume": "echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run -",
     "build": "deno task lume",
     "serve": "deno task lume --serve",
-    "test": "PUPPETEER_PRODUCT=chrome deno test --no-check --parallel --shuffle=7 --unstable --allow-env --allow-write --allow-read --allow-net --allow-run --lock=lock.json --ignore=demo/page.test.ts",
-    "check": "deno lint core nusa || true & deno check --lock=lock.json nusa/render-scope.ts nusa/std.ts",
-    "demo": "deno task serve --watch & PUPPETEER_PRODUCT=chrome deno test --watch --no-check --shuffle=7 --unstable --allow-env --allow-write --allow-read --allow-net --allow-run --lock=lock.json demo/page.test.ts",
-    "update": "mkdir .lock ; deno test --no-run --no-check --lock=.lock/test.json --lock-write --reload && deno cache --unstable --lock=.lock/config.json --lock-write --reload _config.ts && echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run --lock=.lock/lume.json --lock-write --reload - --version && deno eval 'Deno.writeTextFile(\"lock.json\", JSON.stringify({ version: \"2\", remote: Object.assign(...await Promise.all([...Deno.readDirSync(\".lock\")].map( async ({name}) => (await import(`./.lock/${name}`, {assert:{type:\"json\"}})).default.remote ))) }))' && deno fmt lock.json"
+    "test": "PUPPETEER_PRODUCT=chrome deno test --no-check --parallel --shuffle=7 --unstable --allow-env --allow-write --allow-read --allow-net --allow-run --ignore=demo/page.test.ts",
+    "check": "deno lint core nusa || true & deno check nusa/render-scope.ts nusa/std.ts",
+    "demo": "deno task serve --watch & PUPPETEER_PRODUCT=chrome deno test --watch --no-check --shuffle=7 --unstable --allow-env --allow-write --allow-read --allow-net --allow-run demo/page.test.ts",
+    "update": "rm deno.lock ; echo \"import 'lume/task.ts'\" | deno run --reload --unstable --allow-read --allow-run - & deno test --reload --no-run"
   },
   "compilerOptions": {
     "lib": [
       "dom",
       "dom.iterable",
       "dom.asynciterable",
+      "esnext.Array",
       "deno.ns",
       "deno.unstable"
     ]
