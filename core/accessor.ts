@@ -1,5 +1,5 @@
 import type { Instance } from "./types.ts";
-import { type Binder, Bound, index } from "./registry.ts";
+import { type Binder, Bound, index, setCurrentValue } from "./registry.ts";
 import { ColonFor } from "./query.ts";
 import * as task from "./task.ts";
 
@@ -62,13 +62,17 @@ function patch(
   set[mark] = true;
 
   desc.get = function (this: Instance) {
-    const result = get!.call(this);
-    return getFun ? result : databank[this[index]];
+    const value = setCurrentValue(databank[this[index]]),
+      result = get!.call(this);
+    setCurrentValue(undefined);
+    return getFun ? result : value;
   };
   desc.set = function (this: Instance, value) {
-    set!.call(this, value);
-
     const id = this[index];
+    setCurrentValue(databank[id]);
+    set!.call(this, value);
+    setCurrentValue(undefined);
+
     if (databank[id] !== value) {
       cache[Bound.dedupe]?.();
       cache[Bound.dedupe] = task.render(() => {

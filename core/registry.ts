@@ -1,16 +1,15 @@
 import type { Descriptors, Prototype } from "./types.ts";
 
-export let currentEvent: Event;
-export const setCurrentEvent = (event: Event) => currentEvent = event;
-
-export const index = Symbol();
+export const index = Symbol(),
+  setCurrentEvent = (event_: Event) => event = event_,
+  setCurrentValue = <T>(value_: T) => value = value_;
+export let event: Event, value: unknown;
 
 // TODO: consider using Attr or target Element or host Element as a key (maybe 🤔)
-const registry = new WeakMap<Prototype, [
+export default new WeakMap<Prototype, [
   descriptors: Descriptors<Prototype>,
   members: Record<string, Binder>,
 ]>();
-export default registry;
 
 export const enum Registry {
   descriptors,
