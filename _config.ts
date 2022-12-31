@@ -5,8 +5,8 @@ import * as esbuild_js from "lume/deps/esbuild.ts";
 import source_maps from "lume/plugins/source_maps.ts";
 import minify_html from "lume/plugins/minify_html.ts";
 
-import * as path from "deno/path/mod.ts";
-import { expandGlob, walk, type WalkEntry } from "deno/fs/mod.ts";
+import { join } from "deno/path/mod.ts";
+import { copy, emptyDir, type WalkEntry } from "deno/fs/mod.ts";
 import lume from "lume/mod.ts";
 
 const keep_whitespace = {
@@ -36,7 +36,7 @@ export default lume()
   .use((site) => { // BUG(lume): currently they skip over symlinks https://github.com/lumeland/lume/blob/master/core/source.ts#L334-L336
     const { build, stop } = esbuild_js;
     const config: Parameters<typeof build>[0] = {
-      outdir: path.join(site.options.dest, "nusa"),
+      outdir: join(site.options.dest, "nusa"),
       format: "esm",
       target: "esnext",
       platform: "browser",
@@ -44,52 +44,58 @@ export default lume()
     config.bundle = config.minify = true;
     Object.assign(config, conf);
 
-    site.addEventListener("beforeBuild", bundleScript());
-    site.addEventListener("beforeUpdate", bundleScript(true));
+    site.copy("package.json", "nusa/package.json");
+    site.addEventListener("afterStartServer", () => {
+      config.watch = config.incremental = true;
+      config.sourcemap = "linked";
+    });
+    site.addEventListener("beforeBuild", () => void (justBundling = false));
+    site.addEventListener("beforeBuild", "bundle");
+    site.addEventListener("beforeUpdate", "bundle");
     site.addEventListener("beforeSave", () => done.then(stop));
 
-    let done: Promise<unknown>;
-    function bundleScript(watch?: true) {
-      if (watch) {
-        config.watch = config.incremental = true;
-        config.sourcemap = "linked";
+    let done: Promise<unknown>, justBundling = true;
+    site.script("bundle", async () => {
+      const scripts: string[] = [], modules: string[] = [];
+      // BUG(deno): `walk` and `expandsGlob` must not skip over symlinks
+      // for await (const entry of walk("nusa", { includeDirs: false, exts: [".ts", ".mts"] })) {
+      //                           OR
+      // for await (const entry of expandGlob("nusa/**/*.{,m}ts")) {
+      //
+      for await (const entry of allFilesIn("nusa")) {
+        if (entry.name.endsWith(".ts")) scripts.push(entry.path);
+        else if (entry.name.endsWith(".mts")) modules.push(entry.path);
       }
-      return async () => {
-        if (watch) await Deno.remove(config.outdir!, { recursive: true });
-        const scripts: string[] = [], modules: string[] = [];
-        // BUG(deno): `walk` and `expandsGlob` must not skip over symlinks
-        // for await (const entry of walk("nusa", { includeDirs: false, exts: [".ts", ".mts"] })) {
-        //                           OR
-        // for await (const entry of expandGlob("nusa/**/*.{,m}ts")) {
-        //
-        for await (const entry of allFilesIn("nusa")) {
-          if (entry.name.endsWith(".ts")) scripts.push(entry.path);
-          else if (entry.name.endsWith(".mts")) modules.push(entry.path);
-        }
-        done = Promise.all([
-          build({ ...config, entryPoints: scripts }),
-          build({ ...config, entryPoints: modules, splitting: true }),
-        ]);
-      };
-    }
+      await emptyDir(config.outdir!);
+      done = Promise.all([
+        build({ ...config, entryPoints: scripts }),
+        build({ ...config, entryPoints: modules, splitting: true }),
+      ]);
+      if (justBundling) {
+        copy("package.json", join(config.outdir!, "package.json"));
+        await done.then(stop);
+      }
+      console.log("🔥 /nusa/*.js");
+      console.log("🔥 /nusa/*/*.js");
+    });
   });
 
 /** this is just a workaround until https://github.com/denoland/deno_std/issues/1359 fixed */
 async function* allFilesIn(root: string): AsyncIterableIterator<WalkEntry> {
   for await (const entry of Deno.readDir(root)) {
     if (entry.isSymlink) {
-      const realPath = await Deno.realPath(path.join(root, entry.name));
+      const realPath = await Deno.realPath(join(root, entry.name));
       if ((await Deno.lstat(realPath)).isDirectory) {
         yield* allFilesIn(realPath);
         continue;
       }
     }
     if (entry.isDirectory) {
-      yield* allFilesIn(path.join(root, entry.name));
+      yield* allFilesIn(join(root, entry.name));
       continue;
     }
     const result = { ...entry } as WalkEntry;
-    result.path = path.join(root, entry.name);
+    result.path = join(root, entry.name);
     yield result;
   }
 }
