@@ -1,10 +1,9 @@
 name: Check
 
 on:
-  workflow_dispatch:
-    push:
+  push:
       branches: ["main"]
-    pull_request:
+  pull_requests:
       branches: ["main"]
 
 permissions:
@@ -16,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DENO_DIR: /deno
+  DENO_DIR: ./cache/deno
 
 jobs:
   test:
@@ -27,7 +26,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.DENO_DIR }}
-          key: ${{ secrets.CACHE_VERSION }}-${{ hashFiles('deno.lock') }}
+          key: ${{ hashFiles('deno.lock') }}
       
       - name: Setup repo
         uses: actions/checkout@v3

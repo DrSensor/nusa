@@ -3,7 +3,7 @@ name: Deploy Web Site
 on: [push]
 
 env:
-  DENO_DIR: /deno
+  DENO_DIR: ./cache/deno
 
 jobs:
   deploy:

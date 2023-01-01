@@ -5,7 +5,7 @@ on:
     types: [created]
 
 env:
-  DENO_DIR: /deno
+  DENO_DIR: .cache/deno
 
 jobs:
   deploy:
@@ -30,6 +30,6 @@ jobs:
       - name: Publish
         run: |
           cd _site/nusa
-          npm publish --dry-run
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
