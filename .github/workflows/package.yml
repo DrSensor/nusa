@@ -4,6 +4,9 @@ on:
   release:
     types: [created]
 
+env:
+  DENO_DIR: ~/.cache/deno
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -12,10 +15,8 @@ jobs:
       - uses: denoland/setup-deno@v1
       - uses: actions/cache@v3
         with:
-          path: |
-            ~/.deno
-            ~/.cache/deno
-          key: ${{ secrets.CACHE_VERSION }}-${{ hashFiles('deno.lock') }}
+          path: ${{ env.DENO_DIR }}
+          key: ${{ hashFiles('deno.lock') }}
       - uses: actions/setup-node@v3
         with:
           node-version: latest

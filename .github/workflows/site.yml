@@ -2,6 +2,9 @@ name: Deploy Web Site
 
 on: [push]
 
+env:
+  DENO_DIR: ~/.cache/deno
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -16,9 +19,7 @@ jobs:
       - uses: denoland/setup-deno@v1
       - uses: actions/cache@v3
         with:
-          path: |
-            ~/.deno
-            ~/.cache/deno
+          path: ${{ env.DENO_DIR }}
           key: ${{ hashFiles('deno.lock') }}
 
       - name: Build
