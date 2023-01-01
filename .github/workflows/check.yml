@@ -14,9 +14,6 @@ concurrency:
   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
   cancel-in-progress: true
 
-env:
-  DENO_DIR: ./cache/deno
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -31,7 +28,9 @@ jobs:
       - name: Cache Deno dependencies
         uses: actions/cache@v3
         with:
-          path: ${{ env.DENO_DIR }}
+          path: |
+            ~/.deno
+            ~/.cache/deno
           key: ${{ hashFiles('deno.lock') }}
 
       - name: Verify formatting
