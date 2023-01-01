@@ -1,0 +1,26 @@
+{
+  "name": "nusa",
+  "version": "0.0.2023",
+  "description": "instant real-time web framework without setup",
+  "homepage": "https://nusa.pages.dev",
+  "exports": {
+    "./*": {
+      "types": "./*.d.ts",
+      "default": "./*.js"
+    },
+    "./std/*": {
+      "types": "./std/*.d.ts",
+      "default": "./std/*.js"
+    }
+  },
+  "license": "MIT",
+  "author": "Fahmi Akbar Wildana",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DrSensor/nusa.git",
+    "directory": "nusa"
+  },
+  "bugs": {
+    "url": "https://github.com/DrSensor/wiles/issues/new"
+  }
+}
