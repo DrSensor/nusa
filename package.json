@@ -1,6 +1,6 @@
 {
   "name": "nusa",
-  "version": "0.0.2023",
+  "version": "0.0.1-Jan.2023",
   "description": "instant real-time web framework without setup",
   "homepage": "https://nusa.pages.dev",
   "exports": {
