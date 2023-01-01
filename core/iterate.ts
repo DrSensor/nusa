@@ -106,14 +106,14 @@ export class IterateController<
   #saveAt(index: number) {
     const save = {} as StructFrom<ToA>;
     for (const accessor in this.#access) {
-      const databank = this.#access[accessor]; //@ts-ignore
+      const databank = this.#access[accessor]; //@ts-ignore BUG(typescript): can't assign associated type
       save[accessor] = databank[index];
     }
     this.#backup.set(index, save);
   }
   #restoreAt(index: number) {
     const restore = this.#backup.get(index)!;
-    for (const accessor in this.#access) { //@ts-ignore
+    for (const accessor in this.#access) { //@ts-ignore BUG(typescript): can't assign associated type
       this.#access[accessor][index] = restore[accessor];
     }
   }

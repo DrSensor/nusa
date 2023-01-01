@@ -76,4 +76,6 @@ const viewport = new IntersectionObserver((entries) =>
 
 /** observe true visibility
 @see https://web.dev/intersectionobserver-v2/
-*/ export function visible(...args: Args) {}
+*/
+// deno-lint-ignore no-unused-vars
+export function visible(...args: Args) {}
