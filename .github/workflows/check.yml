@@ -45,6 +45,9 @@ jobs:
       - name: Setup puppeteer
         run: PUPPETEER_PRODUCT=chrome deno run -A --unstable https://deno.land/x/puppeteer/install.ts
 
+      - name: Download dependencies
+        run: deno test --reload --no-run
+
       - name: Run tests
         run: | # thanks to ChatGPT
           # Start the deno task serve process in the background and ignore hangup signals
