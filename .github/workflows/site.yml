@@ -22,7 +22,7 @@ jobs:
           key: ${{ hashFiles('deno.lock') }}
 
       - name: Build
-        run: deno task build
+        run: deno task build --quiet # BUG(lume): --quiet disable checkUpgrade() because `sha` might be undefined https://github.com/lumeland/lume/blob/master/core/utils.ts#L136
 
       - name: Publish
         uses: cloudflare/pages-action@1
