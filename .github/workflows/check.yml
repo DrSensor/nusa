@@ -1,0 +1,74 @@
+name: Check
+
+on:
+  workflow_dispatch:
+    push:
+      branches: ["main"]
+    pull_request:
+      branches: ["main"]
+
+permissions:
+  contents: read
+  pull-request: read
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+env:
+  DENO_DIR: /deno
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cache Deno dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.DENO_DIR }}
+          key: ${{ secrets.CACHE_VERSION }}-${{ hashFiles('deno.lock') }}
+      
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+
+      - name: Verify formatting
+        run: deno fmt --check
+
+      - name: Run linter
+        run: deno lint core nusa
+
+      - name: Run type checker
+        run: deno check `find core nusa -type f -and \( -name "*.ts" -o -name "*.mts" \)`
+
+      - name: Setup puppeteer
+        run: PUPPETEER_PRODUCT=chrome deno run -A --unstable https://deno.land/x/puppeteer/install.ts
+
+      - name: Run tests
+        run: | # thanks to ChatGPT
+          # Start the deno task serve process in the background and ignore hangup signals
+          nohup deno task serve &>/dev/null &
+
+          # Save the PID of the deno task serve process
+          server=$!
+
+          # Run the deno task test command and save its exit code
+          deno task test
+          exit_code=$?
+
+          # Get the process tree for the deno task serve process
+          process_tree=$(pstree -p $server)
+
+          # Extract the PIDs of all processes in the process tree
+          pids=$(echo "$process_tree" | sed -n 's/.*(\([0-9]*\))/\1/p')
+
+          # Terminate all processes in the process tree
+          for pid in $pids; do
+            kill $pid 2>/dev/null
+          done
+
+          # Return the exit code of the deno task test command
+          exit $exit_code

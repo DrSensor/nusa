@@ -1,0 +1,36 @@
+name: Deploy Web Site
+
+on: [push]
+
+env:
+  DENO_DIR: /deno
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      deployments: write
+
+    name: Deploy to Cloudflare Pages
+    steps:
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.DENO_DIR }}
+          key: ${{ secrets.CACHE_VERSION }}-${{ hashFiles('deno.lock') }}
+
+      - uses: actions/checkout@v3
+      - uses: denoland/setup-deno@v1
+
+      - name: Build
+        run: deno task build
+
+      - name: Publish
+        uses: cloudflare/pages-action@1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: nusa
+          directory: _site
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

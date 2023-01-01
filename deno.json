@@ -2,6 +2,7 @@
   "importMap": "./import_map.json",
   "tasks": {
     "lume": "echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run -",
+    "bundle": "deno task lume run bundle",
     "build": "deno task lume",
     "serve": "deno task lume --serve",
     "test": "PUPPETEER_PRODUCT=chrome deno test --no-check --parallel --shuffle=7 --unstable --allow-env --allow-write --allow-read --allow-net --allow-run --ignore=demo/page.test.ts",
