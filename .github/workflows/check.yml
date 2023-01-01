@@ -35,7 +35,7 @@ jobs:
           key: ${{ hashFiles('deno.lock') }}
 
       - name: Verify formatting
-        run: deno fmt --check
+        run: deno fmt --check core nusa
 
       - name: Run linter
         run: deno lint core nusa
