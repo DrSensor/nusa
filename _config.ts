@@ -48,6 +48,7 @@ export default lume()
     site.addEventListener("afterStartServer", () => {
       config.watch = config.incremental = true;
       config.sourcemap = "linked";
+      site.run("bundle");
     });
     site.addEventListener("beforeBuild", () => void (justBundling = false));
     site.addEventListener("beforeBuild", "bundle");
@@ -74,9 +75,14 @@ export default lume()
       if (justBundling) {
         copy("package.json", join(config.outdir!, "package.json"));
         await done.then(stop);
+        console.log("🔥 /nusa/package.json");
       }
       console.log("🔥 /nusa/*.js");
       console.log("🔥 /nusa/*/*.js");
+      if (config.sourcemap) {
+        console.log("🔥 /nusa/*.js.map");
+        console.log("🔥 /nusa/*/*.js.map");
+      }
     });
   });
 
