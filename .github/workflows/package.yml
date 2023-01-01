@@ -11,14 +11,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Cache Deno dependencies
-        uses: actions/cache@v3
+      - uses: actions/checkout@v3
+      - uses: denoland/setup-deno@v1
+      - uses: actions/cache@v3
         with:
           path: ${{ env.DENO_DIR }}
           key: ${{ secrets.CACHE_VERSION }}-${{ hashFiles('deno.lock') }}
-
-      - uses: actions/checkout@v3
-      - uses: denoland/setup-deno@v1
       - uses: actions/setup-node@v3
         with:
           node-version: latest

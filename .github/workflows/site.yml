@@ -15,13 +15,12 @@ jobs:
 
     name: Deploy to Cloudflare Pages
     steps:
+      - uses: actions/checkout@v3
+      - uses: denoland/setup-deno@v1
       - uses: actions/cache@v3
         with:
           path: ${{ env.DENO_DIR }}
-          key: ${{ secrets.CACHE_VERSION }}-${{ hashFiles('deno.lock') }}
-
-      - uses: actions/checkout@v3
-      - uses: denoland/setup-deno@v1
+          key: ${{ hashFiles('deno.lock') }}
 
       - name: Build
         run: deno task build
