@@ -4,9 +4,6 @@ on:
   release:
     types: [created]
 
-env:
-  DENO_DIR: ~/.cache/deno
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,7 +12,7 @@ jobs:
       - uses: denoland/setup-deno@v1
       - uses: actions/cache@v3
         with:
-          path: ${{ env.DENO_DIR }}
+          path: /home/runner/.cache
           key: ${{ hashFiles('deno.lock') }}
       - uses: actions/setup-node@v3
         with:
@@ -23,7 +20,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Bundle
-        run: deno task bundle
+        run: deno task ci:bundle
 
       - name: Publish
         run: |

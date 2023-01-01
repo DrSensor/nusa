@@ -8,6 +8,7 @@ import minify_html from "lume/plugins/minify_html.ts";
 import { join } from "deno/path/mod.ts";
 import { copy, emptyDir, type WalkEntry } from "deno/fs/mod.ts";
 import lume from "lume/mod.ts";
+import Server from "lume/core/server.ts";
 
 const keep_whitespace = {
   minify: false,
@@ -24,13 +25,24 @@ const conf = {
     : {},
 } satisfies BuildOptions["options"];
 
-export default lume()
+const site = lume();
+
+site.script("test", async () => {
+  await site.build();
+  const server = new Server({ port: 3000, root: site.dest() });
+  server.start();
+  const exit = await Deno.run({ cmd: ["deno", "task", "test"] }).status();
+  server.stop();
+  Deno.exit(exit.code);
+});
+
+export default site
   .ignore("core", "nusa", "demo/tester.ts", (path) => path.endsWith("test.ts"))
   .scopedUpdates((path) => path.endsWith(".ts") && !path.startsWith("_"))
   .use(modify_urls({ fn: (url) => url.startsWith("nusa") ? `/${url}` : url }))
   .use(babel())
-  .use(esbuild({ extensions: [".mts"], options: { ...conf, splitting: true } }))
-  .use(esbuild({ extensions: [".ts"], options: conf }))
+  // .use(esbuild({ extensions: [".mts"], options: { ...conf, splitting: true } }))
+  // .use(esbuild({ extensions: [".ts"], options: conf }))
   .use(minify_html())
   .use(source_maps())
   .use((site) => { // BUG(lume): currently they skip over symlinks https://github.com/lumeland/lume/blob/master/core/source.ts#L334-L336

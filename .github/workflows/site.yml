@@ -2,9 +2,6 @@ name: Deploy Web Site
 
 on: [push]
 
-env:
-  DENO_DIR: ~/.cache/deno
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,14 +16,12 @@ jobs:
       - uses: denoland/setup-deno@v1
       - uses: actions/cache@v3
         with:
-          path: ${{ env.DENO_DIR }}
+          path: /home/runner/.cache
           key: ${{ hashFiles('deno.lock') }}
 
       - name: Build
+        run: deno task build
         # run: deno task build --quiet # BUG(lume): --quiet disable checkUpgrade() because `sha` might be undefined https://github.com/lumeland/lume/blob/master/core/utils.ts#L136
-        run: | # BUG(lume): somehow esbuild service stop and cause to return execution with exit code 1, works fine (exit code 0) when running on local machine
-          deno task build || true
-          tree _site/
 
       - name: Publish
         uses: cloudflare/pages-action@1
