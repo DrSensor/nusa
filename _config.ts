@@ -2,6 +2,7 @@ import babel from "drsensor/lume-plugins/babel.ts";
 import { type Options as BuildOptions } from "lume/plugins/esbuild.ts";
 import source_maps from "lume/plugins/source_maps.ts";
 import minify_html from "lume/plugins/minify_html.ts";
+import svgo from "lume/plugins/svgo.ts";
 
 // import routes from "lume/middlewares/redirects.ts";
 import * as babel_importmap from "npm:babel-plugin-import-map";
@@ -110,6 +111,7 @@ export default site
   .ignore("core", "nusa", "demo/tester.ts", (path) => path.endsWith("test.ts"))
   .scopedUpdates((path) => path.endsWith(".ts") && !path.startsWith("_"))
   .use(babel({ plugins: [babel_importmap.plugin()] }))
+  .use(svgo())
   .use(minify_html())
   .use(source_maps())
   .use((site) => {
