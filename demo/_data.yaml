@@ -1,0 +1,3 @@
+scripts:
+  - path: nusa/render-scope
+    attrs: async
