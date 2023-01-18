@@ -6,11 +6,21 @@
   "exports": {
     "./*": {
       "types": "./*.d.ts",
+      "sourcemap": "./*.js.map",
+      "script": "./*.js",
       "default": "./*.js"
     },
+    "./std": {
+      "types": "./std.d.ts",
+      "sourcemap": "./std.js.map",
+      "import": "./std.js",
+      "default": "./std.js"
+    },
     "./std/*": {
-      "types": "./std/*.d.ts",
-      "default": "./std/*.js"
+      "types": "./*.d.ts",
+      "sourcemap": "./*.js.map",
+      "import": "./*.js",
+      "default": "./*.js"
     }
   },
   "license": "MIT",
