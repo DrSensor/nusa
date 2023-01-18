@@ -1,4 +1,4 @@
-import * as current from "/nusa/std/current.js"
+import * as current from "nusa/std/current"
 
 export default class {
   log() { console.log(current.event) }
