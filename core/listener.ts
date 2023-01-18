@@ -1,103 +1,84 @@
 import type { Instance } from "./types.ts";
-import { ColonFor } from "./query.ts";
 import { setCurrentEvent } from "./registry.ts";
 import * as task from "./task.ts";
+import * as ColonFor from "./constant/colon.ts";
 
-/** @example
-```html
-<button :: on:click="increment">
-  <span> ++ </span>
-</button>
-<button :: on:click="!decrement">
-  <span> -- </span>
-</button>
-```
-clicking <span> ++ </span> will increment()
-but clicking <span> -- </span> doesn't decrement()
-unless you click certain area of <button> not covered by <span> -- </span>
-*/
-const enum Handle {
-  Normal,
-  Holey,
+interface HandlePrefix {
+  self_?: string[];
+  // TODO: implement other prefix
+  none_?: string[];
 }
-const enum Token {
-  Holey = "!",
-}
-const events = {} as Record<
-  string,
-  Map<Element, [normal: Set<string>, holey: Set<string>]> | null
->;
+
+const events = {} as Record<string, Map<Element, IntoSet<HandlePrefix>>>;
 
 export function queue(attr: Attr) {
-  const eventName = attr.name.slice(ColonFor.Event);
-  const methodNames = attr.value.split(" ").reduce((final, item) => (
-    final[item.startsWith(Token.Holey) ? Handle.Holey : Handle.Normal]
-      .push(item), final
-  ), [[], []] as [string[], string[]]);
+  const methodNamesPrefix = attr.value.split(" ").reduce((final, value) => (
+    value.startsWith("self:")
+      ? (final.self_ ??= []).push(value.slice(5 /*ColonFor.CaptureSelf*/))
+      // TODO: implement other prefix
+      : (final.none_ ??= []).push(value), final
+  ), {} as Partial<HandlePrefix>);
 
-  if (events[eventName]?.has(attr.ownerElement!)) {
-    const [normals, holeys] = events[eventName]!.get(attr.ownerElement!)!;
-    const [normal$, holey$] = methodNames;
-    normal$.forEach((name) => normals.add(name));
-    holey$.forEach((name) => holeys.add(name));
+  const eventName = attr.name.slice(3 /*ColonFor.Event*/);
+  const cachedNamesPrefix = events[eventName]?.get(attr.ownerElement!);
+
+  if (cachedNamesPrefix) {
+    methodNamesPrefix.self_
+      ?.forEach((cachedNamesPrefix.self_ ??= new Set()).add);
+    // TODO: implement other prefix
+    methodNamesPrefix.none_
+      ?.forEach((cachedNamesPrefix.none_ ??= new Set()).add);
   } else {
-    (events[eventName] ??= new Map()).set(
-      attr.ownerElement!,
-      methodNames.map((it) => new Set(it)) as [Set<string>, Set<string>],
-    );
+    const cachedNamesWithPrefix: IntoSet<HandlePrefix> = {},
+      dedupe = (names?: string[]) => names ? new Set(names) : names;
+
+    cachedNamesWithPrefix.self_ = dedupe(methodNamesPrefix.self_);
+    // TODO: implement other prefix
+    cachedNamesWithPrefix.none_ = dedupe(methodNamesPrefix.none_);
+
+    (events[eventName] ??= new Map())
+      .set(attr.ownerElement!, cachedNamesWithPrefix);
   }
 }
 
+const config = { // default behaviour
+  passive: true,
+  capture: true,
+} satisfies AddEventListenerOptions;
+
 export function listen(scope: ShadowRoot, script: Instance) {
   Object.entries(events).forEach(([event, targetMap]) => {
-    const cancel = { _: () => {} };
-    let holeyMap: Map<Element, Set<string>>;
-    let hasHoley = false;
-    targetMap!.forEach(([methods, holeys], element) => {
-      if (methods.size && element.childElementCount) {
-        element.addEventListener(
-          event,
-          (e) => handle(script, methods, e, cancel),
-          { passive: true, capture: true },
-        );
-      }
-      if (!element.childElementCount) {
-        methods.forEach((method) => holeys.add(Token.Holey + method));
-      }
-      if (holeys.size || !element.childElementCount) {
-        holeyMap ??= new Map();
-        holeyMap.set(element, holeys);
-        hasHoley = true;
-      }
-      // WARNING: all elements that doesn't have children Element will be treated as holey
-      // BUG(bind ref): which make ref.append(element) NOT work as expected (i.e click-ing appended element doesn't trigger class method)
+    let cancel = () => {};
+    const handle = (node: Node, methods: Set<string>, options = config) =>
+      methods.size && node.addEventListener(
+        event,
+        (e: Event) => {
+          // TODO: e.preventDefault() if <tag :: on:event="stealth:method">
+          // TODO: allow propagation if <tag :: on:event="bubble:method">
+          e.stopImmediatePropagation(); // TODO: switch to e.stopPropagation() if script bind to <tag :="">
+          cancel();
+          const render = task.prepare(() => {
+            setCurrentEvent(e);
+            methods.forEach((methodName) =>
+              (script[methodName] as VoidFunction)()
+            );
+          });
+          cancel = render()!;
+          setCurrentEvent(null);
+        },
+        options,
+      );
+
+    targetMap.forEach((prefix, element) => {
+      if (prefix.self_) handle(scope, prefix.self_);
+      // TODO: implement other prefix
+      if (prefix.none_) handle(element, prefix.none_);
     });
-    if (hasHoley) {
-      scope.addEventListener(event, (e) => {
-        const methods = holeyMap.get(e.target as Element);
-        if (methods) handle(script, methods, e, cancel, Token.Holey);
-      }, { passive: true, capture: true });
-    }
-    events[event] = null;
+    targetMap.clear();
   });
 }
 
-function handle(
-  script: Instance,
-  methods: Set<string>,
-  e: Event,
-  cancel: { _(): void },
-  token?: string,
-) {
-  e.stopImmediatePropagation();
-  cancel._();
-  const render = task.prepare(() => {
-    setCurrentEvent(e);
-    methods.forEach((methodName) =>
-      (script[
-        token ? methodName.slice(token.length) : methodName
-      ] as VoidFunction)()
-    );
-  });
-  cancel._ = render()!;
-}
+type IntoSet<R> = {
+  [k in keyof R]: R[k] extends ArrayLike<infer T> | infer U ? Set<T> | U
+    : R[k];
+};

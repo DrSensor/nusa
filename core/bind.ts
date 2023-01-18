@@ -1,13 +1,15 @@
 import type { ESclass, Module, Prototype } from "./types.ts";
-import { type Attribute, Bind, Feature, type Features } from "./query.ts";
+import { type Attributes } from "./query.ts";
+import * as Feature from "./constant/feature.ts";
 
 import registry, { index } from "./registry.ts";
 
 let count = 0;
 
 export default (
-  [attrs, scope]: [Attribute[], ShadowRoot],
-  features: Features,
+  features: Feature.modules,
+  attrs: Attributes,
+  scope: ShadowRoot,
 ) =>
 (module: Module) => {
   const Class = module.default as ESclass;
@@ -16,9 +18,9 @@ export default (
 
 function bind(
   pc: Prototype,
-  attrs: Attribute[],
+  attrs: Attributes,
   scope: ShadowRoot,
-  get: Features,
+  get: Feature.modules,
 ) {
   const [accessor_override, accessor_infer] = get[Feature.accessor] || [];
   const [listener_queue, listener_listen] = get[Feature.listener] || [];
@@ -29,19 +31,14 @@ function bind(
     (notCached = [Object.getOwnPropertyDescriptors(pc), {}] as const);
   if (notCached) registry.set(pc, [descs, members]);
 
-  for (const attr of attrs) {
-    switch (attr._bind) {
-      case Bind.Method: {
-        listener_queue!(attr);
-        break;
-      }
-      case Bind.Accessor:
-        attr.value.split(" ").forEach((accessorName) => {
-          accessor_override!(accessorName, descs, members, attr, cid);
-          access!.push(accessorName);
-        });
-        break;
-    }
+  attrs.events_?.forEach(listener_queue!);
+  if (attrs.props_) {
+    attrs.props_.forEach((attr) =>
+      attr.value.split(" ").forEach((accessorName) => {
+        accessor_override!(accessorName, descs, members, attr, cid);
+        access!.push(accessorName);
+      })
+    );
     Object.defineProperties(pc, descs);
   }
 

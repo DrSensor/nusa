@@ -1,5 +1,5 @@
 import type { ESclass, Prototype } from "./types.ts";
-import registry, { type Binder, Bound, Registry } from "./registry.ts";
+import registry, { type AccessorBinder } from "./registry.ts";
 import { update } from "./accessor.ts";
 import * as task from "./task.ts";
 
@@ -20,7 +20,7 @@ export default <T extends ESclass>(
   dedupeUpdate?.();
   const [access, iterate, restore] = flow.get(controller)!;
 
-  const members = registry.get(Class.prototype)![Registry.members],
+  const [, members] = registry.get(Class.prototype)!,
     [accessors, arrays] = access(members, callback);
 
   const length = Math.min(...arrays.map((the) => the.length)),
@@ -34,8 +34,8 @@ export default <T extends ESclass>(
           limit = skips.pop();
           continue;
         }
-        const [databank, targets] = members[accessor];
-        update(databank, targets, i);
+        const member = members[accessor];
+        update(member.databank_, member.targets_, i);
       }
     }
   });
@@ -71,7 +71,7 @@ export class IterateController<
 
   constructor() {
     const access = (
-      members: Record<string, Binder>,
+      members: Record<string, AccessorBinder>,
       callback: IterFunction<T>,
     ) => {
       currentAccess = this.#access;
@@ -121,15 +121,15 @@ export class IterateController<
 
 let dedupeUpdate: VoidFunction | undefined,
   currentAccess: SoA | undefined,
-  memberAccess: Record<string, Binder> | undefined;
+  memberAccess: Record<string, AccessorBinder> | undefined;
 
 const proxy: SoA = new Proxy({}, {
     get: (_, accessor: string) =>
-      currentAccess![accessor] = memberAccess![accessor][Bound.databank],
+      currentAccess![accessor] = memberAccess![accessor].databank_,
   }),
   flow = new WeakMap<Controller, [
     access: <T extends ESclass>(
-      members: Record<string, Binder>,
+      members: Record<string, AccessorBinder>,
       callback: IterFunction<T>,
     ) => readonly [accessorNames: string[], databanks: unknown[][]],
 

@@ -1,48 +1,39 @@
-import type * as bind from "./bind.ts";
-import type * as accessor from "./accessor.ts";
-import type * as listener from "./listener.ts";
-import { type Attribute, Flags } from "./query.ts";
+import type bind from "./bind.ts";
+import { type Queue } from "./query.ts";
 
-type Args = Parameters<typeof lazyBind>;
-const registry = new WeakMap<Element, Args>();
+import * as Flags from "./constant/flags.ts";
+
+const registry = new WeakMap<Element, [ShadowRoot, Queue]>();
 
 let module: Promise<{
-  _bind: typeof bind.default;
-  _features: Parameters<typeof bind.default>[1];
+  bind_: typeof bind;
+  features_: Parameters<typeof bind>[0];
 }>;
 
-const enum lazy {
-  "./bind.ts" = "./lazy/bind.js",
-  "./accessor.ts" = "./lazy/accessor.js",
-  "./listener.ts" = "./lazy/listener.js",
-}
+function lazyBind(shadow: ShadowRoot, queue: Queue) { //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
+  const { scripts_ } = queue.module_;
+  if (scripts_) {
 
-function lazyBind(
-  shadow: ShadowRoot,
-  scripts: string[],
-  attrs: Attribute[],
-  feature: Flags,
-) { //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
-  module ??= Promise.all([ // tree-shake dynamic import https://parceljs.org/features/code-splitting/#tree-shaking
-    import(lazy["./bind.ts"])
-      .then((module: typeof bind) => module.default),
-    (feature & Flags.hasBinding) && import(lazy["./accessor.ts"])
-      .then((module: typeof accessor) => [module.override, module.infer]),
-    (feature & Flags.hasListener) && import(lazy["./listener.ts"])
-      .then((module: typeof listener) => [module.queue, module.listen]),
-  ]).then(([_bind, ..._features]) => ({ _bind, _features }));
+    //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
+    module ??= Promise.all([ // tree-shake dynamic import https://parceljs.org/features/code-splitting/#tree-shaking
+      import("./bind.ts")
+        .then((module) => module.default),
+      (queue.flags_ & Flags.hasBinding) && import("./accessor.ts")
+        .then((module) => [module.override, module.infer]),
+      (queue.flags_ & Flags.hasListener) && import("./listener.ts")
+        .then((module) => [module.queue, module.listen]),
+    ]).then(([bind_, ...features_]) => ({ bind_, features_ }));
 
-  // BUG(esbuild): can't bundle import() as single module
-  // TODO: import("./runtime.ts"); // preload task.ts and registry.ts
-
-  scripts.forEach(async (script) =>
-    import(script).then(
-      ((await module)._bind)(
-        [attrs, shadow],
-        (await module)._features,
-      ),
-    )
-  );
+    scripts_.forEach(async (script) =>
+      import(script).then(
+        ((await module).bind_)(
+          (await module).features_,
+          queue.attrs_,
+          shadow,
+        ),
+      )
+    );
+  }
 }
 
 const viewport = new IntersectionObserver((entries) =>
@@ -58,18 +49,17 @@ const viewport = new IntersectionObserver((entries) =>
 
 /** observe viewport intersection
 @see https://web.dev/intersectionobserver-v2/
-*/ export function inview(...args: Args) {
-  const host = args[0].host;
-  const rect = host.getBoundingClientRect();
+*/ export function inview(shadow: ShadowRoot, queue: Queue) {
+  const host = shadow.host, rect = host.getBoundingClientRect();
   if (
     rect.top >= 0 &&
     rect.left >= 0 &&
     rect.bottom <= innerHeight &&
     rect.right <= innerWidth
   ) { // is in viewport (sync)
-    lazyBind(...args);
+    lazyBind(shadow, queue);
   } else {
-    registry.set(host, args);
+    registry.set(host, [shadow, queue]);
     viewport.observe(host); // async might reduce TTI when `rel=modulepreload`
   }
 }
@@ -78,4 +68,4 @@ const viewport = new IntersectionObserver((entries) =>
 @see https://web.dev/intersectionobserver-v2/
 */
 // deno-lint-ignore no-unused-vars
-export function visible(...args: Args) {}
+export function visible(shadow: ShadowRoot, queue: Queue) {}
