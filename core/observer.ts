@@ -13,6 +13,10 @@ let module: Promise<{
 function lazyBind(shadow: ShadowRoot, queue: Queue) { //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
   const { scripts_ } = queue.module_;
   if (scripts_) {
+    import("./registry.ts");
+    if (queue.flags_ & (Flags.hasBinding | Flags.hasListener)) {
+      import("./task.ts");
+    }
 
     //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
     module ??= Promise.all([ // tree-shake dynamic import https://parceljs.org/features/code-splitting/#tree-shaking
