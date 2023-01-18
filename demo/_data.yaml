@@ -1,3 +1,5 @@
 scripts:
   - path: nusa/render-scope
     attrs: async
+styles:
+  - path: https://cdn.jsdelivr.net/npm/missing.css/dist/missing.min.css

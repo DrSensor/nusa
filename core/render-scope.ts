@@ -9,6 +9,7 @@ export default class RenderScope extends HTMLElement {
         mode: this.getAttribute("shadow-root") as ShadowRootMode ?? "closed",
       }),
       slot = document.createElement("slot"); // TODO: handle slot in this.children (i.e <render-scope><slot/></render-scope>) to avoid nested slot
+    shadow.adoptedStyleSheets = document.adoptedStyleSheets; // BUG(browser): doesn't work on firefox but working fine on chrome
     shadow.append(slot);
 
     const queue: Queue = { module_: {}, attrs_: {}, flags_: 0 };
