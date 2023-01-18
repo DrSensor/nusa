@@ -1,13 +1,13 @@
 {
   "importMap": "./import_map.json",
   "tasks": {
-    "lume": "echo \"import 'lume/task.ts'\" | deno run --unstable --allow-read --allow-run -",
+    "lume": "echo \"import 'lume/cli.ts'\" | deno run --unstable --allow-write --allow-net --allow-sys --allow-read --allow-run --allow-env -",
     "build": "deno task lume",
     "serve": "deno task lume --serve",
     "test": "PUPPETEER_PRODUCT=chrome deno test --no-check --parallel --shuffle=7 --unstable --allow-env --allow-write --allow-read --allow-net --allow-run --ignore=demo/page.test.ts",
     "check": "deno lint core nusa || true & deno check nusa/render-scope.ts nusa/std.ts",
     "demo": "deno task serve --watch & PUPPETEER_PRODUCT=chrome deno test --watch --no-check --shuffle=7 --unstable --allow-env --allow-write --allow-read --allow-net --allow-run demo/page.test.ts",
-    "update": "rm deno.lock ; echo \"import 'lume/task.ts'\" | deno run --reload --unstable --allow-read --allow-run - & deno test --reload --no-check --no-run",
+    "update": "rm deno.lock ; echo \"import 'lume/cli.ts'\" | deno run --reload --unstable --allow-write --allow-net --allow-read --allow-run --allow-env - & deno test --reload --no-check --no-run",
     "ci:test": "deno task lume run test",
     "ci:bundle": "deno task lume run bundle"
   },
