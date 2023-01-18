@@ -9,6 +9,6 @@
     "rollup/plugin-esbuild": "npm:rollup-plugin-esbuild",
     "rollup/plugin-swc": "npm:rollup-plugin-swc3",
     "rollup/plugin-terser": "npm:@rollup/plugin-terser",
-    "lume/": "https://deno.land/x/lume/"
+    "lume/": "https://deno.land/x/lume@v1.15.1/"
   }
 }
