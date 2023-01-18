@@ -1,6 +1,6 @@
 import type { Instance } from "./types.ts";
 import { type AccessorBinder, index, setCurrentValue } from "./registry.ts";
-import * as task from "./task.ts";
+import * as task from "./task.ts"; // deno-lint-ignore no-unused-vars
 import * as ColonFor from "./constant/colon.ts";
 
 const mark = Symbol();
