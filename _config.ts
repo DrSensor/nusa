@@ -111,7 +111,14 @@ export default site
   .ignore("core", "nusa", "demo/tester.ts", (path) => path.endsWith("test.ts"))
   .scopedUpdates((path) => path.endsWith(".ts") && !path.startsWith("_"))
   .use(babel({ plugins: [babel_importmap.plugin()] }))
-  .use(svgo())
+  .use(svgo({
+    options: {
+      plugins: [{
+        name: "preset-default",
+        params: { overrides: { inlineStyles: false } },
+      }],
+    },
+  }))
   .use(minify_html())
   .use(source_maps())
   .use((site) => {
