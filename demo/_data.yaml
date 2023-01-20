@@ -3,3 +3,4 @@ scripts:
     attrs: async
 styles:
   - path: https://cdn.jsdelivr.net/npm/missing.css/dist/missing.min.css
+  - path: /demo/style.css

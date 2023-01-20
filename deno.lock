@@ -564,6 +564,7 @@
     "https://deno.land/x/lume@v1.15.1/deps/http.ts": "6f5326d2a543fe4c9f32a4006d5b40c45c575769b457c0a8d5c1d24c91fc0e79",
     "https://deno.land/x/lume@v1.15.1/deps/imagick.ts": "752ad4f244516971daf57ca8bb7d8b6670f78311cbae5338f64f9b2ab324f3b4",
     "https://deno.land/x/lume@v1.15.1/deps/jsonc.ts": "a2a43070841b95c8256dbc3752cb4fa66a7244163dcf7d7980c67c937a6bbc57",
+    "https://deno.land/x/lume@v1.15.1/deps/lightningcss.ts": "eb531f8fd7e54ff92908e296fc20f889eca4491b2df0f1bc6b34a73891ad2c4e",
     "https://deno.land/x/lume@v1.15.1/deps/markdown_it.ts": "e48e34de092bc3fc96617372f26190cf3bbf722f4206a9e9e64febbc8fb925c4",
     "https://deno.land/x/lume@v1.15.1/deps/minify_html.ts": "14e8bb1df413bf43a9233f5ccd1d86b80a9514d8aa6f029f44600e0b0061fef5",
     "https://deno.land/x/lume@v1.15.1/deps/nunjucks.ts": "a8f31de092612a613680944e10b3647ccf91a1db4e099f046c3e73a40f8a6193",
@@ -581,6 +582,7 @@
     "https://deno.land/x/lume@v1.15.1/plugins/imagick.ts": "50983cad8e4b97fd6004815bcbeb0fa3e3d332388ecd3bfe6e02a94e5710cef6",
     "https://deno.land/x/lume@v1.15.1/plugins/json.ts": "60f3b8616c282a9c592e1974db143b3461999c55b20235eebced87482ebf16bd",
     "https://deno.land/x/lume@v1.15.1/plugins/jsx.ts": "532a055f1c6c6f00d21d13cb658614d5f6fc56ea28266020d371ba5fb151461a",
+    "https://deno.land/x/lume@v1.15.1/plugins/lightningcss.ts": "35314acf393bbd947bfd5a766769cf03b2a5e255437c45c68de641730d26054e",
     "https://deno.land/x/lume@v1.15.1/plugins/markdown.ts": "dfc6fdd0c2af96da5134567d0d57c3efc5cef3f18c48fa2eb858c7e5db03e12e",
     "https://deno.land/x/lume@v1.15.1/plugins/metas.ts": "69a3dc3569fc99dd91d6dd7329330590e9fe95abc769de685f14e324e381eea4",
     "https://deno.land/x/lume@v1.15.1/plugins/minify_html.ts": "3b179e332cba7dc18b990d4f4fed387b8b09e3242fb77b9845c55d6f6c25d953",
@@ -827,6 +829,7 @@
     "specifiers": {
       "babel-plugin-import-map": "babel-plugin-import-map@1.0.0",
       "date-fns@2.29.3": "date-fns@2.29.3",
+      "lightningcss-wasm@1.18.0": "lightningcss-wasm@1.18.0",
       "markdown-it-attrs@4.1.6": "markdown-it-attrs@4.1.6_markdown-it@13.0.1",
       "markdown-it-deflist@2.1.0": "markdown-it-deflist@2.1.0",
       "markdown-it@13.0.1": "markdown-it@13.0.1",
@@ -1081,6 +1084,10 @@
         "integrity": "sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==",
         "dependencies": {}
       },
+      "lightningcss-wasm@1.18.0": {
+        "integrity": "sha512-abx10CItvB4xTLKoOFhgkC3qAknaLeqY/Gnq0sfVdywSVM5/zG5YZS9kk96g+vHAf9QkIxcMVL/pRyB3mPsjmQ==",
+        "dependencies": { "napi-wasm": "napi-wasm@1.0.1" }
+      },
       "linkify-it@4.0.1": {
         "integrity": "sha512-C7bfi1UZmoj8+PQx22XyeXCuBlokoyWQL5pWSP+EI6nzRylyThouddufc2c1NDIcP9k5agmN9fLpA7VNJfIiqw==",
         "dependencies": { "uc.micro": "uc.micro@1.0.6" }
@@ -1121,6 +1128,10 @@
       },
       "ms@2.1.2": {
         "integrity": "sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==",
+        "dependencies": {}
+      },
+      "napi-wasm@1.0.1": {
+        "integrity": "sha512-70Ks5fMTw5/5iZJg8dtyivwPP9tgyeLRHGa2j4GlFOjz4lWbbTWrDAvSeJlQg+o++cWpX2bSPGI1Hu4W2kbOoA==",
         "dependencies": {}
       },
       "nth-check@2.1.1": {

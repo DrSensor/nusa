@@ -2,6 +2,7 @@ import babel from "drsensor/lume-plugins/babel.ts";
 import { type Options as BuildOptions } from "lume/plugins/esbuild.ts";
 import source_maps from "lume/plugins/source_maps.ts";
 import minify_html from "lume/plugins/minify_html.ts";
+import minify_css from "lume/plugins/lightningcss.ts";
 import svgo from "lume/plugins/svgo.ts";
 
 // import routes from "lume/middlewares/redirects.ts";
@@ -119,6 +120,7 @@ export default site
       }],
     },
   }))
+  .use(minify_css())
   .use(minify_html())
   .use(source_maps())
   .use((site) => {

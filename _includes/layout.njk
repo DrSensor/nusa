@@ -10,7 +10,7 @@
 
   {% for style in styles %}
   <link rel=preload as=style href={{ style.path }}>
-  <link rel=stylesheet href={{ style.path }}>
+  <link rel=stylesheet href={{ style.path }} {{ style.attrs }}>
   {% endfor %}
 
   {% for script in scripts %}
