@@ -1,4 +1,25 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30vh 2rem 120vh;
+}
+
+@media (prefers-color-scheme: dark) {
+  body > span:first-child::before {
+    content: "૮༼◕․◕༽つ ";
+  }
+}
+@media (prefers-color-scheme: light) {
+  body > span:first-child::before {
+    content: "૮༼⚆․⚆༽つ ";
+  }
+}
+
+body > span:first-child + render-scope {
+  margin-top: 100vh;
+}
+
 render-scope {
-  display: inline-block;
-  margin: 120vh 44vw !important;
+  padding: 3px;
 }

@@ -1,3 +1,4 @@
+layout: demo.njk
 scripts:
   - path: nusa/render-scope
     attrs: async
