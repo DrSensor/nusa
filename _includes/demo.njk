@@ -1,5 +1,31 @@
 ---
 layout: layout.njk
 ---
-<span>open your devtool <strong>Network</strong> tab and scroll down ⬇</span>
-{{ content | safe }}
+
+<span>
+  hit <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>i</kbd> ┋
+  click <strong>Network</strong> tab ┋
+  scroll down ⬇
+</span>
+
+<span>don't forget to <strong>Disable Cache</strong> and <em>reload page</em></span>
+
+<div id=demo>{{content|safe}}</div>
+<h2 id=demo-title>Demo</h2>
+
+<div id=source-code>
+
+  <div role="tablist">
+    {% for file in demo %}
+    <button role="tab" aria-controls={{file.path}} aria-selected={{loop.first}}>{{file.path}}</button>
+    {% endfor %}
+  </div>
+
+  {% for file in demo %}
+  <pre id={{file.path}} role="tabpanel" {{"hidden" if not loop.first}}><code
+      class=language-{{file.lang}}>{{file.content}}</code></pre>
+  {% endfor %}
+
+</div>
+
+<span id=end>The <span>End</span></span>

@@ -1,7 +1,18 @@
-layout: demo.njk
+demo: true
+
 scripts:
   - path: nusa/render-scope
     attrs: async
+
+  - path: /missing/tabs.js
+    module: true
+
 styles:
-  - path: https://cdn.jsdelivr.net/npm/missing.css/dist/missing.min.css
+  - path: /missing.css
   - path: /demo/style.css
+
+  - path: /highlight/dark.css
+    media: (prefers-color-scheme:dark)
+
+  - path: /highlight/light.css
+    media: (prefers-color-scheme:light)

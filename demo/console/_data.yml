@@ -1,0 +1,3 @@
+snippet:
+  index.html: ./demo.html
+  module.js: ./module.js

@@ -9,13 +9,13 @@
   <title>૮◕․◕༽ {{ title }}</title>
 
   {% for style in styles %}
-  <link rel=preload as=style href={{ style.path }}>
-  <link rel=stylesheet href={{ style.path }} {{ style.attrs }}>
+  <link rel=preload as=style href={{style.path}}>
+  <link rel=stylesheet href={{style.path}} {{style.attrs}} media={{style.media}}>
   {% endfor %}
 
   {% for script in scripts %}
-  <link rel=preload as=script href="{{ script.path }}">
-  <script {{ "type=module" if script.module }} src={{ script.path }} {{ script.attrs }}></script>
+  <link rel={{ "modulepreload" if script.module else "preload" }} as=script href="{{script.path}}">
+  <script {{"type=module" if script.module}} src={{script.path}} {{script.attrs}}></script>
   {% endfor %}
 </head>
 

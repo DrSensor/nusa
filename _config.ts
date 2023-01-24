@@ -5,6 +5,9 @@ import minify_html from "lume/plugins/minify_html.ts";
 import minify_css from "lume/plugins/lightningcss.ts";
 import svgo from "lume/plugins/svgo.ts";
 
+import code_highlight from "lume/plugins/code_highlight.ts";
+import javascript from "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/es/languages/javascript.min.js";
+
 // import routes from "lume/middlewares/redirects.ts";
 import * as babel_importmap from "npm:babel-plugin-import-map";
 import modify_urls from "lume/plugins/modify_urls.ts";
@@ -72,7 +75,7 @@ const conf = {
   >,
 } satisfies BuildOptions["options"];
 
-const site = lume();
+const site = lume({}, { search: { returnPageData: true } });
 
 import npm from "./package.json" assert { type: "json" };
 const redirects = await Object.entries(npm.exports).reduce(
@@ -113,9 +116,28 @@ site.script("test", async () => {
 });
 
 export default site
+  .remoteFile(
+    "missing.css",
+    "https://cdn.jsdelivr.net/npm/missing.css/dist/missing.min.css",
+  )
+  .remoteFile(
+    "missing/tabs.js",
+    "https://cdn.jsdelivr.net/npm/missing.css/dist/missing-js/tabs.js/+esm",
+  )
+  // TODO: add monospace fonts
+  .remoteFile(
+    "highlight/light.css",
+    "https://cdn.jsdelivr.net/npm/highlight.js/styles/foundation.css",
+  )
+  .remoteFile(
+    "highlight/dark.css",
+    "https://cdn.jsdelivr.net/npm/highlight.js/styles/base16/zenburn.css",
+  )
   .loadAssets([".svg"])
   .ignore("core", "nusa", "demo/tester.ts", (path) => path.endsWith("test.ts"))
   .scopedUpdates((path) => path.endsWith(".ts") && !path.startsWith("_"))
+  // .scopedUpdates(() => true)
+  .use(code_highlight({ languages: { javascript } }))
   .use(babel({ plugins: [babel_importmap.plugin()] }))
   .use(svgo({
     options: {
@@ -183,6 +205,7 @@ export default site
                       at Worker.#pollControl (deno:runtime/js/11_workers.js:155:21)
               */
             // config.minify ? terser(),
+            // @ts-ignore: npm:rollup-plugin-esbuild doesn't provide type declaration
             esbuild({
               ...conf,
               target: "esnext",
