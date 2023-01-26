@@ -77,25 +77,43 @@ const conf = {
 
 const site = lume({}, { search: { returnPageData: true } });
 
-import npm from "./package.json" assert { type: "json" };
+import npm from "./package.json" assert { type: "json" }; // TODO: generate nusa.importmap and register as site.data (all major browser except Safari now support <script type=importmap>)
+// const scripts: string[] = [], modules: string[] = [];
+const entries = new Map<string, "script" | "import">();
 const redirects = await Object.entries(npm.exports).reduce(
   async (prev, [from, as]) => {
     const excludes = ["types", "sourcemap"];
-    let to;
+    let to, type: "script" | "import" | undefined;
     for (const [kind, path] of Object.entries(as)) {
       if (excludes.some((it) => kind === it)) continue;
-      to = join("/nusa", path);
+      if (kind === "script" || kind === "import") type = kind;
+      to = join(`/${npm.name}`, path);
       break;
     }
     if (to == null) return prev;
-    from = join("nusa", from);
+    from = join(npm.name, from);
     const final = await prev;
+    const push = (exportsKey: string, path: string) => {
+      if (!type) return;
+      path = path.slice(1); // remove leading slash /
+      if (exportsKey.endsWith("*")) {
+        exportsKey = exportsKey.slice(0, -1);
+        path = join(exportsKey, basename(path));
+      }
+      path = path.slice(0, -2) + "ts"; // replace .js with .ts
+      entries.set(path, type);
+    };
     if (isGlob(from)) {
       for await (const { name, path } of expandGlob(from, singleStarFiles)) {
-        final[relative(Deno.cwd(), path).slice(0, -extname(path).length)] = to
-          .replace("*", basename(name, extname(name)));
+        const src = to.replace("*", basename(name, extname(name)));
+        const link = relative(Deno.cwd(), path).slice(0, -extname(path).length);
+        final[link] = src;
+        push(from, src);
       }
-    } else final[from] = to;
+    } else {
+      final[from] = to;
+      push(from, to);
+    }
     return final;
   },
   Promise.resolve({} as Record<string, string>),
@@ -103,7 +121,7 @@ const redirects = await Object.entries(npm.exports).reduce(
 // server.use(routes({ redirects })); //<-- not needed because babel_importmap and modify_urls will replace the url
 babel_importmap.load([{ imports: redirects }]);
 site.use(modify_urls({
-  fn: (url) => url.startsWith("nusa") ? redirects[url] : url,
+  fn: (url) => url.startsWith(npm.name) ? redirects[url] : url,
 }));
 
 site.script("test", async () => {
@@ -174,12 +192,12 @@ export default site
 
     let justBundling = true;
     site.script("bundle", async () => {
-      const scripts: string[] = [], modules: string[] = [];
-
-      for await (const entry of walk("nusa", { includeDirs: false })) {
-        if (entry.name.endsWith(".ts")) scripts.push(entry.path);
-        else if (entry.name.endsWith(".mts")) modules.push(entry.path);
-      }
+      const [scripts, modules] = [...entries.entries()].reduce(
+        (final, [path, kind]) => (
+          final[kind === "script" ? 0 : 1].push(path), final
+        ),
+        [[], []] as [string[], string[]],
+      );
       await emptyDir(config.outdir!);
 
       const whitespace = config.minify || config.minifyWhitespace ? "" : "\n";
