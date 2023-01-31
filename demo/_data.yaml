@@ -12,7 +12,7 @@ styles:
   - path: /demo/style.css
 
   - path: /highlight/dark.css
-    media: (prefers-color-scheme:dark)
+    media: "screen and (prefers-color-scheme: dark)"
 
   - path: /highlight/light.css
-    media: (prefers-color-scheme:light)
+    media: "screen and (prefers-color-scheme: light)"
