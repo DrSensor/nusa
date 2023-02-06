@@ -67,6 +67,7 @@ site.script("test", async () => {
   Deno.exit(exit.code);
 });
 
+import { basename } from "deno/path/mod.ts";
 export default site
   .remoteFile(
     "missing.css",
@@ -87,8 +88,7 @@ export default site
   )
   .loadAssets([".svg"])
   .ignore("core", "nusa", "demo/tester.ts", (path) => path.endsWith("test.ts"))
-  .scopedUpdates((path) => path.endsWith(".ts") && !path.startsWith("_"))
-  // .scopedUpdates(() => true)
+  .scopedUpdates((path) => !basename(path).startsWith("_"))
   .use(code_highlight({ languages: { javascript, njk: django } }))
   .use(importmap({ npm }))
   .use(babel({ plugins: [babel_importmap.plugin()] }))
