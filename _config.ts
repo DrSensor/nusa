@@ -87,7 +87,8 @@ export default site
     "https://cdn.jsdelivr.net/npm/highlight.js/styles/base16/zenburn.css",
   )
   .loadAssets([".svg"])
-  .ignore("core", "nusa", "demo/tester.ts", (path) => path.endsWith("test.ts"))
+  .ignore("core", "nusa")
+  .ignore("utils.ts", "demo/tester.ts", (path) => path.endsWith("test.ts"))
   .scopedUpdates((path) => !basename(path).startsWith("_"))
   .use(code_highlight({ languages: { javascript, njk: django } }))
   .use(importmap({ npm }))
