@@ -1,5 +1,3 @@
-export const layout = "demo.njk";
-
 import type { Data, PageData } from "lume/core.ts";
 import { basename, dirname, extname } from "deno/path/mod.ts";
 import { fromFileUrl, join, relative } from "deno/path/mod.ts";

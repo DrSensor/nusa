@@ -1,15 +1,4 @@
 demo: true
 
-scripts:
-  - path: /missing/tabs.js
-    module: true
-
 styles:
   - path: /missing.css
-  - path: /demo/style.css
-
-  - path: /highlight/dark.css
-    media: "screen and (prefers-color-scheme: dark)"
-
-  - path: /highlight/light.css
-    media: "screen and (prefers-color-scheme: light)"
