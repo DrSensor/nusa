@@ -1,6 +1,7 @@
 {
   "version": "2",
   "remote": {
+    "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/es/languages/django.min.js": "0427e848d58da2b475f21342ac0d1c898a6c78b116b5d4eb318f2b310a5c49ff",
     "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/es/languages/javascript.min.js": "e7b98375766d31d3804b3d3236c586e2c18e03085cc2174742c527640beb18c8",
     "https://deno.land/std@0.161.0/_util/assert.ts": "e94f2eb37cebd7f199952e242c77654e43333c1ac4c5c700e929ea3aa5489f74",
     "https://deno.land/std@0.161.0/_util/os.ts": "8a33345f74990e627b9dfe2de9b040004b08ea5146c7c9e8fe9a29070d193934",

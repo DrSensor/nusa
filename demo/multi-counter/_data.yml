@@ -1,5 +1,0 @@
-templateEngine: njk
-snippet:
-  index.jinja: ./demo.njk
-  module.js: ./module.js
-  counter.js: ../counter/module.js

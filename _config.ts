@@ -7,6 +7,7 @@ import svgo from "lume/plugins/svgo.ts";
 
 import code_highlight from "lume/plugins/code_highlight.ts";
 import javascript from "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/es/languages/javascript.min.js";
+import django from "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/es/languages/django.min.js";
 
 import importmap from "./_plugins/importmap.ts";
 import bundler, { BuildConfig } from "./_plugins/bundler.ts";
@@ -88,7 +89,7 @@ export default site
   .ignore("core", "nusa", "demo/tester.ts", (path) => path.endsWith("test.ts"))
   .scopedUpdates((path) => path.endsWith(".ts") && !path.startsWith("_"))
   // .scopedUpdates(() => true)
-  .use(code_highlight({ languages: { javascript } }))
+  .use(code_highlight({ languages: { javascript, njk: django } }))
   .use(importmap({ npm }))
   .use(babel({ plugins: [babel_importmap.plugin()] }))
   .use(svgo({
