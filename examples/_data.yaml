@@ -1,9 +1,6 @@
 demo: true
 
 scripts:
-  - path: nusa/render-scope
-    attrs: async
-
   - path: /missing/tabs.js
     module: true
 

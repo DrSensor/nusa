@@ -48,7 +48,47 @@ export default async function* ({ search }: PageData): AsyncGenerator<
     });
 
     const scripts = [...data.scripts ?? []], styles = [...data.styles ?? []];
-    const content = data.content as string;
+    const content: string = ((content) => {
+      if (extname(src) !== ".html") return content;
+
+      const document = dom.parseFromString(content, "text/html")!;
+      for (const node of document.querySelectorAll("render-scope link[href]")) {
+        const module = node as Element;
+        const url = module.getAttribute("href")!;
+        if (url.startsWith("/")) continue;
+        module.setAttribute("href", "/" + join(dirname(src), url));
+      }
+      // WARNING: this solution can't redirect head.children without explicit <head> in template engine (i.e jinja/njk)
+      for (const el of document.head!.getElementsByTagName("script")) {
+        const module = el.getAttribute("type") === "module";
+        const attrs = el.getAttributeNames().filter((it) =>
+          it !== "src" && (module ? it !== "type" : true)
+        ).join(" ");
+        scripts.push({
+          path: el.getAttribute("src"),
+          ...module && { module },
+          ...attrs && { attrs },
+        });
+      }
+      for (const el of document.head!.getElementsByTagName("link")) {
+        const rel = el.getAttribute("rel")!;
+        switch (rel) {
+          case "stylesheet": {
+            const media = el.getAttribute("media");
+            const attrs = el.getAttributeNames().filter((it) =>
+              it !== "rel" && it !== "href" && (media ? it !== "media" : true)
+            ).join(" ");
+            styles.push({
+              path: el.getAttribute("href"),
+              ...media && { media },
+              ...attrs && { attrs },
+            });
+            break;
+          }
+        }
+      }
+      return document.body.innerHTML;
+    })(data.content as string);
 
     const url = join(
       ...["/", __dirname],
