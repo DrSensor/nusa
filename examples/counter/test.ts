@@ -1,7 +1,7 @@
 import { it } from "deno/testing/bdd.ts";
 import { assertEquals } from "deno/testing/asserts.ts";
 
-import * as tester from "../tester.ts";
+import * as tester from "../../demo/tester.ts";
 import type { ElementHandle } from "puppeteer";
 
 const test = tester.page("demo/counter", {

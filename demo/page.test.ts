@@ -7,5 +7,5 @@ for await (const { path } of expandGlob("demo/*\/test.ts")) {
 await Promise.all(tests);
 */
 
-import "./console/test.ts";
-import "./counter/test.ts";
+import "../examples/console/test.ts";
+import "../examples/counter/test.ts";
