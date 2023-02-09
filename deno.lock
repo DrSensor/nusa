@@ -827,6 +827,7 @@
     "https://raw.githubusercontent.com/drsensor/lume-plugins/community/babel.ts": "bd7869dd60045332584aefc7700000c9016eb81784dae51650d92b4be892d379",
     "https://raw.githubusercontent.com/drsensor/lume-plugins/community/babel/deps.ts": "96be65ffcd7d0dc8de19431c1121ea885e2fa6d0ef9c60bb6be444bc859f854b",
     "https://raw.githubusercontent.com/drsensor/lume-plugins/community/babel/options.ts": "91124bf5b56ee3ab51de2caa1ec429f5ba474440003e6d4f3010be65d62e1130",
+    "https://raw.githubusercontent.com/drsensor/safe-html-rewriter/trunk/module.ts": "0195f288087802d1fd33b781efde34cbe1b1a4e77f04a10c8d535ae00d7a2db5",
     "https://wilsonl.in/minify-html/deno/0.10.3/index.js": "c8124516a6369ef9293473143d462b1592cf19aa25b110abd27d3cbb40124030"
   },
   "npm": {
@@ -834,6 +835,7 @@
       "babel-plugin-import-map": "babel-plugin-import-map@1.0.0",
       "date-fns@2.29.3": "date-fns@2.29.3",
       "highlight.js@11.7.0": "highlight.js@11.7.0",
+      "html-rewriter-wasm": "html-rewriter-wasm@0.4.1",
       "lightningcss-wasm@1.18.0": "lightningcss-wasm@1.18.0",
       "markdown-it-attrs@4.1.6": "markdown-it-attrs@4.1.6_markdown-it@13.0.1",
       "markdown-it-deflist@2.1.0": "markdown-it-deflist@2.1.0",

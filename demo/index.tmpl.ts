@@ -1,14 +1,18 @@
 import type { Data, PageData } from "lume/core.ts";
+import type { ElementHandlers } from "html-rewriter-wasm";
 import { basename, dirname, extname } from "deno/path/mod.ts";
 import { fromFileUrl, join, relative } from "deno/path/mod.ts";
-import { DOMParser, type Element } from "lume/deps/dom.ts";
 import { concat, dedupe, ext } from "../utils.ts";
+import { HTMLRewriter } from "html-rewriter";
 
 type DemoSnippet = Record<"path" | "lang" | "content", string>;
 
 type Yield = Data & { demo: DemoSnippet[] };
 export default async function* (page: PageData): AsyncGenerator<Yield> {
   const demo: Data[] = page.search.pages("demo=true");
+  if (demo.length === 0) return;
+  const rewrite = new HTMLRewriter();
+
   for (const data of demo) {
     if (
       typeof data.content !== "string" || typeof data.url !== "string"
@@ -45,7 +49,7 @@ export default async function* (page: PageData): AsyncGenerator<Yield> {
     codes.forEach((code, path) => {
       if (code.lang !== "js" || imports.has(path)) return;
       imports.forEach((origin, file) => {
-        code.content = code.content.replace(origin, "./" + file);
+        code.content = code.content.replaceAll(origin, "./" + file);
       });
     });
 
@@ -56,9 +60,51 @@ export default async function* (page: PageData): AsyncGenerator<Yield> {
       ))(src.split("/")),
     );
 
-    const content = extname(src) === ".html"
-      ? remap(src, data.content, [scripts, styles])
-      : data.content;
+    const register: ElementHandlers = {
+      element(el) {
+        const attrs = [...el.attributes].flatMap(([name, value]) =>
+          name !== "src" && name !== "href"
+            ? [value ? `${name}="${value}"` : name]
+            : []
+        );
+        switch (el.tagName) {
+          case "script":
+            scripts.push({
+              path: el.getAttribute("src"),
+              ...attrs.length && { attrs },
+              ...el.getAttribute("type") === "module" && { module: true },
+            });
+            break;
+          case "style":
+            styles.push({
+              path: el.getAttribute("href"),
+              ...attrs.length && { attrs },
+              ...el.hasAttribute("media") &&
+                { media: el.getAttribute("media") },
+            });
+            break;
+        }
+        el.remove();
+      },
+    }; // WARNING(cloudflare): HTMLRewriter can't handle :root selector
+    rewrite.once('script[type="importmap"]', register);
+    rewrite.once('script[src^="nusa"]', register);
+    rewrite.once('link[rel="stylesheet"]', register);
+
+    const redirect: ElementHandlers = {
+      element(el) {
+        let attr;
+        let url = el.getAttribute(attr = "href") ??
+          el.getAttribute(attr = "src")!;
+        if (url.startsWith("/")) return;
+        url = join("/", extname(src) ? dirname(src) : src, url);
+        el.setAttribute(attr, url);
+      },
+    };
+    rewrite.once("render-scope > link[href]", redirect);
+    rewrite.once("render-scope > script[src]", redirect);
+
+    const content = await rewrite.transform(data.content);
 
     const demo: DemoSnippet[] = [...codes.entries()].map(
       ([path, code]) => ({ path, ...code }),
@@ -71,6 +117,7 @@ export default async function* (page: PageData): AsyncGenerator<Yield> {
       ...{ tags: ["demo"], demo },
     };
   }
+  rewrite.free();
 }
 
 const isCodeSnippet = (entry: Snippet | CodeSnippet): entry is CodeSnippet =>
@@ -91,63 +138,14 @@ async function process(
     lang = (lang || extname(path)).slice(1);
     const origin = path;
     path = join(src.endsWith("/") ? src : dirname(src), path);
-    let content = await Deno.readTextFile(path);
+    const content = await Deno.readTextFile(path);
 
-    if (ext.HTMLish(lang)) { // TODO: move all top level <script> and <link rel=stylesheet> to <head> base layout via site.data.scripts
-      content = `<script async href=nusa/render-scope></script>
-
-${content}`;
-    } else if (
+    if (
       lang === "js" && origin.startsWith("../") && !file.startsWith("../")
     ) imports.set(file, origin);
 
     codes.set(file, { lang, content });
   }
-}
-
-const DOM = new DOMParser();
-function remap(
-  src: string,
-  content: string,
-  [scripts, styles]: [scripts: unknown[], styles: unknown[]],
-): string {
-  const document = DOM.parseFromString(content, "text/html")!;
-  for (const node of document.querySelectorAll("render-scope link[href]")) {
-    const module = node as Element;
-    const url = module.getAttribute("href")!;
-    if (url.startsWith("/")) continue;
-    module.setAttribute("href", "/" + join(dirname(src), url));
-  }
-  // WARNING: this solution can't redirect head.children without explicit <head> in template engine (i.e jinja/njk)
-  for (const el of document.head!.getElementsByTagName("script")) {
-    const module = el.getAttribute("type") === "module";
-    const attrs = el.getAttributeNames().filter((it) =>
-      it !== "src" && (module ? it !== "type" : true)
-    ).join(" ");
-    scripts.push({
-      path: el.getAttribute("src"),
-      ...module && { module },
-      ...attrs && { attrs },
-    });
-  }
-  for (const el of document.head!.getElementsByTagName("link")) {
-    const rel = el.getAttribute("rel")!;
-    switch (rel) {
-      case "stylesheet": {
-        const media = el.getAttribute("media");
-        const attrs = el.getAttributeNames().filter((it) =>
-          it !== "rel" && it !== "href" && (media ? it !== "media" : true)
-        ).join(" ");
-        styles.push({
-          path: el.getAttribute("href"),
-          ...media && { media },
-          ...attrs && { attrs },
-        });
-        break;
-      }
-    }
-  }
-  return document.body.innerHTML;
 }
 
 const __dirname = (
