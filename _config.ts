@@ -26,8 +26,7 @@ const keep_whitespace = {
   minifyWhitespace: false,
 } satisfies BuildOptions["options"];
 
-import type { Queue } from "./core/query.ts";
-import type { Binder } from "./core/registry.ts";
+import type { query, registry } from "./core/types.d.ts";
 const conf = {
   ...Deno.env.get("KEEP_WHITESPACE") || !keep_whitespace.minifyIdentifiers
     ? keep_whitespace
@@ -47,10 +46,10 @@ const conf = {
     dedupeRender_: "r",
   } satisfies Partial<
     Record<
-      | keyof Queue
-      | keyof Queue["module_"]
-      | keyof Queue["attrs_"]
-      | keyof Binder,
+      | keyof query.Queue
+      | keyof query.Queue["module_"]
+      | keyof query.Queue["attrs_"]
+      | keyof registry.Binder,
       string
     >
   >,

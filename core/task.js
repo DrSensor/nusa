@@ -1,25 +1,32 @@
 const { port1, port2 } = new MessageChannel();
 port2.start();
 
-function macro(
-  callback: VoidFunction,
-  options?: AddEventListenerOptions,
-): VoidFunction {
+/** Schedule task
+@param callback{VoidFunction}
+@param options{AddEventListenerOptions=}
+@returns {() => void}
+*/ function macro(callback, options) {
   port2.addEventListener("message", callback, options);
   port1.postMessage(null);
   return () => port2.removeEventListener("message", callback);
 }
 
-function micro(callback: VoidFunction) {
-  let cancel: true | undefined;
+/** Schedule micro task
+@param callback{VoidFunction}
+@returns {() => true}
+*/ function micro(callback) {
+  let /** @type true | undefined */ cancel;
   queueMicrotask(() => cancel ?? callback());
   return () => cancel = true;
 }
 
 let skipFrame = false, prepareFrame = false;
-const queue = [] as FrameRequestCallback[];
+const queue = /** @type FrameRequestCallback[] */ ([]);
 
-export function prepare(callback: VoidFunction) {
+/** Prepare (mark) for next render
+@param callback{VoidFunction} - inside callback, it may call {@link render} function
+@returns {() => VoidFunction | undefined}
+*/ export function prepare(callback) {
   skipFrame = prepareFrame = true;
   callback();
   return () => {
@@ -30,11 +37,11 @@ export function prepare(callback: VoidFunction) {
   };
 }
 
-export function defer(
-  callback: VoidFunction,
-  options?: AddEventListenerOptions,
-) {
-  let abort: VoidFunction | undefined;
+/** Defer execution into next task
+@param callback{VoidFunction}
+@param options{AddEventListenerOptions=}
+*/ export function defer(callback, options) {
+  let /** @type VoidFunction | undefined */ abort;
   const cancel = macro(() => {
     skipFrame = true;
     const unlock = () => abort = micro(() => skipFrame = false);
@@ -47,11 +54,12 @@ export function defer(
   };
 }
 
-export function idle(
-  callback: IdleRequestCallback,
-  options?: IdleRequestOptions,
-) {
-  let abort: VoidFunction | undefined;
+/** Schedule when browser on idle
+@param callback{IdleRequestCallback}
+@param options{IdleRequestOptions=}
+@returns {() => void}
+*/ export function idle(callback, options) {
+  let /** @type VoidFunction | undefined */ abort;
   const id = requestIdleCallback((deadline) => {
     skipFrame = true;
     const unlock = () => abort = micro(() => skipFrame = false);
@@ -64,17 +72,24 @@ export function idle(
   };
 }
 
-function prerender(callback: FrameRequestCallback) {
+/** Schedule into render/animation frame via rAF
+@param callback{FrameRequestCallback}
+@returns {() => void}
+*/ function prerender(callback) {
   const id = requestAnimationFrame(callback);
   return () => cancelAnimationFrame(id);
 }
 
-export function render(callback: FrameRequestCallback) {
+/** Schedule into render/animation frame
+@param callback{FrameRequestCallback}
+@returns {VoidFunction | undefined}
+*/ export function render(callback) {
   if (prepareFrame && skipFrame) {
     queue.push(callback);
     return;
   }
-  let abort: VoidFunction | undefined, cancel: VoidFunction;
+  let /** @type VoidFunction | undefined */ abort,
+    /** @type VoidFunction */ cancel;
   if (skipFrame) cancel = prerender(callback);
   else {
     if (!prepareFrame) queue.push(callback);
@@ -92,8 +107,11 @@ export function render(callback: FrameRequestCallback) {
 }
 
 // TODO: replace with requestPostAnimationFrame
-function postrender(callback: FrameRequestCallback): VoidFunction {
-  let abort: VoidFunction | undefined;
+/** Schedule after render/animation frame
+@param callback{FrameRequestCallback}
+@returns {() => void}
+*/ function postrender(callback) {
+  let /** @type VoidFunction | undefined */ abort;
   const cancel = prerender((t) => abort = macro(() => callback(t)));
   return () => {
     cancel();
@@ -101,7 +119,11 @@ function postrender(callback: FrameRequestCallback): VoidFunction {
   };
 }
 
-function ifAsync(callbackReturn: unknown, resolve: () => void) {
+/** Check if callback is async
+@param callbackReturn{unknown}
+@param resolve{() => void}
+@returns {true | undefined}
+*/ function ifAsync(callbackReturn, resolve) {
   if (callbackReturn instanceof Promise) {
     callbackReturn.then(resolve);
     return true;

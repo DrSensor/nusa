@@ -12,6 +12,7 @@
     "ci:bundle": "deno task lume run bundle"
   },
   "compilerOptions": {
+    "checkJs": true,
     "lib": [
       "dom",
       "dom.iterable",
