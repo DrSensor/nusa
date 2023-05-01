@@ -1,1 +1,1 @@
-export { event, value } from "../../core/registry.ts";
+export { event, value } from "../../core/registry.js";
