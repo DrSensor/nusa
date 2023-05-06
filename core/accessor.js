@@ -52,35 +52,45 @@ let /** @type boolean */ unpatch;
 const mark = Symbol();
 
 /** Patch {@link PropertyDescriptor} of certain {@link accessor}
-@param descs{PropertyDescriptorMap}
-@param members{Record<string, _AccessorBinder>}
+@param descs{Record<accessor, undefined | PropertyDescriptor & { [mark]?: true }>}
+@param members{Record<accessor, _AccessorBinder>}
 @param accessor{string}
 */ function patch(descs, members, accessor) {
   const cache = members[accessor], { databank_, targets_ } = cache;
-  const desc = descs[accessor], { set, get } = desc;
+  const desc = descs[accessor];
 
-  // @ts-ignore avoid double override
-  if (get && !get[mark]) {
+  if (!desc || desc[mark]) return;
+  desc[mark] = true;
+
+  const { get, set, value, writable: notAccessor } = desc,
+    is = /** @param access{Function=} */ (access) => access ?? notAccessor;
+  let propValue = value;
+
+  if (is(get)) {
     desc.get = /** @this _Instance */ function () {
-      if (Object.hasOwn(this, index)) {
-        const value = setCurrentValue(databank_[this[index]]),
-          returnValue = get.call(this);
+      const getOriginValue = () => get ? get.call(this) : propValue;
+
+      if (Object.hasOwn(this, index)) { // if accessed outisde class constructor()
+        const proxyValue = setCurrentValue(databank_[this[index]]),
+          originValue = getOriginValue();
         setCurrentValue(undefined);
-        return unpatch ? returnValue : value;
-        // TODO: if (no setter) return returnValue
+        return unpatch ? originValue : proxyValue;
+        // TODO: if (no setter) return originValue and ??
       }
-      return get.call(this);
-    }; // @ts-ignore!
-    get[mark] = true;
+      return getOriginValue();
+    };
   }
 
-  // @ts-ignore avoid double override
-  if (set && !set[mark]) {
+  if (is(set)) {
     desc.set = /** @this _Instance */ function (value) {
-      if (Object.hasOwn(this, index)) { // TODO: if (no getter) ??
+      const setOriginValue = () =>
+        set ? set.call(this, value) : (propValue = value);
+
+      // TODO: if (no getter) ??
+      if (Object.hasOwn(this, index)) { // if accessed outside class constructor()
         const id = this[index];
         setCurrentValue(databank_[id]);
-        set.call(this, value);
+        setOriginValue();
         setCurrentValue(undefined);
 
         if (databank_[id] !== value) {
@@ -92,9 +102,13 @@ const mark = Symbol();
         }
         databank_[id] = value;
         unpatch = false;
-      } else set.call(this, value);
-    }; // @ts-ignore!
-    set[mark] = true;
+      } else setOriginValue();
+    };
+  }
+
+  if (notAccessor) {
+    delete desc.value;
+    delete desc.writable;
   }
 }
 
