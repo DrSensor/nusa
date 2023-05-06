@@ -8,16 +8,20 @@ import * as task from "./task.js";
 /** Override accessor behaviour described in {@link descs}
 After override, you still need to apply it via {@link Object.defineProperties}
 @param accessor{string}
-@param descs{PropertyDescriptorMap}
+@param descs{Record<string, undefined | PropertyDescriptor & { [mark]?: true }>}
 @param members{Record<string, _AccessorBinder>}
 @param attr{Attr}
 @param index{number}
 */ export function override(accessor, descs, members, attr, index) {
   init(members, accessor, attr, index);
-  patch(descs, members, accessor);
+  const desc = descs[accessor];
+  if (desc && !desc[mark]) {
+    desc[mark] = true;
+    patch(desc, members[accessor]);
+  }
 }
 
-/** Populate registry
+/** Populate registry {@link members}
 @param members{Record<string, _AccessorBinder>}
 @param accessor{string}
 @param attr{Attr}
@@ -34,33 +38,42 @@ After override, you still need to apply it via {@link Object.defineProperties}
 }
 
 /** Autocast accessor value from {@link Attr.value} (string) at runtime
-@param accessors{string[]}
+@param properties{Set<string>}
+@param accessors{Set<string>}
+@param descs{Record<string, undefined | PropertyDescriptor & { [mark]?: true }>}
 @param members{Record<string, _AccessorBinder>}
-@param index{number}
-@returns {(script: _Instance) => void}
-*/ export function infer(accessors, members, index) {
+@param instance{_Instance}
+@param id{number}
+*/ export function infer(properties, accessors, descs, members, instance, id) {
   unpatch = true;
-  return (script) => {
-    accessors.forEach((accessor) =>
-      members[accessor].databank_[index] = script[accessor]
-    );
-    unpatch = false;
-  };
+  const initData = /** @param field{string} */ (field) =>
+    members[field].databank_[id] = instance[field];
+  accessors.forEach(initData);
+  properties.forEach((property) => {
+    if (Object.hasOwn(instance, property)) {
+      initData(property);
+      const desc = descs[property] ??= {
+        value: instance[property],
+        writable: true,
+      };
+      if (!desc[mark]) {
+        desc[mark] = true;
+        patch(desc, members[property]);
+      }
+      delete instance[property];
+    }
+  });
+  unpatch = false;
 }
 
 let /** @type boolean */ unpatch;
 const mark = Symbol();
 
 /** Patch {@link PropertyDescriptor} of certain {@link accessor}
-@param descs{Record<accessor, undefined | PropertyDescriptor & { [mark]?: true }>}
-@param members{Record<accessor, _AccessorBinder>}
-@param accessor{string}
-*/ function patch(descs, members, accessor) {
-  const cache = members[accessor], { databank_, targets_ } = cache;
-  const desc = descs[accessor];
-
-  if (!desc || desc[mark]) return;
-  desc[mark] = true;
+@param desc{PropertyDescriptor}
+@param cache{_AccessorBinder}
+*/ function patch(desc, cache) {
+  const { databank_, targets_ } = cache;
 
   const { get, set, value, writable: notAccessor } = desc,
     is = /** @param access{Function=} */ (access) => access ?? notAccessor;

@@ -27,7 +27,9 @@ let count = 0;
 */ function bind(pc, attrs, scope, get) {
   const [accessor_override, accessor_infer] = get[Feature.accessor];
   const [listener_queue, listener_listen] = get[Feature.listener];
-  const cid = count++, access = /** @type string[] */ ([]);
+  const id = count++,
+    accessors = /** @type Set<string> */ (new Set()),
+    properties = /** @type Set<string> */ (new Set());
 
   let notCached;
   const [descs, members] = registry.get(pc) ?? (notCached = /** @type const */ (
@@ -36,19 +38,18 @@ let count = 0;
   if (notCached) registry.set(pc, [descs, members]);
 
   attrs.events_?.forEach(/** @type {(attr: Attr) => void} */ (listener_queue));
+  attrs.props_?.forEach((attr) =>
+    attr.value.split(" ").forEach((propName) => {
+      accessor_override(propName, descs, members, attr, id);
+      (descs[propName] ? accessors : properties).add(propName);
+    })
+  );
+
+  const instance = new pc.constructor();
+  instance[index] = id;
   if (attrs.props_) {
-    attrs.props_.forEach((attr) =>
-      attr.value.split(" ").forEach((accessorName) => {
-        accessor_override(accessorName, descs, members, attr, cid);
-        access.push(accessorName);
-      })
-    );
+    accessor_infer(properties, accessors, descs, members, instance, id);
     Object.defineProperties(pc, descs);
   }
-
-  const inferFrom = accessor_infer?.(access, members, cid);
-  const script = new pc.constructor();
-  script[index] = cid;
-  inferFrom?.(script);
-  listener_listen?.(scope, script);
+  listener_listen?.(scope, instance);
 }
