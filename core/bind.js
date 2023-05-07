@@ -38,19 +38,20 @@ let count = 0;
   if (notCached) registry.set(pc, [descs, members]);
 
   attrs.events_?.forEach(/** @type {(attr: Attr) => void} */ (listener_queue));
-  if (attrs.props_) {
-    attrs.props_.forEach((attr) =>
-      attr.value.split(" ").forEach((propName) => {
-        accessor_override(propName, descs, members, attr, id);
-        (descs[propName] ? accessors : properties).add(propName);
-      })
-    );
-    if (notCached && accessors.size) Object.defineProperties(pc, descs);
-  }
+  attrs.props_?.forEach((attr) =>
+    attr.value.split(" ").forEach((propName) => {
+      accessor_override(propName, descs, members, attr, id);
+      (descs[propName] ? accessors : properties).add(propName);
+    })
+  );
+
+  if (notCached && accessors.size) Object.defineProperties(pc, descs);
 
   const instance = new pc.constructor();
   instance[index] = id;
+
   accessor_infer?.(properties, accessors, descs, members, instance, id);
   if (notCached && properties.size) Object.defineProperties(pc, descs);
+
   listener_listen?.(scope, instance);
 }
