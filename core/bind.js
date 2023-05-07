@@ -45,14 +45,12 @@ let count = 0;
         (descs[propName] ? accessors : properties).add(propName);
       })
     );
-    Object.defineProperties(pc, descs);
+    if (notCached && accessors.size) Object.defineProperties(pc, descs);
   }
 
   const instance = new pc.constructor();
   instance[index] = id;
-  if (attrs.props_) {
-    accessor_infer(properties, accessors, descs, members, instance, id);
-    Object.defineProperties(pc, descs);
-  }
+  accessor_infer?.(properties, accessors, descs, members, instance, id);
+  if (notCached && properties.size) Object.defineProperties(pc, descs);
   listener_listen?.(scope, instance);
 }

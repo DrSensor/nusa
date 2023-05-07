@@ -82,7 +82,7 @@ const mark = Symbol();
   if (is(get)) {
     desc.get = /** @this _Instance */ function () {
       let value;
-      if (Object.hasOwn(this, index)) { // if accessed OUTSIDE class constructor()
+      if (this[index] !== undefined) { // if accessed OUTSIDE class constructor()
         value = databank_[this[index]];
         if (get) {
           setCurrentValue(value);
@@ -99,7 +99,7 @@ const mark = Symbol();
     if (is(set)) {
       desc.set = /** @this _Instance */ function (value) {
         // TODO: if (no getter) ??
-        if (Object.hasOwn(this, index)) { // if accessed OUTSIDE class constructor()
+        if (this[index] !== undefined) { // if accessed OUTSIDE class constructor()
           const id = this[index];
 
           if (set) {
