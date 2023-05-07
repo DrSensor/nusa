@@ -28,8 +28,8 @@ let count = 0;
   const [accessor_override, accessor_infer] = get[Feature.accessor];
   const [listener_queue, listener_listen] = get[Feature.listener];
   const id = count++,
-    accessors = /** @type Set<string> */ (new Set()),
-    properties = /** @type Set<string> */ (new Set());
+    /** @type Set<string> */ accessors = new Set(),
+    /** @type Set<string> */ properties = new Set();
 
   let notCached;
   const [descs, members] = registry.get(pc) ?? (notCached = /** @type const */ (
@@ -38,12 +38,15 @@ let count = 0;
   if (notCached) registry.set(pc, [descs, members]);
 
   attrs.events_?.forEach(/** @type {(attr: Attr) => void} */ (listener_queue));
-  attrs.props_?.forEach((attr) =>
-    attr.value.split(" ").forEach((propName) => {
-      accessor_override(propName, descs, members, attr, id);
-      (descs[propName] ? accessors : properties).add(propName);
-    })
-  );
+  if (attrs.props_) {
+    attrs.props_.forEach((attr) =>
+      attr.value.split(" ").forEach((propName) => {
+        accessor_override(propName, descs, members, attr, id);
+        (descs[propName] ? accessors : properties).add(propName);
+      })
+    );
+    Object.defineProperties(pc, descs);
+  }
 
   const instance = new pc.constructor();
   instance[index] = id;

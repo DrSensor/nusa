@@ -11,13 +11,13 @@ After override, you still need to apply it via {@link Object.defineProperties}
 @param descs{Record<string, undefined | PropertyDescriptor & { [mark]?: true }>}
 @param members{Record<string, _AccessorBinder>}
 @param attr{Attr}
-@param index{number}
-*/ export function override(accessor, descs, members, attr, index) {
-  init(members, accessor, attr, index);
+@param id{number}
+*/ export function override(accessor, descs, members, attr, id) {
+  init(members, accessor, attr, id);
   const desc = descs[accessor];
   if (desc && !desc[mark]) {
     desc[mark] = true;
-    patch(desc, members[accessor]);
+    patch(desc, members[accessor], id);
   }
 }
 
@@ -25,14 +25,14 @@ After override, you still need to apply it via {@link Object.defineProperties}
 @param members{Record<string, _AccessorBinder>}
 @param accessor{string}
 @param attr{Attr}
-@param index{number}
-*/ function init(members, accessor, attr, index) {
+@param id{number}
+*/ function init(members, accessor, attr, id) {
   const data = members[accessor] ??= { databank_: [], targets_: [] };
-  data.targets_[index] ??= [];
+  data.targets_[id] ??= [];
 
   const targetElement = /** @type Element */ (attr.ownerElement),
     targetName = attr.name.slice(0, /** @type _Colon["Attr"] */ (-1));
-  data.targets_[index].push(
+  data.targets_[id].push(
     targetElement.getAttributeNode(targetName) ?? [targetElement, targetName],
   );
 }
@@ -45,9 +45,10 @@ After override, you still need to apply it via {@link Object.defineProperties}
 @param instance{_Instance}
 @param id{number}
 */ export function infer(properties, accessors, descs, members, instance, id) {
-  unpatch = true;
-  const initData = /** @param field{string} */ (field) =>
-    members[field].databank_[id] = instance[field];
+  const initData = /** @param field{string} */ (field) => {
+    const { databank_ } = members[field];
+    if (databank_.length <= id) databank_[id] = instance[field];
+  };
   accessors.forEach(initData);
   properties.forEach((property) => {
     if (Object.hasOwn(instance, property)) {
@@ -58,80 +59,84 @@ After override, you still need to apply it via {@link Object.defineProperties}
       };
       if (!desc[mark]) {
         desc[mark] = true;
-        patch(desc, members[property]);
+        patch(desc, members[property], id);
       }
       delete instance[property];
     }
   });
-  unpatch = false;
 }
 
-let /** @type boolean */ unpatch;
 const mark = Symbol();
 
 /** Patch {@link PropertyDescriptor} of certain {@link accessor}
 @param desc{PropertyDescriptor}
 @param cache{_AccessorBinder}
-*/ function patch(desc, cache) {
+@param id{number}
+*/ function patch(desc, cache, id) {
   const { databank_, targets_ } = cache;
 
   const { get, set, value, writable: notAccessor } = desc,
     is = /** @param access{Function=} */ (access) => access ?? notAccessor;
-  let propValue = value;
+  let propValue = value, /** @type boolean */ assignedInConstructor;
 
   if (is(get)) {
     desc.get = /** @this _Instance */ function () {
-      const getOriginValue = () => get ? get.call(this) : propValue;
-
-      if (Object.hasOwn(this, index)) { // if accessed outisde class constructor()
-        const proxyValue = setCurrentValue(databank_[this[index]]),
-          originValue = getOriginValue();
-        setCurrentValue(undefined);
-        return unpatch ? originValue : proxyValue;
-        // TODO: if (no setter) return originValue and ??
-      }
-      return getOriginValue();
-    };
-  }
-
-  if (is(set)) {
-    desc.set = /** @this _Instance */ function (value) {
-      const setOriginValue = () =>
-        set ? set.call(this, value) : (propValue = value);
-
-      // TODO: if (no getter) ??
-      if (Object.hasOwn(this, index)) { // if accessed outside class constructor()
-        const id = this[index];
-        setCurrentValue(databank_[id]);
-        setOriginValue();
-        setCurrentValue(undefined);
-
-        if (databank_[id] !== value) {
-          cache.dedupeRender_?.();
-          cache.dedupeRender_ = task.render(() => {
-            update(databank_, targets_, id);
-            cache.dedupeRender_ = undefined;
-          });
+      let value;
+      if (Object.hasOwn(this, index)) { // if accessed OUTSIDE class constructor()
+        value = databank_[this[index]];
+        if (get) {
+          setCurrentValue(value);
+          get.call(this);
+          setCurrentValue(undefined);
         }
-        databank_[id] = value;
-        unpatch = false;
-      } else setOriginValue();
+      } else { // if accessed INSIDE class constructor()
+        value = get ? get.call(this) : propValue;
+        if (!assignedInConstructor) databank_[id] = value;
+      }
+      return value;
     };
-  }
 
-  if (notAccessor) {
-    delete desc.value;
-    delete desc.writable;
+    if (is(set)) {
+      desc.set = /** @this _Instance */ function (value) {
+        // TODO: if (no getter) ??
+        if (Object.hasOwn(this, index)) { // if accessed OUTSIDE class constructor()
+          const id = this[index];
+
+          if (set) {
+            setCurrentValue(databank_[id]);
+            set.call(this, value);
+            setCurrentValue(undefined);
+          }
+
+          if (databank_[id] !== value) {
+            cache.dedupeRender_?.();
+            cache.dedupeRender_ = task.render(() => {
+              update(databank_, targets_, id);
+              cache.dedupeRender_ = undefined;
+            });
+          }
+          databank_[id] = value;
+        } else { // if accessed INSIDE class constructor()
+          assignedInConstructor = true;
+          set ? set.call(this, value) : (propValue = value);
+        }
+      };
+    }
+
+    if (notAccessor) {
+      delete desc.value;
+      delete desc.writable;
+    }
   }
 }
 
 /** Update accessor value (pointer) which point into {@link databank} (virtual heap)
 @param databank{_AccessorBinder["databank_"]}
 @param targets{_AccessorBinder["targets_"]}
-@param index{number}
-*/ export function update(databank, targets, index) {
-  const value = /** @type string */ (databank[index]),
-    targetAt = targets[index];
+@param id{number}
+*/ export function update(databank, targets, id) {
+  const value = /** @type string */ (databank[id]),
+    targetAt = targets[id];
   targetAt.forEach((target, i) => {
     if (target instanceof Node) { // target maybe Attr or Text
       const { ownerElement, name } = /** @type Attr */ (target); // @ts-ignore bind Element.prototype.property by default
