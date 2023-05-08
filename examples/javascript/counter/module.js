@@ -1,7 +1,7 @@
-import * as current from "nusa/std/current";
+import * as current from "libnusa/current";
 
 export default class {
-  accessor count = 0;
+  count = 0;
 
   increment() {
     this.count++;

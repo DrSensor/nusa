@@ -1,11 +1,14 @@
 <script type=importmap>{
   "imports": {
-    "nusa/std/current": "/nusa/std/current.js",
-    "nusa/std/iterate": "/nusa/std/iterate.js"
+    "libnusa/current": "/libs/javascript/current.js",
+    "libnusa/iterate": "/libs/javascript/iterate.js",
+    "nusa/render-scope": "/elements/render-scope.js"
   }
 }</script>
 <!----------------------------------------------------------------------->
-<script type=module src=/nusa/render-scope.js async></script>
+<script async>
+  import("nusa/render-scope")
+</script>
 
 {% for count in range(0, 10) %}
 <render-scope>
