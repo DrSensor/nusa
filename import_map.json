@@ -1,16 +1,6 @@
 {
   "imports": {
-    "drsensor/lume-plugins/": "https://raw.githubusercontent.com/drsensor/lume-plugins/community/",
     "deno/": "https://deno.land/std/",
-    "puppeteer": "https://deno.land/x/puppeteer/mod.ts",
-    "html-rewriter": "https://raw.githubusercontent.com/drsensor/safe-html-rewriter/trunk/module.ts",
-    "html-rewriter-wasm": "npm:html-rewriter-wasm",
-    "esbuild": "https://deno.land/x/esbuild/mod.js",
-    "rollup": "npm:rollup",
-    "rollup/": "https://esm.sh/@rollup/",
-    "rollup/plugin-esbuild": "npm:rollup-plugin-esbuild",
-    "rollup/plugin-swc": "npm:rollup-plugin-swc3",
-    "rollup/plugin-terser": "npm:@rollup/plugin-terser",
-    "lume/": "https://deno.land/x/lume@v1.15.1/"
+    "puppeteer": "https://deno.land/x/puppeteer/mod.ts"
   }
 }
