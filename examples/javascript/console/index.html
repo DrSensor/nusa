@@ -11,6 +11,9 @@
 
 <render-scope>
   <link as=script href=module.js>
+  <script type=hoistmap>{
+    "imports": ["libnusa/current"]
+  }</script>
 
   <button :: on:click=log> console.log </button>
   <button :: on:click=debug> console.debug </button>

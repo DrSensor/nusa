@@ -13,6 +13,9 @@
 {% for count in range(0, 10) %}
 <render-scope>
   <link as=script href=module.js>
+  <script type=hoistmap>{
+    "imports": ["../counter/module.js", "libnusa/current", "libnusa/iterate"]
+  }</script>
 
   <button :: on:click=increment {% if count % 2 %} text:=count {% endif %}>
     {% if count % 2 %}
