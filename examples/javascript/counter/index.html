@@ -11,9 +11,12 @@
 
 <render-scope>
   <link as=script href=module.js>
+
+  <!---------- optional ---------->
   <script type=hoistmap>{
     "imports": ["libnusa/current"]
   }</script>
+  <!------------------------------>
 
   <button :: on:click=increment>
     <span :: text:=count>0</span>
