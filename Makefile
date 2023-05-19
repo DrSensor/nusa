@@ -17,5 +17,38 @@ pretty:
 	caddy fmt --overwrite
 
 
+run: pretty build
+	$(MAKE) -j livereload.sock watch serve
+
+reload: build
+	echo -e "event: reload\ndata:\n" | tee `cat livereload.fifo`
+
 serve:
 	SITE=${SITE_ADDR} REPO=${REPO_ADDR} caddy run
+
+watch:
+	watchexec --postpone \
+	--watch site/ \
+	--watch .site/ \
+	--watch soupault.toml \
+	"make reload"
+
+
+%.sock:
+	trap "rm $*.{sock,fifo}" INT HUP TERM; \
+	ncat --listen --unixsock $@ -c "$(MAKE) --no-print-directory -Bk $*.fifo" --keep-open
+
+TEMP.fifo := $(shell mktemp --dry-run).fifo
+%.fifo:
+	@mkfifo ${TEMP.fifo}
+	@echo ${TEMP.fifo} >> $@
+	$(info $(SSE.http))
+	tail -F ${TEMP.fifo}
+
+define SSE.http
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Type: text/event-stream
+
+
+endef

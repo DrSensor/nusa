@@ -53,3 +53,17 @@ widget = "insert_html"
 html = "<link rel=icon href=/icon.svg>"
 selector = "head"
 action = "prepend_child"
+
+[widgets.livereload]
+profile = "development"
+widget = "insert_html"
+html = """
+<script>
+  new EventSource("/livereload")
+    .addEventListener("reload", function () {
+      this.close()
+      location.reload()
+    })
+</script>
+"""
+selector = "head"

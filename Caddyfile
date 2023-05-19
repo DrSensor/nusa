@@ -9,6 +9,8 @@
 }
 
 {$SITE} {
+	reverse_proxy /livereload unix/livereload.sock
+
 	root * result/site/
 	file_server browse
 }
