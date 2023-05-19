@@ -1,3 +1,7 @@
 # Things emitted by the build system
 result/
 .cache/
+
+# Used to stream/push and controll the site (i.e /livereload)
+*.sock
+*.fifo
