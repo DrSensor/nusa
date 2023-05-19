@@ -1,2 +1,3 @@
-_site/
-.lock/
+# Things emitted by the build system
+result/
+.cache/

@@ -1,0 +1,37 @@
+{
+  "diagnostics.globals": [
+    "HTML",
+    "Regex",
+    "String",
+    "Sys",
+    "Plugin",
+    "Log",
+    "JSON",
+    "TOML",
+    "YAML",
+    "Date",
+    "Value",
+    "Table",
+    "page",
+    "page_source",
+    "page_file",
+    "target_file",
+    "target_dir",
+    "nav_path",
+    "page_url",
+    "config",
+    "hook_config",
+    "force",
+    "soupault_config",
+    "site_index",
+    "index_entry",
+    "index_fields",
+    "site_dir",
+    "build_dir",
+    "persistent_data",
+    "format"
+  ],
+  "diagnostics.disable": [
+    "lowercase-global"
+  ]
+}

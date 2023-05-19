@@ -1,0 +1,55 @@
+[settings] # To learn about configuring soupault, visit https://www.soupault.app/reference-manual
+strict = true                   # Stop on page processing errors?
+verbose = false                 # Display progress?
+debug = false                   # Display detailed debug output?
+caching = true                  # cache outputs of page preprocessors and preprocess_element widget commands
+cache_dir = ".cache/soupault"   # where to store that cache
+site_dir = "site"               # Where input files (pages and assets) are stored.
+build_dir = "result/site"       # Where the output goes
+plugin_discovery = true         # Plugins can be either automatically discovered or loaded explicitly.
+plugin_dirs = [".site/plugins"] # e.g, my-plugin.lua -> `widget = "my-plugin"`
+default_extension = "html"      # All other extensions (".md", ".rst"...) are replaced, by default with ".html"
+ignore_extensions = ["draft"]   # Page files with these extensions are ignored.
+
+# Files with extensions from this list are considered pages and processed.
+# All other files are copied to ${BUILD_DIR} unchanged.
+page_file_extensions = ["html", "md"]
+
+# Soupault can work as a website generator or an HTML processor.
+#
+# In the "website generator" mode, it considers files in ${site_dir}/ page bodies
+# and inserts them into the empty page template stored in templates/main.html
+#
+# Setting this option to false switches it to the "HTML processor" mode
+# when it considers every file in ${site_dir}/ a complete page and only runs it through widgets or plugins.
+generator_mode = true
+default_template_file = ".site/templates/empty.html" # I don't need this since everything handled by [template.*] but somehow soupault require it
+default_content_selector = "body"                    # Insert each content into <html></html> (templates/empty.html) making them into full html page
+complete_page_selector = "html"                      # Files that contain an <html> element are considered complete pages rather than page bodies
+doctype = "<!DOCTYPE html>"                          # If a page does not have a document type declaration, force it to HTML5
+keep_doctype = true                                  # If a page already has a document type declaration, keep the declaration
+pretty_print_html = true                             # When set to false, the original whitespace (if any) will be preserved as is
+
+
+[widgets.page-title] # Takes the content of the first <h1> and inserts it into the <title>
+widget = "title"
+selector = "h1"
+default = "૮◕․◕༽ Nusa"
+prepend = "૮◕․◕༽ "
+force = true
+keep = true
+
+[widgets.generator-meta] # in case some robots crawl this site for ranking framework popularity
+widget = "generator-meta"
+
+[widgets.normalize-viewport]
+widget = "insert_html"
+html = '<meta name=viewport content="width=device-width, initial-scale=1.0">'
+selector = "head"
+action = "prepend_child"
+
+[widgets.icon]
+widget = "insert_html"
+html = "<link rel=icon href=/icon.svg>"
+selector = "head"
+action = "prepend_child"
