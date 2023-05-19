@@ -60,6 +60,29 @@ html = '<meta name=robots content="noindex, nofollow, noimageindex, nosnippet, n
 selector = "head"
 action = "prepend_child"
 
+[widgets.fix-head]
+widget = "move_element"
+selector = [
+  "body head > *",
+  "body meta",
+  "body style",
+  "body link",
+  "body script",
+]
+except = [
+  "template head",
+  "template meta",
+  "template style",
+  "template link",
+  "template script",
+]
+placement = "head"
+
+[widgets.del-head]
+widget = "delete_element"
+after = "fix-head"
+selector = "body head"
+
 [widgets.livereload]
 profile = "development"
 widget = "insert_html"
