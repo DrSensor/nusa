@@ -54,6 +54,12 @@ html = "<link rel=icon href=/icon.svg>"
 selector = "head"
 action = "prepend_child"
 
+[widgets.block-robots]
+widget = "insert_html"
+html = '<meta name=robots content="noindex, nofollow, noimageindex, nosnippet, noarchive, notranslate, nositelinkssearchbox, max-image-preview:0, max-video-preview:0, unavailable_after:2023-06-29">'
+selector = "head"
+action = "prepend_child"
+
 [widgets.livereload]
 profile = "development"
 widget = "insert_html"
