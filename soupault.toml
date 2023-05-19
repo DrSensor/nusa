@@ -31,6 +31,46 @@ keep_doctype = true                                  # If a page already has a d
 pretty_print_html = true                             # When set to false, the original whitespace (if any) will be preserved as is
 
 
+########## process: site/demo/** ##########
+[templates.demo]
+file = ".site/templates/demo.html"
+section = "demo"
+include_subsections = true
+content_selector = "#demo"
+content_action = "replace_content"
+
+[widgets.demo-tabs]
+widget = "nusa/sources"
+section = "demo"
+include_subsections = true
+action = "insert_after"
+selector = ["#demo-title", "#demo"]
+delete = ["script[type=importmap]", "script[type=hoistmap]"]
+hash_command = "sha384sum -z | cut -c -8"
+render_template = """
+<div role="tablist">
+  {% for source in sources %}
+  <button role="tab"
+    {% if loop.first %}aria-selected=true{% endif %}
+    aria-controls={{source.hash}}
+  >{{source.file}}</button>
+  {% endfor %}
+</div>
+
+{% for source in sources %}
+<pre role="tabpanel"
+  {% if not loop.first %}hidden{% endif %}
+  id={{source.hash}}
+><code
+  class=language-{{source.lang}}
+>{% filter escape %}{{
+  source.content
+}}{% endfilter %}</code></pre>
+{% endfor %}
+"""
+###########################################
+
+
 [widgets.page-title] # Takes the content of the first <h1> and inserts it into the <title>
 widget = "title"
 selector = "h1"
@@ -75,6 +115,8 @@ except = [
   "template style",
   "template link",
   "template script",
+  "render-scope > link",
+  "render-scope > script",
 ]
 placement = "head"
 
