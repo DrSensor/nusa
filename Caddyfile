@@ -1,0 +1,19 @@
+{
+	http_port 8080
+	https_port 4430
+	admin off
+	persist_config off
+	log {
+		level ERROR
+	}
+}
+
+{$SITE} {
+	root * result/site/
+	file_server browse
+}
+
+{$REPO} {
+	root * .
+	file_server browse
+}
