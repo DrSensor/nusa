@@ -125,6 +125,14 @@ widget = "delete_element"
 after = "fix-head"
 selector = "body head"
 
+[widgets.importmap-first]
+widget = "move_element"
+after = "fix-head"
+move_one = true
+selector = "script[type=importmap]"
+action = "insert_before"
+placement = "script"
+
 [widgets.livereload]
 profile = "development"
 widget = "insert_html"
