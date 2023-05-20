@@ -31,6 +31,12 @@ keep_doctype = true                                  # If a page already has a d
 pretty_print_html = true                             # When set to false, the original whitespace (if any) will be preserved as is
 
 
+[widgets.syntax-highlighting]
+widget = "preprocess_element"
+selector = 'code[class^="language-"]'
+command = 'highlight -O html -f -S $(echo $ATTR_CLASS | sed -e "s/language-//")'
+
+
 ########## process: site/demo/** ##########
 [templates.demo]
 file = ".site/templates/demo.html"
