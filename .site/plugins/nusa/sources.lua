@@ -38,7 +38,7 @@ function sources_add(path)
   local content
   if path == page_file then
     content = Sys.read_file(path)
-    content = Regex.replace_all(content, ":", ".") -- BUG(lambdasoup): they still assume colon is XML namespace
+    content = Regex.replace_all(content, ":", "﹕") -- BUG(lambdasoup): they still assume colon is XML namespace
     local page_origin = HTML.parse(content)
     if to_remove then
       local remove_at = HTML.select_all_of(page_origin, to_remove)
@@ -50,7 +50,7 @@ function sources_add(path)
     content = HTML.to_string(page_origin)                          -- contain trailing newlines with indentation
     content = Regex.replace_all(content, "([ \t]*\n){3,}", "\n\n") -- cleanup ☝
     content = Regex.replace_all(content, '=""', "")                -- attribute without value
-    content = Regex.replace_all(content, "\\.", ":")               -- BUG(lambdasoup): they still assume colon is XML namespace
+    content = Regex.replace_all(content, "﹕", ":")               -- BUG(lambdasoup): they still assume colon is XML namespace
   else
     path = Sys.join_path(page_dir, path)
     content = Sys.read_file(path)

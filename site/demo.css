@@ -2,7 +2,8 @@
   user-select: revert !important;
 }
 [role="tabpanel"] {
-  width: 80dvi;
+  max-width: 80ch;
+  width: 95dvi;
   overflow: scroll;
 }
 
