@@ -34,8 +34,8 @@ watch:
 	trap "rm $*.{sock,fifo}" INT HUP TERM; \
 	ncat -lUk $@ -c "$(MAKE) -Bk $*.fifo"
 
-TEMP.fifo := $(shell mktemp -u).fifo
 %.fifo:
+	$(eval TEMP.fifo := $(shell mktemp -u).fifo)
 	@mkfifo ${TEMP.fifo}
 	@echo ${TEMP.fifo} >> $@
 	$(info $(SSE.http))
