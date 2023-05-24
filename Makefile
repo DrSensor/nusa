@@ -32,7 +32,7 @@ watch:
 
 %.sock:
 	trap "rm $*.{sock,fifo}" INT HUP TERM; \
-	ncat -lUk $@ -c "$(MAKE) --no-print-directory -Bk $*.fifo"
+	ncat -lUk $@ -c "$(MAKE) -Bk $*.fifo"
 
 TEMP.fifo := $(shell mktemp -u).fifo
 %.fifo:
@@ -48,3 +48,8 @@ Content-Type: text/event-stream
 
 
 endef
+
+
+ifndef VERBOSE
+MAKEFLAGS += --no-print-directory
+endif
