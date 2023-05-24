@@ -27,18 +27,14 @@ serve:
 	SITE=${SITE_ADDR} REPO=${REPO_ADDR} caddy run
 
 watch:
-	watchexec --postpone \
-	--watch site/ \
-	--watch .site/ \
-	--watch soupault.toml \
-	"make reload"
+	watchexec -p -w site/ -w .site/ -w soupault.toml "make reload"
 
 
 %.sock:
 	trap "rm $*.{sock,fifo}" INT HUP TERM; \
-	ncat --listen --unixsock $@ -c "$(MAKE) --no-print-directory -Bk $*.fifo" --keep-open
+	ncat -lUk $@ -c "$(MAKE) --no-print-directory -Bk $*.fifo"
 
-TEMP.fifo := $(shell mktemp --dry-run).fifo
+TEMP.fifo := $(shell mktemp -u).fifo
 %.fifo:
 	@mkfifo ${TEMP.fifo}
 	@echo ${TEMP.fifo} >> $@
