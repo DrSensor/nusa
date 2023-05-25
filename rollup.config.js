@@ -1,13 +1,17 @@
+import elements from "./elements/package.json" assert { type: "json" };
+import libs from "./libs/javascript/package.json" assert { type: "json" };
+import core from "./core/package.json" assert { type: "json" };
+
 /** @type {import("npm:rollup").RollupOptions} */
 export default {
   input: {
-    "nusa/render-scope": "elements/render-scope.js",
+    [`${elements.name}/render-scope`]: "elements/render-scope.js",
 
-    "libnusa/__exports__": "libs/javascript/__exports__.js",
-    "libnusa/current": "libs/javascript/current.js",
-    "libnusa/iterate": "libs/javascript/iterate.js",
+    [`${libs.name}/__exports__`]: "libs/javascript/__exports__.js",
+    [`${libs.name}/current`]: "libs/javascript/current.js",
+    [`${libs.name}/iterate`]: "libs/javascript/iterate.js",
   },
   output: {
-    chunkFileNames: "runtime/[name].js",
+    chunkFileNames: `${core.name}/[name].js`,
   },
 };

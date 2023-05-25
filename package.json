@@ -1,28 +1,8 @@
 {
-  "name": "nusa",
   "version": "0.0.1-Jan.2023",
-  "description": "instant real-time web framework without setup",
+  "description": "incremental runtime for buildless webdev",
+  "workspaces": ["elements", "libs/javascript", "core"],
   "homepage": "https://nusa.pages.dev",
-  "exports": {
-    "./*": {
-      "types": "./*.d.ts",
-      "sourcemap": "./*.js.map",
-      "script": "./*.js",
-      "default": "./*.js"
-    },
-    "./std": {
-      "types": "./std.d.ts",
-      "sourcemap": "./std.js.map",
-      "import": "./std.js",
-      "default": "./std.js"
-    },
-    "./std/*": {
-      "types": "./*.d.ts",
-      "sourcemap": "./*.js.map",
-      "import": "./*.js",
-      "default": "./*.js"
-    }
-  },
   "license": "MIT",
   "author": "Fahmi Akbar Wildana",
   "repository": {
