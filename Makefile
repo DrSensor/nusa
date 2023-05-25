@@ -6,6 +6,11 @@ REPO_ADDR ?= localhost:8000
 
 build:
 	$(MAKE) -j ${BUILD_DIR}/{site,packages}
+	mkdir ${BUILD_DIR}/site/npm
+	$(MAKE) ${BUILD_DIR}/site/npm/{@getnusa,libnusa,nusa}
+
+${BUILD_DIR}/site/npm/%: ${BUILD_DIR}/packages/%
+	ln -rs $< $@
 
 
 ${BUILD_DIR}/site: ./site/
@@ -22,6 +27,11 @@ ifeq ($(CI) , true)
 else
 	rollup -c --silent -d $@
 endif
+	$(MAKE) -Bj {core,libs/javascript,elements}/package.json
+
+%/package.json:
+	$(eval PKG_NAME = $(shell jq -r ".name" $@))
+	jq -s ".[0] + .[1] | del(.workspaces)" package.json $@ > ${BUILD_DIR}/packages/${PKG_NAME}/package.json
 pretty:
 	caddy fmt --overwrite
 
