@@ -4,15 +4,24 @@ BUILD_DIR ?= result
 SITE_ADDR ?= localhost:3000
 REPO_ADDR ?= localhost:8000
 
+build:
+	$(MAKE) -j ${BUILD_DIR}/{site,packages}
 
-build: site/
+
+${BUILD_DIR}/site: ./site/
 ifeq ($(CI) , true)
-	soupault --verbose --build-dir ${BUILD_DIR}/site --profile production
+	soupault --verbose --build-dir $@ --profile production
 else
-	@soupault --build-dir ${BUILD_DIR}/site --profile development
+	soupault --build-dir $@ --profile development
 endif
 
 
+${BUILD_DIR}/packages: ./elements/ ./libs/javascript/ ./core/
+ifeq ($(CI) , true)
+	rollup -c -d $@
+else
+	rollup -c --silent -d $@
+endif
 pretty:
 	caddy fmt --overwrite
 
