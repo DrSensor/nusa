@@ -47,16 +47,19 @@ pretty:
 
 
 run: pretty build
-	$(MAKE) -j livereload.sock watch serve
+	$(MAKE) -j livereload.sock watch-site watch-packages serve
 
-reload: build
+reload:
 	echo -e "event: reload\ndata:\n" | tee `cat livereload.fifo`
 
 serve:
 	SITE=${SITE_ADDR} REPO=${REPO_ADDR} caddy run
 
-watch:
-	watchexec -p -w site/ -w .site/ -w soupault.toml "make reload"
+watch-site:
+	watchexec -p -w site/ -w .site/ -w soupault.toml "make ${BUILD_DIR}/site reload"
+	
+watch-packages:
+	watchexec -p -w core/ -w libs/javascript/ -w elements/ -w rollup.config.js "make ${BUILD_DIR}/packages reload"
 
 
 %.sock:
