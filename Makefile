@@ -30,8 +30,16 @@ endif
 	$(MAKE) -Bj {core,libs/javascript,elements}/package.json
 
 %/package.json:
-	$(eval PKG_NAME = $(shell jq -r ".name" $@))
-	jq -s ".[0] + .[1] | del(.workspaces)" package.json $@ > ${BUILD_DIR}/packages/${PKG_NAME}/package.json
+	jq -s '${package.jq}' package.json $@ > ${BUILD_DIR}/packages/`jq -r ".name" $@`/package.json
+
+define package.jq
+.[0] + .[1] | del(.workspace) | \
+if .name != "@getnusa/runtime" then \
+	.dependencies."@getnusa/runtime" = .version \
+else . end
+endef
+
+
 pretty:
 	caddy fmt --overwrite
 
