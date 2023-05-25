@@ -4,6 +4,7 @@ BUILD_DIR ?= result
 SITE_ADDR ?= localhost:3000
 REPO_ADDR ?= localhost:8000
 
+
 build:
 	$(MAKE) -j ${BUILD_DIR}/{site,packages}
 	mkdir ${BUILD_DIR}/site/npm
@@ -28,6 +29,7 @@ else
 	rollup -c --silent -d $@
 endif
 	$(MAKE) -Bj {core,libs/javascript,elements}/package.json
+	rg -Fl ../@getnusa/runtime ${BUILD_DIR}/packages -t js | xargs -r sed -i "s|../@getnusa/runtime|@getnusa/runtime|"
 
 %/package.json:
 	jq -s '${package.jq}' package.json $@ > ${BUILD_DIR}/packages/`jq -r ".name" $@`/package.json
