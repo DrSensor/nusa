@@ -1,3 +1,7 @@
+# Dependencies
+vendor/
+node_modules/
+
 # Things emitted by the build system
 result/
 .cache/
