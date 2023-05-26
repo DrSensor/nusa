@@ -144,11 +144,15 @@ profile = "development"
 widget = "insert_html"
 html = """
 <script>
-  new EventSource("/livereload")
-    .addEventListener("reload", function () {
-      this.close()
-      location.reload()
-    })
+  let sse = new EventSource("/livereload")
+  sse.addEventListener("reload", function() {
+    this.close()
+    location.reload()
+  })
+  addEventListener("beforeunload", () => {
+    sse.close()
+    sse = undefined
+  })
 </script>
 """
 selector = "head"
