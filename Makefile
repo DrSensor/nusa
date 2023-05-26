@@ -7,10 +7,11 @@ REPO_ADDR ?= localhost:8000
 
 build:
 	$(MAKE) -j ${BUILD_DIR}/{site,packages}
-	mkdir ${BUILD_DIR}/site/npm
-	$(MAKE) ${BUILD_DIR}/site/npm/{@getnusa,libnusa,nusa}
+	$(MAKE) ${BUILD_DIR}/site/npm/{@getnusa/runtime,libnusa,nusa}
+
 
 ${BUILD_DIR}/site/npm/%: ${BUILD_DIR}/packages/%
+	[ ! -d $@ ] && mkdir -p $(dir $@)
 	ln -rs $< $@
 
 
@@ -29,10 +30,11 @@ else
 	rollup -c --silent -d $@
 endif
 	$(MAKE) -Bj {core,libs/javascript,elements}/package.json
-	rg -Fl ../@getnusa/runtime ${BUILD_DIR}/packages -t js | xargs -r sed -i "s|../@getnusa/runtime|@getnusa/runtime|"
 
 %/package.json:
-	jq -s '${package.jq}' package.json $@ > ${BUILD_DIR}/packages/`jq -r ".name" $@`/package.json
+	$(eval PKG_NAME := $(shell jq -r ".name" $@))
+	sed -i "s|../${PKG_NAME}|${PKG_NAME}|" $$(find ${BUILD_DIR}/packages -path ${BUILD_DIR}/packages/${PKG_NAME} -prune -o -name "*.js" -print)
+	jq -s '${package.jq}' package.json $@ > ${BUILD_DIR}/packages/${PKG_NAME}/package.json
 
 define package.jq
 .[0] + .[1] | del(.workspace) | \
