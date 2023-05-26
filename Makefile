@@ -14,7 +14,7 @@ ${BUILD_DIR}/site/npm/%: ${BUILD_DIR}/packages/%
 	ln -rs $< $@
 
 
-${BUILD_DIR}/site: ./site/
+${BUILD_DIR}/site: site/*
 ifeq ($(CI) , true)
 	soupault --verbose --build-dir $@ --profile production
 else
@@ -22,7 +22,7 @@ else
 endif
 
 
-${BUILD_DIR}/packages: ./elements/ ./libs/javascript/ ./core/
+${BUILD_DIR}/packages: elements/* libs/javascript/* core/* core/*/*
 ifeq ($(CI) , true)
 	rollup -c -d $@
 else
