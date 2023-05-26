@@ -76,6 +76,28 @@ render_template = """
 """
 ###########################################
 
+########## normalize importmap ##########
+[widgets.nusa-importmap]
+widget = "insert_html"
+html = '''<script type=importmap>{
+  "imports": {
+    "nusa/render-scope": "/npm/nusa/render-scope.js",
+    "libnusa/current": "/npm/libnusa/current.js",
+    "libnusa/iterate": "/npm/libnusa/iterate.js",
+    "libnusa": "/npm/libnusa/__exports__.js",
+    "nusa/": "/npm/nusa/",
+    "libnusa/": "/npm/libnusa/",
+    "@getnusa/runtime/": "/npm/@getnusa/runtime/"
+  }
+}</script>'''
+selector = "head"
+
+[widgets.delete-importmap]
+widget = "delete_element"
+section = "demo"
+include_subsections = true
+selector = "body > importmap"
+#########################################
 
 [widgets.page-title] # Takes the content of the first <h1> and inserts it into the <title>
 widget = "title"
@@ -108,6 +130,7 @@ action = "prepend_child"
 
 [widgets.fix-head]
 widget = "move_element"
+after = "delete-importmap"
 selector = [
   "body head > *",
   "body meta",
