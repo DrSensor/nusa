@@ -13,5 +13,8 @@ export default {
   },
   output: {
     chunkFileNames: `${core.name}/[name].js`,
+    freeze: false,
+    hoistTransitiveImports: false,
   },
+  preserveEntrySignatures: "allow-extension",
 };

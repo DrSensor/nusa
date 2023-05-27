@@ -1,0 +1,16 @@
+{
+  "attrs_": "a",
+  "flags_": "f",
+  "module_": "m",
+  "scripts_": "j",
+  "styles_": "c",
+  "props_": "p",
+  "events_": "e",
+  "databank_": "d",
+  "targets_": "t",
+  "dedupeRender_": "r",
+  "bind_": "i",
+  "features_": "o",
+  "none_": "s",
+  "self_": "n"
+}
