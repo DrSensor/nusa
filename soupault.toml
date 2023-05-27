@@ -96,7 +96,7 @@ selector = "head"
 widget = "delete_element"
 section = "demo"
 include_subsections = true
-selector = "body > importmap"
+selector = "body script[type=importmap]"
 #########################################
 
 [widgets.page-title] # Takes the content of the first <h1> and inserts it into the <title>
