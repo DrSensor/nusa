@@ -29,16 +29,14 @@ if excludes and not Value.is_list(excludes) then
 end
 
 target = HTML.select_one(page, placement)
-if move_one then
-  elements = { HTML.select_any_of(page, selectors) }
-else
-  elements = HTML.select_all_of(page, selectors)
-end
+elements = HTML.select_all_of(page, selectors)
+
 index = 1; while elements[index] do
   local element = elements[index]
-  if not (excludes and HTML.matches_any_of_selectors(page, element, excludes)) then
+  if element ~= target and not (excludes and HTML.matches_any_of_selectors(page, element, excludes)) then
     HTML.delete(element)
     HTML[action](target, element)
+    if move_one then Plugin.exit() end
   end
   index = index + 1
 end
