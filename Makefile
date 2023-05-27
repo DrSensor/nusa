@@ -1,4 +1,5 @@
 .POSIX:
+.SHELLFLAGS = -O globstar -O extglob -c
 
 BUILD_DIR ?= result
 SITE_ADDR ?= localhost:3000
@@ -26,8 +27,10 @@ endif
 ${BUILD_DIR}/packages: elements/* libs/javascript/* core/* core/*/*
 ifeq ($(CI) , true)
 	rollup -c -d $@
+	esbuild --minify --format=esm $@/**/*.js --outdir=$@ --allow-overwrite
 else
 	rollup -c --silent -d $@
+	esbuild --minify --log-level=warn --format=esm $@/**/*.js --outdir=$@ --allow-overwrite
 endif
 	$(MAKE) -Bj {core,libs/javascript,elements}/package.json
 
