@@ -149,11 +149,6 @@ except = [
 ]
 placement = "head"
 
-[widgets.del-head]
-widget = "delete_element"
-after = "fix-head"
-selector = "body head"
-
 [widgets.importmap-first]
 widget = "move_element"
 after = "fix-head"

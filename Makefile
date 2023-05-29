@@ -19,8 +19,10 @@ ${BUILD_DIR}/site/npm/%: ${BUILD_DIR}/packages/%
 ${BUILD_DIR}/site: site/*
 ifeq ($(CI) , true)
 	soupault --verbose --build-dir $@ --profile production
+	minify -r ${BUILD_DIR}/site/ -o ${BUILD_DIR}/
 else
 	soupault --build-dir $@ --profile development
+	minify -qr ${BUILD_DIR}/site/ -o ${BUILD_DIR}/
 endif
 
 
