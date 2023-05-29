@@ -10,6 +10,9 @@ VERSION   ?= $(shell jq -r ".version" package.json)
 build:
 	$(MAKE) -j ${BUILD_DIR}/{site,packages}
 	$(MAKE) ${BUILD_DIR}/site/npm/{@getnusa/runtime,libnusa,nusa}
+ifeq ($(CI), true)
+	tree ${BUILD_DIR} -h
+endif
 
 
 ${BUILD_DIR}/site/npm/%: ${BUILD_DIR}/packages/%
