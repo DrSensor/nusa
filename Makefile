@@ -54,7 +54,11 @@ endef
 
 
 pretty:
+	eclint -fix
 	caddy fmt --overwrite
+	taplo format
+	deno fmt
+	eclint
 
 
 run: pretty build
@@ -68,7 +72,7 @@ serve:
 
 watch-site:
 	watchexec -p -w site/ -w .site/ -w soupault.toml "make ${BUILD_DIR}/site reload"
-	
+
 watch-packages:
 	watchexec -p -w core/ -w libs/javascript/ -w elements/ -w rollup.config.js "make ${BUILD_DIR}/packages reload"
 

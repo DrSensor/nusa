@@ -1,0 +1,26 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[Makefile]
+indent_style = tab
+
+[{*.html,*.svg}]
+indent_style = space
+indent_size = 2
+
+[*.css]
+indent_style = space
+indent_size = 2
+
+[*.lua]
+indent_style = space
+indent_size = 2
+
+[{*.yml,*.yaml}]
+indent_style = space
+indent_size = 2
