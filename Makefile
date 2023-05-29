@@ -4,6 +4,7 @@
 BUILD_DIR ?= result
 SITE_ADDR ?= localhost:3000
 REPO_ADDR ?= localhost:8000
+VERSION   ?= $(shell jq -r ".version" package.json)
 
 
 build:
@@ -44,7 +45,7 @@ endif
 define package.jq
 .[0] + .[1] | del(.workspace) | \
 if .name != "@getnusa/runtime" then \
-	.dependencies."@getnusa/runtime" = .version \
+	.dependencies."@getnusa/runtime" = "${VERSION}" \
 else . end
 endef
 
