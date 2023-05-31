@@ -57,14 +57,14 @@ selector = ["#demo-title", "#demo"]
 delete = ["script[type=importmap]", "script[type=hoistmap]"]
 hash_command = "sha384sum -z | cut -c -8"
 render_template = """
-<div role="tablist">
+<menu role="tablist">
   {% for source in sources %}
-  <button role="tab"
+  <li><button role="tab"
     {% if loop.first %}aria-selected=true{% endif %}
     aria-controls={{source.hash}}
-  >{{source.file}}</button>
+  >{{source.file}}</button></li>
   {% endfor %}
-</div>
+</menu>
 
 {% for source in sources %}
 <pre role="tabpanel"
