@@ -58,7 +58,7 @@ function sources_add(path)
   local source = {
     path = path,
     file = relpath,
-    lang = Sys.get_extension(relpath),
+    lang = Sys.get_extension(path), -- BUG(soupault): it throw Error if path starts_with ../
     content = String.trim(content)
   }
   if hash_command then
