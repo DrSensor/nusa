@@ -13,7 +13,7 @@ ignore_extensions = ["draft"]   # Page files with these extensions are ignored.
 
 # Files with extensions from this list are considered pages and processed.
 # All other files are copied to ${BUILD_DIR} unchanged.
-page_file_extensions = ["html", "md"]
+page_file_extensions = ["html", "md", "jsx"]
 
 # Soupault can work as a website generator or an HTML processor.
 #
@@ -30,6 +30,9 @@ doctype = "<!DOCTYPE html>"                          # If a page does not have a
 keep_doctype = true                                  # If a page already has a document type declaration, keep the declaration
 pretty_print_html = true                             # When set to false, the original whitespace (if any) will be preserved as is
 
+
+[preprocessors]
+jsx = "make -Bsf .site/processors/jsx2html.mk"
 
 [widgets.syntax-highlighting]
 widget = "preprocess_element"
