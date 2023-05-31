@@ -28,13 +28,18 @@ end
 target = HTML.select_any_of(page, insert_at)
 page_dir = Sys.dirname(page_file)
 
+files = {} -- to prevent duplicates
 sources = {}; sources_length = 0
 function sources_add(path)
-  Log.info("[nusa] Add " .. path .. " into sources")
   local relpath = Sys.basename(path)
   if String.starts_with(path, "../") then
     relpath = path
   end
+
+  if files[relpath] then return end
+  Log.info("[nusa] Add " .. path .. " into sources")
+  files[relpath] = 1
+
   local content
   if path == page_file then
     content = Sys.read_file(path)
@@ -55,6 +60,7 @@ function sources_add(path)
     path = Sys.join_path(page_dir, path)
     content = Sys.read_file(path)
   end
+
   local source = {
     path = path,
     file = relpath,
