@@ -28,7 +28,7 @@ default_content_selector = "body"                    # Insert each content into 
 complete_page_selector = "html"                      # Files that contain an <html> element are considered complete pages rather than page bodies
 doctype = "<!DOCTYPE html>"                          # If a page does not have a document type declaration, force it to HTML5
 keep_doctype = true                                  # If a page already has a document type declaration, keep the declaration
-pretty_print_html = true                             # When set to false, the original whitespace (if any) will be preserved as is
+pretty_print_html = false                            # When set to false, the original whitespace (if any) will be preserved as is
 
 
 [preprocessors]
@@ -39,6 +39,13 @@ widget = "preprocess_element"
 selector = 'code[class^="language-"]'
 command = 'highlight -O html -f -S $(echo $ATTR_CLASS | sed -e "s/language-//")'
 
+
+########## nusa ##########
+[widgets.minify-hoistmap]
+widget = "preprocess_element"
+after = ["fix-head"]
+selector = "script[type=hoistmap]"
+command = "jq -c"
 
 ########## process: site/demo/** ##########
 [templates.demo]
@@ -77,7 +84,10 @@ render_template = """
 }}{% endfilter %}</code></pre>
 {% endfor %}
 """
-###########################################
+################### process: site/demo/** #END
+
+################### nusa #END
+
 
 ########## normalize importmap ##########
 [widgets.nusa-importmap]
@@ -100,7 +110,13 @@ widget = "delete_element"
 section = "demo"
 include_subsections = true
 selector = "body script[type=importmap]"
-#########################################
+
+[widgets.minify-importmap]
+widget = "preprocess_element"
+after = ["nusa-importmap", "fix-head"]
+selector = "script[type=importmap]"
+command = "jq -c"
+################### normalize importmap #END
 
 [widgets.page-title] # Takes the content of the first <h1> and inserts it into the <title>
 widget = "title"
