@@ -1,6 +1,10 @@
 {
   "version": "2",
-  "remote": {},
+  "remote": {
+    "https://deno.land/x/hono@v3.2.3/middleware/html/index.ts": "a5028d8170dcc030d003749e743213e6532ff65798b741b81220207abc9af82d",
+    "https://deno.land/x/hono@v3.2.3/middleware/jsx/index.ts": "8c24ee1966d3fc67a658ee8413c9a21f5fa7da8af49c8a199cc55e22e24e80bb",
+    "https://deno.land/x/hono@v3.2.3/utils/html.ts": "636c4a04eaea1c52c14a37cd28d83cba66b293d1e31420a4475e951268901ae4"
+  },
   "npm": {
     "specifiers": {
       "rollup": "rollup@3.23.0"

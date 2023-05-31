@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "hono/html": "https://deno.land/x/hono/middleware/html/index.ts",
+    "hono/jsx": "https://deno.land/x/hono/middleware/jsx/index.ts"
+  }
+}
