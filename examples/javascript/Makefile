@@ -18,15 +18,11 @@ else
 ifeq ($(JS) , deno)
 	$(JS) run $(JSFLAGS) --allow-read --allow-net - << 'EOF'
 	import { serve } from "https://deno.land/std/http/server.ts"
-	serve( app.fetch,
-	     { port: ${SITE_PORT}
-	     , hostname: "${SITE_HOST}" })
+	serve( app.fetch, { port: ${SITE_PORT}, hostname: "${SITE_HOST}" })
 else ifeq ($(JS) , node)
 	$(JS) $(JSFLAGS) << 'EOF'
 	import { serve } from '@hono/node-server'
-	serve({ fetch: app.fetch,
-	      , port: ${SITE_PORT}
-	      , hostname: "${SITE_HOST}" })
+	serve({ fetch: app.fetch, port: ${SITE_PORT}, hostname: "${SITE_HOST}" })
 endif
 	import app from "./server.js"
 	EOF
