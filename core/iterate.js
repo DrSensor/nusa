@@ -165,9 +165,11 @@ const /** @type _WeakFlow */ flow = new WeakMap(),
     {},
     {
       get: /** @param accessor{string} */ (_, accessor) =>
-        /** @type _SoA */ ((currentAccess)[accessor] =
-          /** @type Record<string, _AccessorBinder> */ (memberAccess)[
-            accessor
-          ].databank_),
+        /** @type _SoA */ (
+          (currentAccess[accessor] =
+            /** @type Record<string, _AccessorBinder> */ (memberAccess)[
+              accessor
+            ].databank_)
+        ),
     },
   );
