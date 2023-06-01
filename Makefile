@@ -57,7 +57,7 @@ pretty:
 	eclint -fix
 	caddy fmt --overwrite
 	taplo format
-	deno fmt
+	rome format . --write
 	eclint
 
 

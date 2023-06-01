@@ -15,12 +15,16 @@ import * as task from "./task.js";
 /** Queue methods that need to be attached as {@link EventListener} into {@link events}
 @param attr{Attr}
 */ export function queue(attr) {
-  const methodNamesPrefix = attr.value.split(" ").reduce((final, value) => (
-    value.startsWith("self:")
-      ? (final.self_ ??= []).push(value.slice(5 /*ColonFor.CaptureSelf*/))
-      // TODO: implement other prefix
-      : (final.none_ ??= []).push(value), final
-  ), /** @type Partial<_HandlePrefix> */ ({}));
+  const methodNamesPrefix = attr.value.split(" ").reduce(
+    (final, value) => (
+      value.startsWith("self:")
+        ? (final.self_ ??= []).push(value.slice(5 /*ColonFor.CaptureSelf*/))
+        : // TODO: implement other prefix
+          (final.none_ ??= []).push(value),
+      final
+    ),
+    /** @type Partial<_HandlePrefix> */ ({}),
+  );
 
   const eventName = attr.name.slice(/** @type _Colon["Event"] */ (3));
   const cachedNamesPrefix = events[eventName]?.get(
@@ -28,10 +32,12 @@ import * as task from "./task.js";
   );
 
   if (cachedNamesPrefix) {
-    methodNamesPrefix.self_
-      ?.forEach((cachedNamesPrefix.self_ ??= new Set()).add);
-    methodNamesPrefix.none_
-      ?.forEach((cachedNamesPrefix.none_ ??= new Set()).add);
+    methodNamesPrefix.self_?.forEach(
+      (cachedNamesPrefix.self_ ??= new Set()).add,
+    );
+    methodNamesPrefix.none_?.forEach(
+      (cachedNamesPrefix.none_ ??= new Set()).add,
+    );
     // TODO: implement other prefix
   } else {
     const /** @type _IntoSet<_HandlePrefix> */ cachedNamesWithPrefix = {};
@@ -71,7 +77,8 @@ const events = {};
     @param methods{Set<string>}
     @param options{AddEventListenerOptions}
     */ const handle = (node, methods, options = config) =>
-      methods.size && node.addEventListener(
+      methods.size &&
+      node.addEventListener(
         event,
         (e) => {
           // TODO: e.preventDefault() if <tag :: on:event="stealth:method">
@@ -81,7 +88,7 @@ const events = {};
           const render = task.prepare(() => {
             setCurrentEvent(e);
             methods.forEach((methodName) =>
-              /** @type VoidFunction */ (script[methodName])()
+              /** @type VoidFunction */ (script[methodName])(),
             );
           });
           cancel = /** @type {() => VoidFunction} */ (render());

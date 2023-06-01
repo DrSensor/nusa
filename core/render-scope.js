@@ -16,7 +16,8 @@ export default class RenderScope extends HTMLElement {
 
     /** @type import("./query.js").Queue */
     const queue = { module_: {}, attrs_: {}, flags_: 0 };
-    slot.onslotchange = () => { // avoid glitch when html content is too big
+    slot.onslotchange = () => {
+      // avoid glitch when html content is too big
       query(this, RenderScope, queue);
       slot.after(...this.childNodes);
 

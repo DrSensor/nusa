@@ -31,7 +31,5 @@
     "persistent_data",
     "format"
   ],
-  "diagnostics.disable": [
-    "lowercase-global"
-  ]
+  "diagnostics.disable": ["lowercase-global"]
 }

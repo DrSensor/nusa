@@ -6,4 +6,5 @@
 @typedef {[_listener["queue"], _listener["listen"]]} modules.listener
  */
 
-export const accessor = 0, listener = 1;
+export const accessor = 0,
+  listener = 1;

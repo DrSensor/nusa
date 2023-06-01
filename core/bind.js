@@ -32,9 +32,12 @@ let count = 0;
     /** @type Set<string> */ properties = new Set();
 
   let notCached;
-  const [descs, members] = registry.get(pc) ?? (notCached = /** @type const */ (
-    [Object.getOwnPropertyDescriptors(pc), {}]
-  ));
+  const [descs, members] =
+    registry.get(pc) ??
+    (notCached = /** @type const */ ([
+      Object.getOwnPropertyDescriptors(pc),
+      {},
+    ]));
   if (notCached) registry.set(pc, [descs, members]);
 
   attrs.events_?.forEach(/** @type {(attr: Attr) => void} */ (listener_queue));
@@ -42,7 +45,7 @@ let count = 0;
     attr.value.split(" ").forEach((propName) => {
       accessor_override(propName, descs, members, attr, id);
       (descs[propName] ? accessors : properties).add(propName);
-    })
+    }),
   );
 
   if (notCached && accessors.size) Object.defineProperties(pc, descs);

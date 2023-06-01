@@ -11,7 +11,8 @@ let /** @type Promise<{bind_: _bindFn, features_: Parameters<_bindFn>[0]}> */ mo
 /** fetch and run module runtime for binding along with user linked modules then bind all linked modules
 @param shadow{ShadowRoot}
 @param queue{_query$Queue}
-*/ function lazyBind(shadow, queue) { //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
+*/ function lazyBind(shadow, queue) {
+  //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
   const { scripts_ } = queue.module_;
   if (scripts_) {
     import("./registry.js");
@@ -20,23 +21,22 @@ let /** @type Promise<{bind_: _bindFn, features_: Parameters<_bindFn>[0]}> */ mo
     }
 
     //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
-    module ??= Promise.all([ // tree-shake dynamic import https://parceljs.org/features/code-splitting/#tree-shaking
-      import("./bind.js")
-        .then((module) => module.default),
-      (queue.flags_ & Flags.hasBinding) && import("./accessor.js")
-        .then((module) => [module.override, module.infer]),
-      (queue.flags_ & Flags.hasListener) && import("./listener.js")
-        .then((module) => [module.queue, module.listen]),
+    module ??= Promise.all([
+      // tree-shake dynamic import https://parceljs.org/features/code-splitting/#tree-shaking
+      import("./bind.js").then((module) => module.default),
+      queue.flags_ & Flags.hasBinding &&
+        import("./accessor.js").then((module) => [
+          module.override,
+          module.infer,
+        ]),
+      queue.flags_ & Flags.hasListener &&
+        import("./listener.js").then((module) => [module.queue, module.listen]),
     ]).then(([bind_, ...features_]) => ({ bind_, features_ }));
 
     scripts_.forEach(async (script) =>
       import(script).then(
-        ((await module).bind_)(
-          (await module).features_,
-          queue.attrs_,
-          shadow,
-        ),
-      )
+        (await module).bind_((await module).features_, queue.attrs_, shadow),
+      ),
     );
   }
 }
@@ -49,7 +49,7 @@ const viewport = new IntersectionObserver((entries) =>
       registry.delete(host);
       viewport.unobserve(host);
     }
-  })
+  }),
 );
 
 /** observe viewport intersection
@@ -57,13 +57,15 @@ const viewport = new IntersectionObserver((entries) =>
 @param shadow{ShadowRoot}
 @param queue{_query$Queue}
 */ export function inview(shadow, queue) {
-  const host = shadow.host, rect = host.getBoundingClientRect();
+  const host = shadow.host,
+    rect = host.getBoundingClientRect();
   if (
     rect.top >= 0 &&
     rect.left >= 0 &&
     rect.bottom <= innerHeight &&
     rect.right <= innerWidth
-  ) { // is in viewport (sync)
+  ) {
+    // is in viewport (sync)
     lazyBind(shadow, queue);
   } else {
     registry.set(host, [shadow, queue]);

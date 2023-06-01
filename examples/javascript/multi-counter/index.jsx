@@ -5,7 +5,7 @@ import { html, raw, raw as js } from "hono/html";
 const json = (object) => raw(JSON.stringify(object));
 
 const importmap = {
-  "imports": {
+  imports: {
     "libnusa/current": "/libs/javascript/current.js",
     "libnusa/iterate": "/libs/javascript/iterate.js",
     "nusa/render-scope": "/elements/render-scope.js",
@@ -44,9 +44,5 @@ function Counter({ count }) {
   `;
 }
 Counter.hoistmap = {
-  "imports": [
-    "../counter/module.js",
-    "libnusa/iterate",
-    "libnusa/current",
-  ],
+  imports: ["../counter/module.js", "libnusa/iterate", "libnusa/current"],
 };

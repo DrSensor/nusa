@@ -80,10 +80,7 @@ export namespace constant {
   }
 }
 export type IntoSet<R> = {
-  [k in keyof R]: R[k] extends (
-    ArrayLike<infer T> | infer U
-  ) ? (Set<T> | U)
-    : R[k];
+  [k in keyof R]: R[k] extends ArrayLike<infer T> | infer U ? Set<T> | U : R[k];
 };
 
 export namespace registry {
@@ -103,15 +100,17 @@ export namespace registry {
   type Targets = (Attr | [target: Element, attrName: string] | Text)[];
 }
 
-export type SoA<
-  T extends Prototype = Prototype,
-> = Omit<StructOfArray<T>, "constructor" | symbol>;
+export type SoA<T extends Prototype = Prototype,> = Omit<
+  StructOfArray<T>,
+  "constructor" | symbol
+>;
 
 export type StructFrom<T> = {
   [key in keyof T]: T[key] extends (infer value)[] ? value : never;
 };
 
-type StructOfArray<T> = { // deno-lint-ignore ban-types
+type StructOfArray<T> = {
+  // deno-lint-ignore ban-types
   [key in keyof T]: T[key] extends Function ? never : T[key][];
 };
 
@@ -122,12 +121,10 @@ export namespace iterate {
       members: Record<string, registry.AccessorBinder>,
       callback: IterFunction<T>,
     ) => readonly [accessorNames: string[], databanks: unknown[][]],
-
     iterate: <T extends ESclass>(
       length: number,
       callback: IterFunction<T>,
     ) => Set<number>,
-
     restore: (skips: Iterable<number>) => void,
   ];
 
