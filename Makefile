@@ -62,12 +62,12 @@ pretty:
 
 
 run: pretty build
-	$(MAKE) -j livereload.sock watch-site watch-packages serve serve-javascript-examples
+	$(MAKE) -j livereload.sock watch-{site,packages} serve-{all,javascript-examples}
 
 reload:
 	echo -e "event: reload\ndata:\n" | tee `cat livereload.fifo`
 
-serve:
+serve-all:
 	SITE=${SITE_ADDR} REPO=${REPO_ADDR} caddy run
 
 serve-%-examples: examples/%/server.* examples/%/Makefile
