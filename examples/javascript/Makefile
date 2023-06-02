@@ -11,6 +11,9 @@ SITE_ADDR ?= localhost:5745
 
 
 run:
+	watchexec -w server.js -w Makefile -r -- $(MAKE) serve
+
+serve:
 ifeq ($(JS) , bun)
 	$(JS) run $(JSFLAGS) --hot ./server.js
 else
@@ -29,5 +32,5 @@ endif
 
 endif
 
-run: SITE_HOST := $(firstword $(subst :, ,$(SITE_ADDR)))
-run: SITE_PORT := $(lastword $(subst :, ,$(SITE_ADDR)))
+serve: SITE_HOST := $(firstword $(subst :, ,$(SITE_ADDR)))
+serve: SITE_PORT := $(lastword $(subst :, ,$(SITE_ADDR)))

@@ -70,8 +70,8 @@ reload:
 serve:
 	SITE=${SITE_ADDR} REPO=${REPO_ADDR} caddy run
 
-serve-%-examples:
-	$(MAKE) -C examples/$*
+serve-%-examples: examples/%/server.* examples/%/Makefile
+	$(MAKE) -C examples/$* run
 
 watch-site:
 	watchexec -p -w site/ -w .site/ -w soupault.toml "make ${BUILD_DIR}/site reload"
