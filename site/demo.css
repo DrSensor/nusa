@@ -6,6 +6,13 @@
   width: 95dvi;
   overflow: scroll;
 }
+[role="tablist"] > li::marker {
+  content: none;
+}
+menu[role="tablist"] {
+  margin-block: unset;
+  padding-inline: unset;
+}
 
 body {
   display: flex;
