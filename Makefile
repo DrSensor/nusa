@@ -20,7 +20,7 @@ ${BUILD_DIR}/site/npm/%: ${BUILD_DIR}/packages/%
 	ln -rs $< $@
 
 
-${BUILD_DIR}/site: site/*
+${BUILD_DIR}/site: soupault.toml site/* .site/* .site/*/* examples/*/* examples/*/*/*
 ifeq ($(CI) , true)
 	soupault --verbose --build-dir $@ --profile production
 	minify -r ${BUILD_DIR}/site/ -o ${BUILD_DIR}/
