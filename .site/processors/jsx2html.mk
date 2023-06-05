@@ -1,7 +1,7 @@
 .POSIX:
 .ONESHELL:
 SELF_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
-include $(join ${SELF_DIR}, ../../env.mk)
+include $(join $(SELF_DIR), ../../env.mk)
 
 
 %.jsx:
