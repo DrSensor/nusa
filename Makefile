@@ -43,7 +43,7 @@ endif
 %/package.json:
 	$(eval PKG_NAME := $(shell jq -r ".name" $@))
 	sed -i "s|../$(PKG_NAME)|$(PKG_NAME)|" $$(find $(BUILD_DIR)/packages -path $(BUILD_DIR)/packages/$(PKG_NAME) -prune -o -name "*.js" -print)
-	jq -s '${package.jq}' package.json $@ > $(BUILD_DIR)/packages/$(PKG_NAME)/package.json
+	jq -s '$(package.jq)' package.json $@ > $(BUILD_DIR)/packages/$(PKG_NAME)/package.json
 
 define package.jq
 .[0] + .[1] | del(.workspace) | \
@@ -86,10 +86,10 @@ watch-packages:
 
 %.fifo:
 	$(eval TEMP.fifo := $(shell mktemp -u).fifo)
-	@mkfifo ${TEMP.fifo}
-	@echo ${TEMP.fifo} >> $@
+	@mkfifo $(TEMP.fifo)
+	@echo $(TEMP.fifo) >> $@
 	$(info $(SSE.http))
-	tail -F ${TEMP.fifo}
+	tail -F $(TEMP.fifo)
 
 define SSE.http
 HTTP/1.1 200 OK
