@@ -8,29 +8,29 @@ VERSION   ?= $(shell jq -r ".version" package.json)
 
 
 build:
-	$(MAKE) -j ${BUILD_DIR}/{site,packages}
-	$(MAKE) ${BUILD_DIR}/site/npm/{@getnusa/runtime,libnusa,nusa}
+	$(MAKE) -j $(BUILD_DIR)/{site,packages}
+	$(MAKE) $(BUILD_DIR)/site/npm/{@getnusa/runtime,libnusa,nusa}
 ifeq ($(CI), true)
-	tree ${BUILD_DIR} -h
+	tree $(BUILD_DIR) -h
 endif
 
 
-${BUILD_DIR}/site/npm/%: ${BUILD_DIR}/packages/%
+$(BUILD_DIR)/site/npm/%: $(BUILD_DIR)/packages/%
 	[ ! -d $@ ] && mkdir -p $(dir $@)
 	ln -rs $< $@
 
 
-${BUILD_DIR}/site: soupault.toml site/* .site/* .site/*/* examples/*/* examples/*/*/*
+$(BUILD_DIR)/site: soupault.toml site/* .site/* .site/*/* examples/*/* examples/*/*/*
 ifeq ($(CI) , true)
 	soupault --verbose --build-dir $@ --profile production
-	minify -r ${BUILD_DIR}/site/ -o ${BUILD_DIR}/
+	minify -r $(BUILD_DIR)/site/ -o $(BUILD_DIR)/
 else
 	soupault --build-dir $@ --profile development
-	minify -qr ${BUILD_DIR}/site/ -o ${BUILD_DIR}/
+	minify -qr $(BUILD_DIR)/site/ -o $(BUILD_DIR)/
 endif
 
 
-${BUILD_DIR}/packages: elements/* libs/javascript/* core/* core/*/*
+$(BUILD_DIR)/packages: elements/* libs/javascript/* core/* core/*/*
 ifeq ($(CI) , true)
 	rollup -c -d $@
 	esbuild --mangle-props=[^_]_$$ --mangle-cache=core/props.json --minify --format=esm $@/**/*.js --outdir=$@ --allow-overwrite
@@ -42,13 +42,13 @@ endif
 
 %/package.json:
 	$(eval PKG_NAME := $(shell jq -r ".name" $@))
-	sed -i "s|../${PKG_NAME}|${PKG_NAME}|" $$(find ${BUILD_DIR}/packages -path ${BUILD_DIR}/packages/${PKG_NAME} -prune -o -name "*.js" -print)
-	jq -s '${package.jq}' package.json $@ > ${BUILD_DIR}/packages/${PKG_NAME}/package.json
+	sed -i "s|../$(PKG_NAME)|$(PKG_NAME)|" $$(find $(BUILD_DIR)/packages -path $(BUILD_DIR)/packages/$(PKG_NAME) -prune -o -name "*.js" -print)
+	jq -s '${package.jq}' package.json $@ > $(BUILD_DIR)/packages/$(PKG_NAME)/package.json
 
 define package.jq
 .[0] + .[1] | del(.workspace) | \
 if .name != "@getnusa/runtime" then \
-	.dependencies."@getnusa/runtime" = "${VERSION}" \
+	.dependencies."@getnusa/runtime" = "$(VERSION)" \
 else . end
 endef
 
@@ -68,16 +68,16 @@ reload:
 	echo -e "event: reload\ndata:\n" | tee `cat livereload.fifo`
 
 serve-all:
-	SITE=${SITE_ADDR} REPO=${REPO_ADDR} caddy run
+	SITE=$(SITE_ADDR) REPO=$(REPO_ADDR) caddy run
 
 serve-%-examples: examples/%/server.* examples/%/Makefile
 	$(MAKE) -C examples/$* run
 
 watch-site:
-	watchexec -p -w site/ -w .site/ -w soupault.toml "make ${BUILD_DIR}/site reload"
+	watchexec -p -w site/ -w .site/ -w soupault.toml "make $(BUILD_DIR)/site reload"
 
 watch-packages:
-	watchexec -p -w core/ -w libs/javascript/ -w elements/ -w rollup.config.js "make ${BUILD_DIR}/packages reload"
+	watchexec -p -w core/ -w libs/javascript/ -w elements/ -w rollup.config.js "make $(BUILD_DIR)/packages reload"
 
 
 %.sock:
