@@ -1,7 +1,7 @@
 { pkgs, ... }: {
 
   packages = with pkgs;
-    [ tree jq gnused toybox ] ++ [ gnumake watchexec nmap caddy ]
+    [ tree jq toybox ] ++ [ gnumake watchexec nmap caddy ]
     ++ [ highlight soupault minify ] ++ [ esbuild nodePackages.rollup ];
 
   languages.nix.enable = true;
