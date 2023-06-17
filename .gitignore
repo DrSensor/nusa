@@ -9,3 +9,8 @@ result/
 # Used to stream/push and controll the site (i.e /livereload)
 *.sock
 *.fifo
+
+# Used for automatic devenv
+.devenv/
+.direnv/
+.pre-commit-config.yaml
