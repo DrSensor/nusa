@@ -11,40 +11,37 @@
     };
   };
 
-  outputs = inputs@{ flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ inputs.devenv.flakeModule ];
+  outputs = inputs@{ flake-parts, devenv, ... }:
+    with devenv.lib;
+    with flake-parts.lib;
+    mkFlake { inherit inputs; } {
+      imports = [ devenv.flakeModule ];
       systems = [ "x86_64-linux" "aarch64-linux" "i686-linux" ]
         ++ [ "x86_64-darwin" "aarch64-darwin" ];
 
-      perSystem = { pkgs, lib, system, config, ... }:
-        let
-          inputs' = inputs // { inherit pkgs lib system config; };
-
-          # recursiveMerge = with lib; foldr recursiveUpdate;
-          # WARNING: lib.attrsets.recursiveUpdate can't merge [packages]
-          recursiveMerge = with lib;
-            let
-              f = path:
-                zipAttrsWith (name: values:
-                  if length values == 1 then
-                    head values
-                  else if all isList values then
-                    unique (concatLists values)
-                  else if all isAttrs values then
-                    f (path ++ [ name ]) values
-                  else
-                    last values);
-            in f [ ];
-
-        in rec {
-          devenv.shells.default = recursiveMerge [
+      perSystem = { pkgs, ... }: rec {
+        devenv.shells.javascript = ./examples/javascript/devenv.nix;
+        devenv.shells.js-bundler = ./core/devenv.nix;
+        devenv.shells.site-generator = ./.site/devenv.nix;
+        devenv.shells.web-server = ./devenv.nix;
+        devShells.default = mkShell {
+          inherit inputs pkgs;
+          modules = [
             devenv.shells.javascript
-            (import ./devenv.nix inputs')
+            devenv.shells.js-bundler
+            devenv.shells.site-generator
+            devenv.shells.web-server
+            {
+              languages.nix.enable = true;
+              pre-commit.hooks = {
+                nixfmt.enable = true;
+                nil.enable = true;
+                statix.enable = true;
+                deadnix.enable = true;
+              };
+            }
           ];
-
-          devenv.shells.javascript =
-            import ./examples/javascript/devenv.nix inputs';
         };
+      };
     };
 }

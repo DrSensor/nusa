@@ -1,14 +1,6 @@
 { pkgs, ... }: {
 
-  packages = with pkgs;
-    [ tree jq toybox ] ++ [ gnumake watchexec nmap caddy ]
-    ++ [ highlight soupault minify ] ++ [ esbuild nodePackages.rollup ];
+  packages = with pkgs; [ tree toybox ] ++ [ gnumake watchexec nmap caddy ];
 
-  languages.nix.enable = true;
-
-  pre-commit.hooks = {
-    editorconfig-checker.enable = true;
-    lua-ls.enable = true;
-    taplo.enable = true;
-  };
+  pre-commit = { hooks.editorconfig-checker.enable = true; };
 }
