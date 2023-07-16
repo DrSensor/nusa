@@ -42,6 +42,14 @@
             }
           ];
         };
+        devShells.CI = mkShell {
+          inherit inputs pkgs;
+          modules = [
+            { env.CI = "true"; }
+            devenv.shells.js-bundler
+            devenv.shells.site-generator
+          ];
+        };
       };
     };
 }

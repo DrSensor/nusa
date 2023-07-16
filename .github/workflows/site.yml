@@ -13,15 +13,19 @@ jobs:
     name: Deploy to Cloudflare Pages
     steps:
       - uses: actions/checkout@v3
-      - uses: denoland/setup-deno@v1
+      - uses: nixbuild/nix-quick-install-action@v22
+        with:
+          nix_conf: experimental-features = nix-command flakes
       - uses: actions/cache@v3
         with:
-          path: /home/runner/.cache
+          path: /home/runner/.cache/deno
           key: ${{ hashFiles('deno.lock') }}
+      - uses: actions/cache@v3
+        with:
+          path: /home/runner/.cache/soupault
+          key: ${{ hashFiles('soupault.toml') }}
 
-      - name: Build
-        run: deno task build
-        # run: deno task build --quiet # BUG(lume): --quiet disable checkUpgrade() because `sha` might be undefined https://github.com/lumeland/lume/blob/master/core/utils.ts#L136
+      - run: nix develop .#CI --command make
 
       - name: Publish
         uses: cloudflare/pages-action@1
@@ -29,5 +33,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: nusa
-          directory: _site
+          directory: result/site
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

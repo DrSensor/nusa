@@ -9,7 +9,7 @@ with lib; {
 
   packages = with pkgs; [ gnumake watchexec ] ++ [ rome ];
 
-  pre-commit = {
+  pre-commit = mkIf (!env ? CI) {
     hooks.editorconfig-checker.enable = true;
     # hooks.rome.enable = true; TODO: either wait or make PR to github:cachix/devenv
   };

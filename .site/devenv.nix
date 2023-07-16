@@ -10,7 +10,7 @@ with lib; {
   packages = with pkgs;
     [ soupault minify ] ++ [ gnumake highlight ] ++ [ jq toybox ];
 
-  pre-commit = {
+  pre-commit = mkIf (!env ? CI) {
     hooks.editorconfig-checker.enable = true;
     hooks.lua-ls.enable = true;
     hooks.taplo.enable = true;

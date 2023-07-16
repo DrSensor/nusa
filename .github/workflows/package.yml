@@ -9,22 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: denoland/setup-deno@v1
+      - uses: cachix/install-nix-action@v2
       - uses: actions/cache@v3
         with:
-          path: /home/runner/.cache
+          path: /home/runner/.cache/deno
           key: ${{ hashFiles('deno.lock') }}
-      - uses: actions/setup-node@v3
+      - uses: actions/cache@v3
         with:
-          node-version: latest
-          registry-url: https://registry.npmjs.org
+          path: /home/runner/.cache/soupault
+          key: ${{ hashFiles('soupault.toml') }}
 
-      - name: Bundle
-        run: deno task ci:bundle
+      - run: nix develop .#js-bundler --command "make result/packages"
 
       - name: Publish
-        run: |
-          cd _site/nusa
+        run: | # TODO: generate package.json{workspaces} to simplify npm publish
+          cd result/packages
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
