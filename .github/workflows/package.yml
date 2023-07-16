@@ -19,7 +19,7 @@ jobs:
           path: /home/runner/.cache/soupault
           key: ${{ hashFiles('soupault.toml') }}
 
-      - run: nix develop .#js-bundler --command "make result/packages"
+      - run: nix develop .#js-bundler --impure --command "make result/packages"
 
       - name: Publish
         run: | # TODO: generate package.json{workspaces} to simplify npm publish
