@@ -42,6 +42,12 @@
               [ nix javascript ] ++ [ js-bundler site-generator web-server ];
           };
 
+          # Just temporary for .github/workflows/check.yaml
+          # Eventually it will perform browser test that most likely require devShells.default as a whole.
+          devenv.shells.check = {
+            packages = with pkgs; [ rome taplo luajitPackages.luacheck eclint ];
+          };
+
           devShells.CI = mkShell {
             inherit inputs pkgs;
             modules = with devenv.shells; [

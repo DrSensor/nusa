@@ -20,23 +20,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: denoland/setup-deno@v1
-      - uses: actions/cache@v3
-        with:
-          path: /home/runner/.cache
-          key: ${{ hashFiles('deno.lock') }}
+      - uses: cachix/install-nix-action@v2
 
-      - name: Verify formatting
-        run: deno fmt --check core nusa
-
-      - name: Run linter
-        run: deno lint core nusa
-
-      - name: Run type checker
-        run: deno check `find core nusa -type f -and \( -name "*.ts" -o -name "*.mts" \)`
-
-      - name: Setup puppeteer
-        run: PUPPETEER_PRODUCT=chrome deno run -A --unstable https://deno.land/x/puppeteer/install.ts
-
-      - name: Run tests
-        run: deno task ci:test
+      - run: nix develop .#check --impure --command "make check"

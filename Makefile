@@ -39,6 +39,7 @@ else
 	esbuild --mangle-props=[^_]_$$ --mangle-cache=core/props.json --minify --log-level=warning --format=esm $@/**/*.js --outdir=$@ --allow-overwrite
 endif
 	$(MAKE) -Bj {core,libs/javascript,elements}/package.json
+# TODO: generate $@/package.json{workspaces} to simplify npm publish
 
 %/package.json:
 	$(eval PKG_NAME := $(shell jq -r ".name" $@))
@@ -58,7 +59,17 @@ pretty:
 	caddy fmt --overwrite
 	taplo format
 	rome format . --write
-	eclint
+
+
+check:
+	-rome check .
+	-taplo lint **.toml
+	-luacheck .site
+	-eclint
+
+
+fix:
+	rome check . --apply
 
 
 run: pretty build
