@@ -25,4 +25,4 @@ jobs:
           nix_conf: experimental-features = nix-command flakes
       - uses: DeterminateSystems/magic-nix-cache-action@v2
 
-      - run: nix develop .#CI-check --impure --command make check
+      - run: nix develop .#CI-check --impure --command make --keep-going check

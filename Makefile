@@ -62,15 +62,18 @@ pretty:
 	rome format . --write
 
 
-check:
-	# rome check .
-	taplo lint **.toml
-	luacheck .site
+check: check-js check-lua check-toml
 	eclint
+check-js:
+	rome check core/ elements/ libs/javascript/ examples/javascript/ rollup.config.mjs
+check-toml:
+	taplo lint **.toml
+check-lua:
+	luacheck .site/
 
-
-fix:
-	rome check . --apply
+fix: fix-js
+fix-js:
+	rome check --apply core elements libs/javascript examples/javascript rollup.config.mjs
 
 
 run: pretty build
