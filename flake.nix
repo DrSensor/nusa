@@ -21,11 +21,14 @@
 
       perSystem = { pkgs, lib, ... }:
         let
-          CI = rec {
+          CI = {
             env.CI = "true";
-            env.SHELL = "${pkgs.bash}/bin/bash"; # help other cli
-            env.MAKESHELL = env.SHELL;
+
+            # help other CLI's to discover true bash
+            env.SHELL = "${pkgs.bash}/bin/bash";
+            packages = [ pkgs.bash ];
           };
+
         in with lib; rec {
           devenv.shells.nix = {
             languages.nix.enable = true;

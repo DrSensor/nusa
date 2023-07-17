@@ -1,4 +1,5 @@
 .POSIX:
+SHELL := bash
 .SHELLFLAGS = -O globstar -O extglob -c
 
 BUILD_DIR ?= result
