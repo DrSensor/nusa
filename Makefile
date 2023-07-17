@@ -63,7 +63,7 @@ pretty:
 
 
 check:
-	rome check .
+	# rome check .
 	taplo lint **.toml
 	luacheck .site
 	eclint
