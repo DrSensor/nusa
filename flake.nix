@@ -19,37 +19,37 @@
       systems = [ "x86_64-linux" "aarch64-linux" "i686-linux" ]
         ++ [ "x86_64-darwin" "aarch64-darwin" ];
 
-      perSystem = { pkgs, ... }: rec {
-        devenv.shells.javascript = ./examples/javascript/devenv.nix;
-        devenv.shells.js-bundler = ./core/devenv.nix;
-        devenv.shells.site-generator = ./.site/devenv.nix;
-        devenv.shells.web-server = ./devenv.nix;
-        devShells.default = mkShell {
-          inherit inputs pkgs;
-          modules = [
-            devenv.shells.javascript
-            devenv.shells.js-bundler
-            devenv.shells.site-generator
-            devenv.shells.web-server
-            {
-              languages.nix.enable = true;
-              pre-commit.hooks = {
-                nixfmt.enable = true;
-                nil.enable = true;
-                statix.enable = true;
-                deadnix.enable = true;
-              };
-            }
-          ];
+      perSystem = { pkgs, lib, ... }:
+        with lib; rec {
+          devenv.shells.nix = {
+            languages.nix.enable = true;
+            pre-commit.hooks = {
+              nixfmt.enable = true;
+              nil.enable = true;
+              statix.enable = true;
+              deadnix.enable = true;
+            };
+          };
+          devenv.shells.javascript = ./examples/javascript/devenv.nix;
+
+          devenv.shells.js-bundler = ./core/devenv.nix;
+          devenv.shells.site-generator = ./.site/devenv.nix;
+          devenv.shells.web-server = ./devenv.nix;
+
+          devShells.default = mkShell {
+            inherit inputs pkgs;
+            modules = with devenv.shells;
+              [ nix javascript ] ++ [ js-bundler site-generator web-server ];
+          };
+
+          devShells.CI = mkShell {
+            inherit inputs pkgs;
+            modules = with devenv.shells; [
+              { env.CI = "true"; }
+              js-bundler
+              site-generator
+            ];
+          };
         };
-        devShells.CI = mkShell {
-          inherit inputs pkgs;
-          modules = [
-            { env.CI = "true"; }
-            devenv.shells.js-bundler
-            devenv.shells.site-generator
-          ];
-        };
-      };
     };
 }
