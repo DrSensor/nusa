@@ -21,9 +21,10 @@
 
       perSystem = { pkgs, lib, ... }:
         let
-          CI = {
+          CI = rec {
             env.CI = "true";
-            env.SHELL = "${pkgs.bash}/bin/bash"; # help Make locate real bash
+            env.SHELL = "${pkgs.bash}/bin/bash"; # help other cli
+            env.MAKESHELL = env.SHELL;
           };
         in with lib; rec {
           devenv.shells.nix = {
