@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: cachix/install-nix-action@v2
+      - uses: nixbuild/nix-quick-install-action@v22
+        with:
+          nix_conf: experimental-features = nix-command flakes
 
       - run: nix develop .#check --impure --command "make check"
