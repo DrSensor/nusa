@@ -16,10 +16,6 @@ jobs:
         with:
           path: /home/runner/.cache/deno
           key: ${{ hashFiles('deno.lock') }}
-      - uses: actions/cache@v3
-        with:
-          path: /home/runner/.cache/soupault
-          key: ${{ hashFiles('soupault.toml') }}
 
       - run: nix develop .#js-bundler --impure --command "make result/packages"
 
