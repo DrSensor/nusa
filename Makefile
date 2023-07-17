@@ -63,10 +63,10 @@ pretty:
 
 
 check:
-	-rome check .
-	-taplo lint **.toml
-	-luacheck .site
-	-eclint
+	rome check .
+	taplo lint **.toml
+	luacheck .site
+	eclint
 
 
 fix:
