@@ -17,10 +17,11 @@ port2.start();
 */ function micro(callback) {
   let /** @type true | undefined */ cancel;
   queueMicrotask(() => cancel ?? callback());
-  return () => cancel = true;
+  return () => (cancel = true);
 }
 
-let skipFrame = false, prepareFrame = false;
+let skipFrame = false,
+  prepareFrame = false;
 const queue = /** @type FrameRequestCallback[] */ ([]);
 
 /** Prepare (mark) for next render
@@ -44,7 +45,7 @@ const queue = /** @type FrameRequestCallback[] */ ([]);
   let /** @type VoidFunction | undefined */ abort;
   const cancel = macro(() => {
     skipFrame = true;
-    const unlock = () => abort = micro(() => skipFrame = false);
+    const unlock = () => (abort = micro(() => (skipFrame = false)));
     ifAsync(callback(), unlock) || unlock();
   }, options);
   return () => {
@@ -62,7 +63,7 @@ const queue = /** @type FrameRequestCallback[] */ ([]);
   let /** @type VoidFunction | undefined */ abort;
   const id = requestIdleCallback((deadline) => {
     skipFrame = true;
-    const unlock = () => abort = micro(() => skipFrame = false);
+    const unlock = () => (abort = micro(() => (skipFrame = false)));
     ifAsync(callback(deadline), unlock) || unlock();
   }, options);
   return () => {
@@ -93,11 +94,12 @@ const queue = /** @type FrameRequestCallback[] */ ([]);
   if (skipFrame) cancel = prerender(callback);
   else {
     if (!prepareFrame) queue.push(callback);
-    cancel = postrender(() =>
-      abort = prerender((t) => {
-        let callback; // deno-lint-ignore no-cond-assign
-        while (callback = queue.pop()) callback(t);
-      })
+    cancel = postrender(
+      () =>
+        (abort = prerender((t) => {
+          let callback; // deno-lint-ignore no-cond-assign
+          while ((callback = queue.pop())) callback(t);
+        })),
     );
   }
   return () => {
@@ -112,7 +114,7 @@ const queue = /** @type FrameRequestCallback[] */ ([]);
 @returns {() => void}
 */ function postrender(callback) {
   let /** @type VoidFunction | undefined */ abort;
-  const cancel = prerender((t) => abort = macro(() => callback(t)));
+  const cancel = prerender((t) => (abort = macro(() => callback(t))));
   return () => {
     cancel();
     abort?.();

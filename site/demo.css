@@ -1,0 +1,93 @@
+[role="tab"] {
+  user-select: revert !important;
+}
+[role="tabpanel"] {
+  max-width: 80ch;
+  width: 95dvi;
+  overflow: scroll;
+}
+[role="tablist"] > li::marker {
+  content: none;
+}
+menu[role="tablist"] {
+  margin-block: unset;
+  padding-inline: unset;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20lvh 2rem 50lvh;
+}
+
+body > span:first-child::after {
+  content: "༼༼";
+}
+body > span:first-child::before {
+  content: "༽༽";
+}
+@media (prefers-color-scheme: dark) {
+  .hljs-string {
+    color: #80b380 !important;
+  }
+  body > span:nth-child(2n):not(#end)::before {
+    content: "૮༼◕․◕༽つ) ";
+  }
+  #end > *::before {
+    content: "༼◕․◕༽ ";
+  }
+}
+body > span::after,
+body > span::before,
+#end > *::before {
+  color: var(--warn-fg);
+}
+@media (prefers-color-scheme: light) {
+  body > span:nth-child(2n):not(#end)::before {
+    content: "૮༼◔․◔༽つ) ";
+  }
+  #end > *::before {
+    content: "༼◔․◔༽ ";
+  }
+}
+
+#end,
+body > span:first-child + span {
+  margin-top: 80lvh;
+}
+
+body > span:first-child + span > :first-child::before {
+  content: "🗹 ";
+  font-size: 1.2rem;
+}
+body > span:first-child + span > :last-child::before {
+  content: "⟳";
+  font-size: 1.6rem;
+}
+
+body > span:first-child > strong {
+  text-decoration: underline overline var(--blue-5) double;
+}
+
+render-scope {
+  padding: 3px;
+}
+
+#demo {
+  border: 1px ridge;
+  padding: 10px 5px;
+  margin-top: 100lvh;
+}
+#demo-title {
+  margin: 0;
+}
+#demo,
+#demo-title {
+  width: fit-content;
+  margin-inline: auto;
+}
+
+#end {
+  text-transform: uppercase;
+}

@@ -1,2 +1,16 @@
-_site/
-.lock/
+# Dependencies
+vendor/
+node_modules/
+
+# Things emitted by the build system
+result/
+.cache/
+
+# Used to stream/push and controll the site (i.e /livereload)
+*.sock
+*.fifo
+
+# Used for automatic devenv
+.devenv/
+.direnv/
+.pre-commit-config.yaml

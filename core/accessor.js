@@ -27,7 +27,7 @@ After override, you still need to apply it via {@link Object.defineProperties}
 @param attr{Attr}
 @param id{number}
 */ function init(members, accessor, attr, id) {
-  const data = members[accessor] ??= { databank_: [], targets_: [] };
+  const data = (members[accessor] ??= { databank_: [], targets_: [] });
   data.targets_[id] ??= [];
 
   const targetElement = /** @type Element */ (attr.ownerElement),
@@ -53,10 +53,10 @@ After override, you still need to apply it via {@link Object.defineProperties}
   properties.forEach((property) => {
     if (Object.hasOwn(instance, property)) {
       initData(property);
-      const desc = descs[property] ??= {
+      const desc = (descs[property] ??= {
         value: instance[property],
         writable: true,
-      };
+      });
       if (!desc[mark]) {
         desc[mark] = true;
         patch(desc, members[property], id);
@@ -77,19 +77,22 @@ const mark = Symbol();
 
   const { get, set, value, writable: notAccessor } = desc,
     is = /** @param access{Function=} */ (access) => access ?? notAccessor;
-  let propValue = value, /** @type boolean */ assignedInConstructor;
+  let propValue = value,
+    /** @type boolean */ assignedInConstructor;
 
   if (is(get)) {
     desc.get = /** @this _Instance */ function () {
       let value;
-      if (this[index] !== undefined) { // if accessed OUTSIDE class constructor()
+      if (this[index] !== undefined) {
+        // if accessed OUTSIDE class constructor()
         value = databank_[this[index]];
         if (get) {
           setCurrentValue(value);
           get.call(this);
           setCurrentValue(undefined);
         }
-      } else { // if accessed INSIDE class constructor()
+      } else {
+        // if accessed INSIDE class constructor()
         value = get ? get.call(this) : propValue;
         if (!assignedInConstructor) databank_[id] = value;
       }
@@ -99,7 +102,8 @@ const mark = Symbol();
     if (is(set)) {
       desc.set = /** @this _Instance */ function (value) {
         // TODO: if (no getter) ??
-        if (this[index] !== undefined) { // if accessed OUTSIDE class constructor()
+        if (this[index] !== undefined) {
+          // if accessed OUTSIDE class constructor()
           const id = this[index];
 
           if (set) {
@@ -116,7 +120,8 @@ const mark = Symbol();
             });
           }
           databank_[id] = value;
-        } else { // if accessed INSIDE class constructor()
+        } else {
+          // if accessed INSIDE class constructor()
           assignedInConstructor = true;
           set ? set.call(this, value) : (propValue = value);
         }
@@ -138,18 +143,23 @@ const mark = Symbol();
   const value = /** @type string */ (databank[id]),
     targetAt = targets[id];
   targetAt.forEach((target, i) => {
-    if (target instanceof Node) { // target maybe Attr or Text
+    if (target instanceof Node) {
+      // target maybe Attr or Text
       const { ownerElement, name } = /** @type Attr */ (target); // @ts-ignore bind Element.prototype.property by default
-      if (ownerElement && name in ownerElement) ownerElement[name] = value; // WARNING(browser): binding just Attr of <input value> is buggy since it treat the attribute as initial value, not current value
+      if (ownerElement && name in ownerElement)
+        ownerElement[name] =
+          value; // WARNING(browser): binding just Attr of <input value> is buggy since it treat the attribute as initial value, not current value
       else target.nodeValue = value; // then fallback to bind the attribute (or Text if target not instanceof Attr)
     } else {
       const [element, attrName] = target;
       element.setAttribute(attrName, value);
 
-      const attr = targetAt[i] =
-        /** @type Attr */ (element.getAttributeNode(attrName)); // make members[,targets] uniform when all attributes all set
+      const attr = (targetAt[i] = /** @type Attr */ (
+        element.getAttributeNode(attrName)
+      )); // make members[,targets] uniform when all attributes all set
 
-      if (attrName === "text") { // but it break uniform structure when binding Text content
+      if (attrName === "text") {
+        // but it break uniform structure when binding Text content
         const text = new Text(value);
         /** @type Element */ (attr.ownerElement).replaceChildren(text);
         targetAt.push(text);

@@ -1,0 +1,10 @@
+{
+  "name": "libnusa",
+  "exports": {
+    ".": "__exports__.js",
+    "./*": "./*.js"
+  },
+  "dependencies": {
+    "@getnusa/runtime": "file:../../core"
+  }
+}

@@ -1,13 +1,22 @@
 <script type=importmap>{
   "imports": {
-    "nusa/std/current": "/nusa/std/current.js"
+    "libnusa/current": "/libs/javascript/current.js",
+    "nusa/render-scope": "/elements/render-scope.js"
   }
 }</script>
 <!----------------------------------------------------------------------->
-<script type=module src=/nusa/render-scope.js async></script>
+<script async>
+  import("nusa/render-scope")
+</script>
 
 <render-scope>
   <link as=script href=module.js>
+
+  <!---------- optional ---------->
+  <script type=hoistmap>{
+    "imports": ["libnusa/current"]
+  }</script>
+  <!------------------------------>
 
   <button :: on:click=log> console.log </button>
   <button :: on:click=debug> console.debug </button>

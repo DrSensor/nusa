@@ -1,0 +1,195 @@
+[settings] # To learn about configuring soupault, visit https://www.soupault.app/reference-manual
+strict = true                   # Stop on page processing errors?
+verbose = false                 # Display progress?
+debug = false                   # Display detailed debug output?
+caching = true                  # cache outputs of page preprocessors and preprocess_element widget commands
+cache_dir = ".cache/soupault"   # where to store that cache
+site_dir = "site"               # Where input files (pages and assets) are stored.
+build_dir = "result/site"       # Where the output goes
+plugin_discovery = true         # Plugins can be either automatically discovered or loaded explicitly.
+plugin_dirs = [".site/plugins"] # e.g, my-plugin.lua -> `widget = "my-plugin"`
+default_extension = "html"      # All other extensions (".md", ".rst"...) are replaced, by default with ".html"
+ignore_extensions = ["draft"]   # Page files with these extensions are ignored.
+
+# Files with extensions from this list are considered pages and processed.
+# All other files are copied to ${BUILD_DIR} unchanged.
+page_file_extensions = ["html", "md", "jsx"]
+
+# Soupault can work as a website generator or an HTML processor.
+#
+# In the "website generator" mode, it considers files in ${site_dir}/ page bodies
+# and inserts them into the empty page template stored in templates/main.html
+#
+# Setting this option to false switches it to the "HTML processor" mode
+# when it considers every file in ${site_dir}/ a complete page and only runs it through widgets or plugins.
+generator_mode = true
+default_template_file = ".site/templates/empty.html" # I don't need this since everything handled by [template.*] but somehow soupault require it
+default_content_selector = "body"                    # Insert each content into <html></html> (templates/empty.html) making them into full html page
+complete_page_selector = "html"                      # Files that contain an <html> element are considered complete pages rather than page bodies
+doctype = "<!DOCTYPE html>"                          # If a page does not have a document type declaration, force it to HTML5
+keep_doctype = true                                  # If a page already has a document type declaration, keep the declaration
+pretty_print_html = false                            # When set to false, the original whitespace (if any) will be preserved as is
+
+
+[preprocessors]
+jsx = "make -Bsf .site/processors/jsx2html.mk"
+
+[widgets.syntax-highlighting]
+widget = "preprocess_element"
+selector = 'code[class^="language-"]'
+command = 'highlight -O html -f -S $(echo $ATTR_CLASS | sed -e "s/language-//")'
+
+
+########## nusa ##########
+[widgets.minify-hoistmap]
+widget = "preprocess_element"
+after = ["fix-head"]
+selector = "script[type=hoistmap]"
+command = "jq -c"
+
+########## process: site/demo/** ##########
+[templates.demo]
+file = ".site/templates/demo.html"
+section = "demo"
+include_subsections = true
+content_selector = "#demo"
+content_action = "replace_content"
+
+[widgets.demo-tabs]
+widget = "nusa/sources"
+section = "demo"
+include_subsections = true
+action = "insert_after"
+selector = ["#demo-title", "#demo"]
+delete = ["script[type=importmap]", "script[type=hoistmap]"]
+hash_command = "sha384sum -z | cut -c -8"
+render_template = """
+<menu role="tablist">
+  {% for source in sources %}
+  <li><button role="tab"
+    {% if loop.first %}aria-selected=true{% endif %}
+    aria-controls={{source.hash}}
+  >{{source.file}}</button></li>
+  {% endfor %}
+</menu>
+
+{% for source in sources %}
+<pre role="tabpanel"
+  {% if not loop.first %}hidden{% endif %}
+  id={{source.hash}}
+><code
+  class=language-{{source.lang}}
+>{% filter escape %}{{
+  source.content
+}}{% endfilter %}</code></pre>
+{% endfor %}
+"""
+################### process: site/demo/** #END
+
+################### nusa #END
+
+
+########## normalize importmap ##########
+[widgets.nusa-importmap]
+widget = "insert_html"
+html = '''<script type=importmap>{
+  "imports": {
+    "nusa/render-scope": "/npm/nusa/render-scope.js",
+    "libnusa/current": "/npm/libnusa/current.js",
+    "libnusa/iterate": "/npm/libnusa/iterate.js",
+    "libnusa": "/npm/libnusa/__exports__.js",
+    "nusa/": "/npm/nusa/",
+    "libnusa/": "/npm/libnusa/",
+    "@getnusa/runtime/": "/npm/@getnusa/runtime/"
+  }
+}</script>'''
+selector = "head"
+
+[widgets.delete-importmap]
+widget = "delete_element"
+section = "demo"
+include_subsections = true
+selector = "body script[type=importmap]"
+
+[widgets.minify-importmap]
+widget = "preprocess_element"
+after = ["nusa-importmap", "fix-head"]
+selector = "script[type=importmap]"
+command = "jq -c"
+################### normalize importmap #END
+
+[widgets.page-title] # Takes the content of the first <h1> and inserts it into the <title>
+widget = "title"
+selector = "h1"
+default = "૮◕․◕༽ Nusa"
+prepend = "૮◕․◕༽ "
+force = true
+keep = true
+
+[widgets.generator-meta] # in case some robots crawl this site for ranking framework popularity
+widget = "generator-meta"
+
+[widgets.normalize-viewport]
+widget = "insert_html"
+html = '<meta name=viewport content="width=device-width, initial-scale=1.0">'
+selector = "head"
+action = "prepend_child"
+
+[widgets.icon]
+widget = "insert_html"
+html = "<link rel=icon href=/icon.svg>"
+selector = "head"
+action = "prepend_child"
+
+[widgets.block-robots]
+widget = "insert_html"
+html = '<meta name=robots content="noindex, nofollow, noimageindex, nosnippet, noarchive, notranslate, nositelinkssearchbox, max-image-preview:0, max-video-preview:0, unavailable_after:2023-06-29">'
+selector = "head"
+action = "prepend_child"
+
+[widgets.fix-head]
+widget = "move_element"
+after = "delete-importmap"
+selector = [
+  "body head > *",
+  "body meta",
+  "body style",
+  "body link",
+  "body script",
+]
+except = [
+  "template head",
+  "template meta",
+  "template style",
+  "template link",
+  "template script",
+  "render-scope > link",
+  "render-scope > script",
+]
+placement = "head"
+
+[widgets.importmap-first]
+widget = "move_element"
+after = "fix-head"
+move_one = true
+selector = "script[type=importmap]"
+action = "insert_before"
+placement = "script"
+
+[widgets.livereload]
+profile = "development"
+widget = "insert_html"
+html = """
+<script>
+  let sse = new EventSource("/livereload")
+  sse.addEventListener("reload", function() {
+    this.close()
+    location.reload()
+  })
+  addEventListener("beforeunload", () => {
+    sse.close()
+    sse = undefined
+  })
+</script>
+"""
+selector = "head"
