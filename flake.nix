@@ -48,7 +48,8 @@
           devShells.default = mkShell { # direnv
             inherit inputs pkgs;
             modules = with devenv.shells;
-              [ nix javascript ] ++ [ js-bundler site-generator web-server ];
+              [ nix javascript ] ++ [ js-bundler site-generator web-server ]
+              ++ [ check ];
           };
 
           # Just temporary for .github/workflows/check.yaml

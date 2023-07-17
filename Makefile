@@ -27,8 +27,8 @@ ifeq ($(CI) , true)
 	minify -r $(BUILD_DIR)/site/ -o $(BUILD_DIR)/
 else
 	soupault --build-dir $@ --profile development
-	minify -qr $(BUILD_DIR)/site/ -o $(BUILD_DIR)/
-endif
+	minify -r $(BUILD_DIR)/site/ -o $(BUILD_DIR)/ > /dev/null
+endif # BUG(nixpkgs): minify v2.11.1 (old) doesn't have --quiet flag
 
 
 $(BUILD_DIR)/packages: elements/* libs/javascript/* core/* core/*/*
