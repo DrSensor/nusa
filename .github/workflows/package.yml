@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: nixbuild/nix-quick-install-action@v25
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - uses: actions/cache@v3
         with:
           path: /home/runner/.cache/deno
