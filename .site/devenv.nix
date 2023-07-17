@@ -12,7 +12,7 @@ with lib; {
 
   pre-commit = mkIf (!env ? CI) {
     hooks.editorconfig-checker.enable = true;
-    hooks.lua-ls.enable = true;
+    hooks.luacheck.enable = true;
     hooks.taplo.enable = true;
   };
 }
