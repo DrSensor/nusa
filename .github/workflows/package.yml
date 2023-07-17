@@ -17,7 +17,7 @@ jobs:
           path: /home/runner/.cache/deno
           key: ${{ hashFiles('deno.lock') }}
 
-      - run: nix develop .#js-bundler --impure --command bash --command make result/packages
+      - run: nix develop .#CI-package --impure --command make result/packages
 
       - name: Publish
         run: | # TODO: generate package.json{workspaces} to simplify npm publish

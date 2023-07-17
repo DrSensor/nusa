@@ -20,7 +20,12 @@
         ++ [ "x86_64-darwin" "aarch64-darwin" ];
 
       perSystem = { pkgs, lib, ... }:
-        with lib; rec {
+        let
+          CI = {
+            env.CI = "true";
+            env.SHELL = "${pkgs.bash}/bin/bash"; # help Make locate real bash
+          };
+        in with lib; rec {
           devenv.shells.nix = {
             languages.nix.enable = true;
             pre-commit.hooks = {
@@ -36,7 +41,7 @@
           devenv.shells.site-generator = ./.site/devenv.nix;
           devenv.shells.web-server = ./devenv.nix;
 
-          devShells.default = mkShell {
+          devShells.default = mkShell { # direnv
             inherit inputs pkgs;
             modules = with devenv.shells;
               [ nix javascript ] ++ [ js-bundler site-generator web-server ];
@@ -48,13 +53,17 @@
             packages = with pkgs; [ rome taplo luajitPackages.luacheck eclint ];
           };
 
-          devShells.CI = mkShell {
+          devShells.CI-check = mkShell {
             inherit inputs pkgs;
-            modules = with devenv.shells; [
-              { env.CI = "true"; }
-              js-bundler
-              site-generator
-            ];
+            modules = with devenv.shells; [ CI check ];
+          };
+          devShells.CI-package = mkShell {
+            inherit inputs pkgs;
+            modules = with devenv.shells; [ CI js-bundler ];
+          };
+          devShells.CI-site = mkShell {
+            inherit inputs pkgs;
+            modules = with devenv.shells; [ CI js-bundler site-generator ];
           };
         };
     };

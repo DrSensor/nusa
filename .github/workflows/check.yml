@@ -24,4 +24,4 @@ jobs:
         with:
           nix_conf: experimental-features = nix-command flakes
 
-      - run: nix develop .#check --impure --command bash --command make check
+      - run: nix develop .#CI-check --impure --command make check
