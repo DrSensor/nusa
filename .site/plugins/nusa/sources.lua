@@ -52,10 +52,10 @@ function sources_add(path)
         index = index + 1
       end
     end
-    content = HTML.to_string(page_origin)                          -- contain trailing newlines with indentation
+    content = HTML.to_string(page_origin) -- contain trailing newlines with indentation
     content = Regex.replace_all(content, "([ \t]*\n){3,}", "\n\n") -- cleanup ☝
-    content = Regex.replace_all(content, '=""', "")                -- attribute without value
-    content = Regex.replace_all(content, "﹕", ":")               -- BUG(lambdasoup): they still assume colon is XML namespace
+    content = Regex.replace_all(content, '=""', "") -- attribute without value
+    content = Regex.replace_all(content, "﹕", ":") -- BUG(lambdasoup): they still assume colon is XML namespace
   else
     path = Sys.join_path(page_dir, path)
     content = Sys.read_file(path)

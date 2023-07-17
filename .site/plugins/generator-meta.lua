@@ -27,7 +27,7 @@ else
   else
     head = HTML.select_one(page, "head")
     if head then
-      HTML.append_child(head, meta)
+      HTML.append_child(head, generator_meta)
     else
       Log.warning("Page has no <head> element, nowhere to insert a generator meta tag")
     end
