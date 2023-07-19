@@ -31,11 +31,11 @@ iterate.for(Position, (i, { x, y }) => {
     flow.get(controller)
   );
 
-  const [, members] = /** @type _Cache */ (registry.get(Class.prototype)),
-    [accessors, arrays] = access(members, callback);
+  const [, members] = /** @type _Cache */ (registry.get(Class.prototype));
+  const [accessors, arrays] = access(members, callback);
 
-  const length = Math.min(...arrays.map((the) => the.length)),
-    skips = [...iterate(length, callback)];
+  const length = Math.min(...arrays.map((the) => the.length));
+  const skips = [...iterate(length, callback)];
 
   dedupeUpdate = task.render(() => {
     for (const accessor of accessors) {
@@ -83,14 +83,14 @@ iterate.for(Position, (i, { x, y }) => {
     return index;
   }
 
-  /** @param index{number=} */
+  /** @param index_{number=} */
   skip(index) {
-    index ??= this.#index;
-    if (index !== undefined) {
-      this.#skipAt.push(index);
-      this.#saveAt(index);
+    const index_ = index ?? this.#index;
+    if (index_ !== undefined) {
+      this.#skipAt.push(index_);
+      this.#saveAt(index_);
     }
-    return index;
+    return index_;
   }
 
   constructor() {
@@ -100,7 +100,8 @@ iterate.for(Position, (i, { x, y }) => {
     */ const access = (members, callback) => {
       currentAccess = this.#access;
       memberAccess = members;
-      callback((this.#index = 0), /** @type ToA */ (proxy)); // TODO: check if return Promise, yes? then use concurrent iteration
+      this.#index = 0;
+      callback(this.#index, /** @type ToA */ (proxy)); // TODO: check if return Promise, yes? then use concurrent iteration
       currentAccess = memberAccess = undefined;
       return /** @type {const} */ ([
         Object.keys(this.#access),
@@ -113,9 +114,9 @@ iterate.for(Position, (i, { x, y }) => {
     @param callback{IterFunction<T>}
     */ const iterate = (length, callback) => {
       for (
-        let /** @type number */ index;
-        length > (index = ++/** @type currentIndex */ (this.#index)) &&
-        this.#stopAt > index;
+        let /** @type currentIndex */ index = ++this.#index;
+        length > index && this.#stopAt > index;
+        index = ++this.#index
       )
         callback(index, this.#access);
       this.#index = undefined; //━┳╸reset
@@ -154,22 +155,21 @@ iterate.for(Position, (i, { x, y }) => {
   }
 }
 
-let /** @type VoidFunction | undefined */ dedupeUpdate,
-  /** @type _SoA | undefined */ currentAccess,
-  /** @type Record<string, _AccessorBinder> | undefined */ memberAccess;
+let /** @type VoidFunction | undefined */ dedupeUpdate;
+let /** @type _SoA | undefined */ currentAccess;
+let /** @type Record<string, _AccessorBinder> | undefined */ memberAccess;
 
 /** @typedef {import("./types.d.ts").iterate.WeakFlow} _WeakFlow */
 
-const /** @type _WeakFlow */ flow = new WeakMap(),
-  /** @type _SoA */ proxy = new Proxy(
+const /** @type _WeakFlow */ flow = new WeakMap();
+const /** @type _SoA */ proxy = new Proxy(
     {},
     {
-      get: /** @param accessor{string} */ (_, accessor) =>
-        /** @type _SoA */ (
-          (currentAccess[accessor] =
-            /** @type Record<string, _AccessorBinder> */ (memberAccess)[
-              accessor
-            ].databank_)
-        ),
+      get: /** @param accessor{string} */ (_, accessor) => /** @type _SoA */ {
+        currentAccess[accessor] = /** @type Record<string, _AccessorBinder> */ (
+          memberAccess
+        )[accessor].databank_;
+        return currentAccess[accessor];
+      },
     },
   );

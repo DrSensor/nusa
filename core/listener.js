@@ -15,16 +15,17 @@ import * as task from "./task.js";
 /** Queue methods that need to be attached as {@link EventListener} into {@link events}
 @param attr{Attr}
 */ export function queue(attr) {
-  const methodNamesPrefix = attr.value.split(" ").reduce(
-    (final, value) => (
-      value.startsWith("self:")
-        ? (final.self_ ??= []).push(value.slice(5 /*ColonFor.CaptureSelf*/))
-        : // TODO: implement other prefix
-          (final.none_ ??= []).push(value),
-      final
-    ),
-    /** @type Partial<_HandlePrefix> */ ({}),
-  );
+  const methodNamesPrefix = attr.value.split(" ").reduce((final, value) => {
+    if (value.startsWith("self:")) {
+      final.self_ ??= [];
+      final.self_.push(value.slice(5 /*ColonFor.CaptureSelf*/));
+    } else {
+      // TODO: implement other prefix
+      final.none_ ??= [];
+      final.none_.push(value);
+    }
+    return final;
+  }, /** @type Partial<_HandlePrefix> */ ({}));
 
   const eventName = attr.name.slice(/** @type _Colon["Event"] */ (3));
   const cachedNamesPrefix = events[eventName]?.get(
@@ -32,12 +33,14 @@ import * as task from "./task.js";
   );
 
   if (cachedNamesPrefix) {
-    methodNamesPrefix.self_?.forEach(
-      (cachedNamesPrefix.self_ ??= new Set()).add,
-    );
-    methodNamesPrefix.none_?.forEach(
-      (cachedNamesPrefix.none_ ??= new Set()).add,
-    );
+    if (methodNamesPrefix.self_) {
+      cachedNamesPrefix.self_ ??= new Set();
+      methodNamesPrefix.self_.forEach(cachedNamesPrefix.self_.add);
+    }
+    if (methodNamesPrefix.none_) {
+      cachedNamesPrefix.none_ ??= new Set();
+      cachedNamesPrefix.none_.forEach(cachedNamesPrefix.none_.add);
+    }
     // TODO: implement other prefix
   } else {
     const /** @type _IntoSet<_HandlePrefix> */ cachedNamesWithPrefix = {};
@@ -47,8 +50,8 @@ import * as task from "./task.js";
     cachedNamesWithPrefix.self_ = dedupe(methodNamesPrefix.self_);
     cachedNamesWithPrefix.none_ = dedupe(methodNamesPrefix.none_);
     // TODO: implement other prefix
-
-    (events[eventName] ??= new Map()).set(
+    events[eventName] ??= new Map();
+    events[eventName].set(
       /** @type Element */ (attr.ownerElement),
       cachedNamesWithPrefix,
     );

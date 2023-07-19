@@ -6,11 +6,11 @@ export default class RenderScope extends HTMLElement {
     super();
 
     const shadow = this.attachShadow({
-        mode: /** @type ShadowRootMode */ (
-          this.getAttribute("shadow-root") ?? "closed"
-        ),
-      }),
-      slot = document.createElement("slot"); // TODO: handle slot in this.children (i.e <render-scope><slot/></render-scope>) to avoid nested slot
+      mode: /** @type ShadowRootMode */ (
+        this.getAttribute("shadow-root") ?? "closed"
+      ),
+    });
+    const slot = document.createElement("slot"); // TODO: handle slot in this.children (i.e <render-scope><slot/></render-scope>) to avoid nested slot
     shadow.adoptedStyleSheets = document.adoptedStyleSheets; // BUG(browser): doesn't work on firefox but working fine on chrome
     shadow.append(slot);
 

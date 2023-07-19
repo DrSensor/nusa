@@ -20,10 +20,12 @@
       const as = /** @type LinkAs */ (element.getAttribute("as"));
       switch (as) {
         case "script":
-          (module_.scripts_ ??= []).push(element.href);
+          module_.scripts_ ??= [];
+          module_.scripts_.push(element.href);
           break;
         case "style":
-          (module_.styles_ ??= []).push(element.href);
+          module_.styles_ ??= [];
+          module_.styles_.push(element.href);
           break;
       }
     }
@@ -44,10 +46,12 @@ import * as Flags from "./constant/flags.js";
     for (const attr of host.attributes) {
       if (attr.name !== sep && attr.name.endsWith(":")) {
         queue.flags_ |= Flags.hasBinding;
-        (queue.attrs_.props_ ??= []).push(attr);
+        queue.attrs_.props_ ??= [];
+        queue.attrs_.props_.push(attr);
       } else if (attr.name.startsWith("on:")) {
         queue.flags_ |= Flags.hasListener;
-        (queue.attrs_.events_ ??= []).push(attr);
+        queue.attrs_.events_ ??= [];
+        queue.attrs_.events_.push(attr);
       }
     }
   }

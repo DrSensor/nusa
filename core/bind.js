@@ -27,17 +27,14 @@ let count = 0;
 */ function bind(pc, attrs, scope, get) {
   const [accessor_override, accessor_infer] = get[Feature.accessor];
   const [listener_queue, listener_listen] = get[Feature.listener];
-  const id = count++,
-    /** @type Set<string> */ accessors = new Set(),
-    /** @type Set<string> */ properties = new Set();
+  const id = count++;
+  const /** @type Set<string> */ accessors = new Set();
+  const /** @type Set<string> */ properties = new Set();
 
-  let notCached;
-  const [descs, members] =
-    registry.get(pc) ??
-    (notCached = /** @type const */ ([
-      Object.getOwnPropertyDescriptors(pc),
-      {},
-    ]));
+  const notCached = !registry.has(pc);
+  const [descs, members] = notCached
+    ? /** @type const */ ([Object.getOwnPropertyDescriptors(pc), {}])
+    : registry.get(pc);
   if (notCached) registry.set(pc, [descs, members]);
 
   attrs.events_?.forEach(/** @type {(attr: Attr) => void} */ (listener_queue));

@@ -57,8 +57,8 @@ const viewport = new IntersectionObserver((entries) =>
 @param shadow{ShadowRoot}
 @param queue{_query$Queue}
 */ export function inview(shadow, queue) {
-  const host = shadow.host,
-    rect = host.getBoundingClientRect();
+  const host = shadow.host;
+  const rect = host.getBoundingClientRect();
   if (
     rect.top >= 0 &&
     rect.left >= 0 &&

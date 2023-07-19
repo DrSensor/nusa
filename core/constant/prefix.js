@@ -32,4 +32,4 @@ export const Outside = /** @type Prefix */ ("outside:");
 @example ```js
 element.addEvenListener(event, e => instance[property] = autocast(e.target.value))
 ```*/
-export const Set = /** @type Prefix */ ("set:");
+export const Setter = /** @type Prefix */ ("set:");

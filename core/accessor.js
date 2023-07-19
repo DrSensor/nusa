@@ -27,11 +27,12 @@ After override, you still need to apply it via {@link Object.defineProperties}
 @param attr{Attr}
 @param id{number}
 */ function init(members, accessor, attr, id) {
-  const data = (members[accessor] ??= { databank_: [], targets_: [] });
+  members[accessor] ??= { databank_: [], targets_: [] };
+  const data = members[accessor];
   data.targets_[id] ??= [];
 
-  const targetElement = /** @type Element */ (attr.ownerElement),
-    targetName = attr.name.slice(0, /** @type _Colon["Attr"] */ (-1));
+  const targetElement = /** @type Element */ (attr.ownerElement);
+  const targetName = attr.name.slice(0, /** @type _Colon["Attr"] */ (-1));
   data.targets_[id].push(
     targetElement.getAttributeNode(targetName) ?? [targetElement, targetName],
   );
@@ -53,10 +54,11 @@ After override, you still need to apply it via {@link Object.defineProperties}
   properties.forEach((property) => {
     if (Object.hasOwn(instance, property)) {
       initData(property);
-      const desc = (descs[property] ??= {
+      descs[property] ??= {
         value: instance[property],
         writable: true,
-      });
+      };
+      const desc = descs[property];
       if (!desc[mark]) {
         desc[mark] = true;
         patch(desc, members[property], id);
@@ -75,10 +77,10 @@ const mark = Symbol();
 */ function patch(desc, cache, id) {
   const { databank_, targets_ } = cache;
 
-  const { get, set, value, writable: notAccessor } = desc,
-    is = /** @param access{Function=} */ (access) => access ?? notAccessor;
-  let propValue = value,
-    /** @type boolean */ assignedInConstructor;
+  const { get, set, value, writable: notAccessor } = desc;
+  const is = /** @param access{Function=} */ (access) => access ?? notAccessor;
+  let propValue = value;
+  let /** @type boolean */ assignedInConstructor;
 
   if (is(get)) {
     desc.get = /** @this _Instance */ function () {
@@ -123,14 +125,16 @@ const mark = Symbol();
         } else {
           // if accessed INSIDE class constructor()
           assignedInConstructor = true;
-          set ? set.call(this, value) : (propValue = value);
+          if (set) set.call(this, value);
+          else propValue = value;
         }
       };
     }
 
     if (notAccessor) {
-      delete desc.value;
-      delete desc.writable;
+      // WARNING(rome): linter may suggest this but if not work then use `delete desc.*`
+      desc.value = undefined;
+      desc.writable = undefined;
     }
   }
 }
@@ -140,23 +144,21 @@ const mark = Symbol();
 @param targets{_AccessorBinder["targets_"]}
 @param id{number}
 */ export function update(databank, targets, id) {
-  const value = /** @type string */ (databank[id]),
-    targetAt = targets[id];
+  const value = /** @type string */ (databank[id]);
+  const targetAt = targets[id];
   targetAt.forEach((target, i) => {
     if (target instanceof Node) {
       // target maybe Attr or Text
       const { ownerElement, name } = /** @type Attr */ (target); // @ts-ignore bind Element.prototype.property by default
-      if (ownerElement && name in ownerElement)
-        ownerElement[name] =
-          value; // WARNING(browser): binding just Attr of <input value> is buggy since it treat the attribute as initial value, not current value
-      else target.nodeValue = value; // then fallback to bind the attribute (or Text if target not instanceof Attr)
+      if (ownerElement && name in ownerElement) {
+        ownerElement[name] = value; // WARNING(browser): binding just Attr of <input value> is buggy since it treat the attribute as initial value, not current value
+      } else target.nodeValue = value; // then fallback to bind the attribute (or Text if target not instanceof Attr)
     } else {
       const [element, attrName] = target;
       element.setAttribute(attrName, value);
 
-      const attr = (targetAt[i] = /** @type Attr */ (
-        element.getAttributeNode(attrName)
-      )); // make members[,targets] uniform when all attributes all set
+      targetAt[i] = /** @type Attr */ (element.getAttributeNode(attrName));
+      const attr = targetAt[i]; // make members[,targets] uniform when all attributes all set
 
       if (attrName === "text") {
         // but it break uniform structure when binding Text content

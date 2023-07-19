@@ -45,14 +45,14 @@ export namespace query {
 /** @path ./constant/ */
 export namespace constant {
   /** @path ./constant/flags.js */
-  export const enum Flags {
+  export enum Flags {
     none = 0,
     hasBinding = 1 << 0,
     hasListener = 1 << 1,
   }
 
   /** @path ./constant/colon.js */
-  export const enum Colon {
+  export enum Colon {
     None = 0,
     Attr = -1,
     WebC = 1,
@@ -65,7 +65,7 @@ export namespace constant {
   }
 
   /** @path ./constant/prefix.js */
-  export const enum Prefix {
+  export enum Prefix {
     None = "",
     Self = "self:",
 
