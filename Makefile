@@ -27,7 +27,7 @@ ifeq ($(CI) , true)
 	minify -r $(BUILD_DIR)/site/ -o $(BUILD_DIR)/
 else
 	soupault --build-dir $@ --profile development
-	minify -r $(BUILD_DIR)/site/ -o $(BUILD_DIR)/ > /dev/null
+	minify -r $(BUILD_DIR)/site/!(npm) -o $(BUILD_DIR)/site
 endif # BUG(nixpkgs): minify v2.11.1 (old) doesn't have --quiet flag
 
 
@@ -55,11 +55,12 @@ else . end
 endef
 
 
+.SILENT: pretty
 pretty:
 	eclint -fix
 	caddy fmt --overwrite
 	taplo format **.toml
-	rome format . --write
+	rome format core/ elements/ libs/javascript/ examples/javascript/ rollup.config.mjs tsconfig.json rome.json package.json .luarc.json --write
 
 
 check:
