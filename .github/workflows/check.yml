@@ -23,4 +23,4 @@ jobs:
       - uses: nixbuild/nix-quick-install-action@v25
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - run: nix develop .#CI-check --impure --command make --keep-going check
+      - run: nix develop .#CI-check --impure --command make check

@@ -62,14 +62,29 @@ pretty:
 	rome format . --write
 
 
-check: check-js check-lua check-toml
-	eclint
+check:
+	$(MAKE) -k check-js check-lua check-toml check-editorconfig
 check-js:
+ifeq ($(CI) , true)
 	rome check core/ elements/ libs/javascript/ examples/javascript/ rollup.config.mjs
+else
+	rome check core/ elements/ libs/javascript/ examples/javascript/ rollup.config.mjs --colors force
+endif
 check-toml:
+ifeq ($(CI) , true)
 	taplo lint **.toml
+else
+	taplo lint **.toml --colors always
+endif
 check-lua:
 	luacheck .site/
+check-editorconfig:
+ifeq ($(CI) , true)
+	eclint
+else
+	eclint -color always
+endif
+
 
 fix: fix-js
 fix-js:
