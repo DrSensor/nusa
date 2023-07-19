@@ -14,11 +14,6 @@
     "noResolve": true,
 
     "checkJs": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "dom.asynciterable",
-      "esnext.Array"
-    ]
+    "lib": ["dom", "dom.iterable", "dom.asynciterable", "esnext.Array"]
   }
 }
