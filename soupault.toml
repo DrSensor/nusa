@@ -62,7 +62,7 @@ include_subsections = true
 action = "insert_after"
 selector = ["#demo-title", "#demo"]
 delete = ["script[type=importmap]", "script[type=hoistmap]"]
-hash_command = "sha384sum -z | cut -c -8"
+hash_command = "sha384sum | cut -c -8"
 render_template = """
 <menu role="tablist">
   {% for source in sources %}
