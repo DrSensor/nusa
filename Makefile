@@ -58,7 +58,7 @@ endef
 pretty:
 	eclint -fix
 	caddy fmt --overwrite
-	taplo format
+	taplo format **.toml
 	rome format . --write
 
 
