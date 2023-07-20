@@ -25,8 +25,8 @@ let count = 0;
 @param scope{ShadowRoot}
 @param get{import("./constant/feature.js").modules}
 */ function bind(pc, attrs, scope, get) {
-  const [accessor_override, accessor_infer] = get[Feature.accessor];
-  const [listener_queue, listener_listen] = get[Feature.listener];
+  const [accessor_override, accessor_infer] = get[Feature.accessor] || [];
+  const [listener_queue, listener_listen] = get[Feature.listener] || [];
   const id = count++;
   const /** @type Set<string> */ accessors = new Set();
   const /** @type Set<string> */ properties = new Set();
