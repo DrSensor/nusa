@@ -1,1 +1,1 @@
-../../core/devenv.nix
+../../core/js/devenv.nix

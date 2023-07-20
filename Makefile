@@ -31,15 +31,15 @@ else
 endif # BUG(nixpkgs): minify v2.11.1 (old) doesn't have --quiet flag
 
 
-$(BUILD_DIR)/packages: elements/* libs/javascript/* core/* core/*/*
+$(BUILD_DIR)/packages: nusa/* nusa/*/* nusa/*/*/* libs/javascript/* core/js/* core/js/*/*
 ifeq ($(CI) , true)
 	rollup -c -d $@
-	esbuild --mangle-props=[^_]_$$ --mangle-cache=core/props.json --minify --format=esm $@/**/*.js --outdir=$@ --allow-overwrite
+	esbuild --mangle-props=[^_]_$$ --mangle-cache=core/js/props.json --minify --format=esm $@/**/*.js --outdir=$@ --allow-overwrite
 else
 	rollup -c --silent -d $@
-	esbuild --mangle-props=[^_]_$$ --mangle-cache=core/props.json --minify --log-level=warning --format=esm $@/**/*.js --outdir=$@ --allow-overwrite
+	esbuild --mangle-props=[^_]_$$ --mangle-cache=core/js/props.json --minify --log-level=warning --format=esm $@/**/*.js --outdir=$@ --allow-overwrite
 endif
-	$(MAKE) -Bj {core,libs/javascript,elements}/package.json
+	$(MAKE) -Bj {core/js,libs/javascript,nusa}/package.json
 # TODO: generate $@/package.json{workspaces} to simplify npm publish
 
 %/package.json:
@@ -60,16 +60,16 @@ pretty:
 	eclint -fix
 	caddy fmt --overwrite
 	taplo format **.toml
-	rome format core/ elements/ libs/javascript/ examples/javascript/ rollup.config.mjs tsconfig.json rome.json package.json .luarc.json --write
+	rome format core/js/ nusa/ libs/javascript/ examples/javascript/ rollup.config.mjs tsconfig.json rome.json package.json .luarc.json --write
 
 
 check:
 	$(MAKE) -k check-js check-lua check-toml check-editorconfig
 check-js:
 ifeq ($(CI) , true)
-	rome check core/ elements/ libs/javascript/ examples/javascript/ rollup.config.mjs
+	rome check core/js/ nusa/ libs/javascript/ examples/javascript/ rollup.config.mjs
 else
-	rome check core/ elements/ libs/javascript/ examples/javascript/ rollup.config.mjs --colors force
+	rome check core/js/ nusa/ libs/javascript/ examples/javascript/ rollup.config.mjs --colors force
 endif
 check-toml:
 ifeq ($(CI) , true)
@@ -89,7 +89,7 @@ endif
 
 fix: fix-js
 fix-js:
-	rome check --apply core elements libs/javascript examples/javascript rollup.config.mjs
+	rome check --apply core/js/ nusa/ libs/javascript/ examples/javascript/ rollup.config.mjs
 
 
 run: pretty build
@@ -108,7 +108,7 @@ watch-site:
 	watchexec -p -w site/ -w .site/ -w soupault.toml "make $(BUILD_DIR)/site reload"
 
 watch-packages:
-	watchexec -p -w core/ -w libs/javascript/ -w elements/ -w rollup.config.js "make $(BUILD_DIR)/packages reload"
+	watchexec -p -w core/js -w libs/javascript/ -w nusa/ -w rollup.config.js "make $(BUILD_DIR)/packages reload"
 
 
 %.sock:

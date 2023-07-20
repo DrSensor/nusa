@@ -1,11 +1,11 @@
-import elements from "./elements/package.json" assert { type: "json" };
+import main from "./nusa/package.json" assert { type: "json" };
 import libs from "./libs/javascript/package.json" assert { type: "json" };
-import core from "./core/package.json" assert { type: "json" };
+import core from "./core/js/package.json" assert { type: "json" };
 
 /** @type {import("npm:rollup").RollupOptions} */
 export default {
   input: {
-    [`${elements.name}/render-scope`]: "elements/render-scope.js",
+    [`${main.name}/render-scope`]: "nusa/elements/render-scope.js",
 
     [`${libs.name}/__exports__`]: "libs/javascript/__exports__.js",
     [`${libs.name}/current`]: "libs/javascript/current.js",

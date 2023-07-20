@@ -1,0 +1,11 @@
+{
+  "name": "nusa",
+  "exports": {
+    "./*.js": "./modules/*.js",
+    "./*/*.js": "./modules/*/*.js",
+    "./*": "./elements/*.js"
+  },
+  "dependencies": {
+    "@getnusa/runtime": "file:../core/js"
+  }
+}

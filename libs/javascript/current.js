@@ -1,1 +1,1 @@
-export { event, value } from "../../core/registry.js";
+export { event, value } from "../../core/js/registry.js";

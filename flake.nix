@@ -41,7 +41,7 @@
           };
           devenv.shells.javascript = ./examples/javascript/devenv.nix;
 
-          devenv.shells.js-bundler = ./core/devenv.nix;
+          devenv.shells.js-bundler = ./core/js/devenv.nix;
           devenv.shells.site-generator = ./.site/devenv.nix;
           devenv.shells.web-server = ./devenv.nix;
 

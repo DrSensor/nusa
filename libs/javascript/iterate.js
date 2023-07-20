@@ -1,8 +1,8 @@
 /** @template {_ESclass} T
- ** @typedef {import("../../core/iterate.js").IterFunction<T>} IterFunction */
-/** @typedef {import("../../core/types.d.ts").ESclass} _ESclass */
+ ** @typedef {import("../../core/js/iterate.js").IterFunction<T>} IterFunction */
+/** @typedef {import("../../core/js/types.d.ts").ESclass} _ESclass */
 
-import iterate, { IterateController } from "../../core/iterate.js";
+import iterate, { IterateController } from "../../core/js/iterate.js";
 
 /** iterate over class instances
 @template {_ESclass} T

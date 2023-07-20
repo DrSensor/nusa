@@ -5,6 +5,6 @@
     "./*": "./*.js"
   },
   "dependencies": {
-    "@getnusa/runtime": "file:../../core"
+    "@getnusa/runtime": "file:../../core/js"
   }
 }
