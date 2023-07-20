@@ -132,9 +132,9 @@ const mark = Symbol();
     }
 
     if (notAccessor) {
-      // WARNING(rome): linter may suggest this but if not work then use `delete desc.*`
-      desc.value = undefined;
-      desc.writable = undefined;
+      // rome-ignore lint/performance/noDelete: property descriptors must not specify a value or be writable when a getter or setter has been specified //
+      delete desc.value; // rome-ignore lint/performance/noDelete:--------------------------------------------------------------------------------------//
+      delete desc.writable; //--------------------------------------------------------------------------------------------------------------------------//
     }
   }
 }
