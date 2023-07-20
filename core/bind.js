@@ -2,6 +2,8 @@
 /** @typedef {import("./types.d.ts").ESclass} _ESclass */
 /** @typedef {import("./types.d.ts").Prototype} _Prototype */
 /** @typedef {import("./query.js").Attributes} _query$Attributes */
+/** @template {_Prototype} [P=_Prototype]
+ ** @typedef {import("./types.d.ts").registry.Cache<P>} _Cache */
 /** @typedef {import("./constant/feature.js").modules} _Feature$modules */
 
 import * as Feature from "./constant/feature.js";
@@ -32,9 +34,9 @@ let count = 0;
   const /** @type Set<string> */ properties = new Set();
 
   const notCached = !registry.has(pc);
-  const [descs, members] = notCached
-    ? /** @type const */ ([Object.getOwnPropertyDescriptors(pc), {}])
-    : registry.get(pc);
+  const /** @type _Cache */ [descs, members] = notCached
+      ? [Object.getOwnPropertyDescriptors(pc), {}]
+      : registry.get(pc);
   if (notCached) registry.set(pc, [descs, members]);
 
   attrs.events_?.forEach(/** @type {(attr: Attr) => void} */ (listener_queue));
