@@ -39,7 +39,7 @@ let count = 0;
       : registry.get(pc);
   if (notCached) registry.set(pc, [descs, members]);
 
-  attrs.events_?.forEach(/** @type {(attr: Attr) => void} */ (listener_queue));
+  attrs.events_?.forEach(listener_queue);
   attrs.props_?.forEach((attr) =>
     attr.value.split(" ").forEach((propName) => {
       accessor_override(propName, descs, members, attr, id);

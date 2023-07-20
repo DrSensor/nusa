@@ -1,3 +1,5 @@
+// TODO: remove this file and chnage to new syntax (i.e token-prefix without namespace)
+
 // deno-lint-ignore-file no-irregular-whitespace
 /** @typedef {import("../types.d.ts").constant.Colon} Colon */
 /** @typedef {import("./prefix.js")} Prefix */
@@ -18,7 +20,7 @@ export const Attr = /** @type Colon */ (-1);
 ```html
 <tag :: @attribute:=property>
 ```
-⚠ Most WebC `@prop` are abbreviated so make sure to expand them into valid `Element.<prop>`
+WARNING: Most WebC `@prop` are abbreviated so make sure to expand them into valid `Element.<prop>`
 ```js
 if (attr.name.startsWith("@") && attr.name.endsWith(":"))
   tag[expand[attr.name.slice(Colon.WebC, Colon.Attr)]] = instance[attr.value]
