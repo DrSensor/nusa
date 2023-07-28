@@ -1,3 +1,6 @@
+# Generated files
+core/regex/*.js
+
 # Dependencies
 vendor/
 node_modules/

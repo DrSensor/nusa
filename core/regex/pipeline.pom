@@ -1,0 +1,27 @@
+enable lazy;
+disable unicode;
+
+#test/ok "my2" "foo123bar"
+#test/err "2my"
+let ident = ( [ascii_alpha] [digit]? )+;
+
+#test/ok "my.prop" "prop"
+let value = ident ('.' ident)?;
+
+#see ./hotkey.pom
+let hotkey = '[' .* greedy ']';
+
+let flow = "~>" | "<~" | "<~>";
+
+(
+  #test/ok "delay500ms:prop" "debounce+[Ctrl-A]+set:prop"
+  (( :mod(ident) ( '+' :kbd(hotkey)? )? )+ ':')?
+
+  ( #recurse ./pipeline.pom
+    :group( '[' .* greedy ']' )?
+  |
+    :prop( value )
+  )
+
+  :pipe( [space]* flow? [space]* )
+)+

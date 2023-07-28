@@ -1,0 +1,6 @@
+local regex := pomsky -f javascript -p
+
+return b{
+  $ %.js: %.pom
+    echo export default /`$regex $input`/ > $output
+}

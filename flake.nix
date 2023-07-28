@@ -11,7 +11,7 @@
     };
   };
 
-  outputs = inputs@{ flake-parts, devenv, ... }:
+  outputs = inputs@{ flake-parts, devenv, nixpkgs, ... }:
     with devenv.lib;
     with flake-parts.lib;
     mkFlake { inherit inputs; } {
@@ -19,12 +19,12 @@
       systems = [ "x86_64-linux" "aarch64-linux" "i686-linux" ]
         ++ [ "x86_64-darwin" "aarch64-darwin" ];
 
-      perSystem = { pkgs, lib, ... }:
+      perSystem = { pkgs, lib, system, ... }:
         let
           CI = {
             env.CI = "true";
 
-            # help other CLI's to discover true bash
+            # help other CLI's to discover pinned bash
             env.SHELL = "${pkgs.bash}/bin/bash";
             packages = [ pkgs.bash ];
           };
@@ -40,6 +40,7 @@
             };
           };
           devenv.shells.javascript = ./examples/javascript/devenv.nix;
+          devenv.shells.regex = ./core/regex/devenv.nix;
 
           devenv.shells.js-bundler = ./core/js/devenv.nix;
           devenv.shells.site-generator = ./.site/devenv.nix;
@@ -48,8 +49,8 @@
           devShells.default = mkShell { # direnv
             inherit inputs pkgs;
             modules = with devenv.shells;
-              [ nix javascript ] ++ [ js-bundler site-generator web-server ]
-              ++ [ check ];
+              [ nix javascript regex ]
+              ++ [ js-bundler site-generator web-server ] ++ [ check ];
           };
 
           # Just temporary for .github/workflows/check.yaml
@@ -69,6 +70,13 @@
           devShells.CI-site = mkShell {
             inherit inputs pkgs;
             modules = with devenv.shells; [ CI js-bundler site-generator ];
+          };
+
+          # kinda unfortunate that flake-parts doesn't provide a clean way to consume an overlay 🙁
+          _module.args.pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ (import ./overlay.nix) ];
+            config = { };
           };
         };
     };
