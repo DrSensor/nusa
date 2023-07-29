@@ -1,0 +1,8 @@
+* eol=lf
+
+*.knit    linguist-language=lua
+knitfile  linguist-language=lua
+Knitfile  linguist-language=lua
+
+.site/**  linguist-vendored
+site/**   linguist-vendored
