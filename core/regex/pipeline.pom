@@ -9,7 +9,7 @@ let ident = ( [ascii_alpha] [digit]? )+;
 let value = ident ('.' ident)?;
 
 #see ./hotkey.pom
-let hotkey = '[' .* greedy ']';
+let hotkey = '[' .* ']';
 
 let flow = "~>" | "<~" | "<~>";
 
