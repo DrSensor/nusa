@@ -1,0 +1,32 @@
+enable lazy;
+disable unicode;
+
+#test/ok "my2" "foo123bar"
+#test/err "2my"
+let ident = ( [ascii_alpha] [digit]? )+;
+let flow = "~>" | "<~" | "<~>";
+
+( [space]*
+
+  #test/ok "delay500ms:prop" "debounce+[Ctrl-A]+set:prop"
+  (
+  ( :mod(ident) ('+' #see hotkey.pom
+                ('[' :hotkey(.*) ']')?
+                )?
+  )+ ':'
+  )?
+
+  (
+  #recurse ./flow.pom
+  ('[' :flow(.*) ']')
+  |
+  #see ./math.pom
+  ('(' :math(.*) ')')
+  |
+  #test/ok "my.prop" "prop"
+  ( :var(ident) ('.' :prop(ident))? )
+  )
+
+  :dir(flow)?
+
+[space]* )+
