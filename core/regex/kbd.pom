@@ -1,0 +1,27 @@
+enable lazy;
+disable unicode;
+
+#example ctrl , Alt , Shift , super , ...
+let mod = [ascii_alpha]+;
+
+#example A , 1 , z , ...
+let key = ![',' '"' "'" '-'] | [ascii_graph];
+
+#example ArrowDown , enter , Escape , ...
+let std = ([ascii_alpha][digit]?){2,};
+
+#example ',' , " " , '-', "_" , '"' , ...
+let lit = ('"' Codepoint '"') | ("'" Codepoint "'");
+
+(
+  :cmb(
+    ( :mod(mod) '-' )?
+    ( %:key(lit|std|key)% '-'? )+
+  ) #--------------------------------key combination
+
+  (
+  ( [space]* :or(',') [space]* ) #---key alias
+  |
+    [space]+ #-----------------------key sequence
+  ) # ^^ implementation MUST insert one space/newline before using this regex
+)+

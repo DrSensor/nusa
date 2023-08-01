@@ -10,8 +10,8 @@ let flow = '<'? '~' '>'?;
   #test/ok "delay500ms:" "debounce+[Ctrl-A]+set:"
   (
   ( :mod(ident) ('+'
-                #see hotkey.pom
-                ('[' :hotkey(.*) ']')?
+                #see kbd.pom
+                ('[' :kbd(.*) ']')?
                 )?
   )+ ':'
   )?
