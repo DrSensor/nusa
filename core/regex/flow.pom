@@ -4,7 +4,7 @@ disable unicode;
 #test/ok "my2" "foo123bar"
 #test/err "2my"
 let ident = ( [ascii_alpha] [digit]? )+;
-let flow = "~>" | "<~" | "<~>";
+let flow = '<'? '~' '>'?;
 
 ( [space]+ # implementation MUST prepend one space/newline before using this regex
 
