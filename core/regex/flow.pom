@@ -8,9 +8,10 @@ let flow = '<'? '~' '>'?;
 
 ( [space]+ # implementation MUST prepend one space/newline before using this regex
 
-  #test/ok "delay500ms:prop" "debounce+[Ctrl-A]+set:prop"
+  #test/ok "delay500ms:" "debounce+[Ctrl-A]+set:"
   (
-  ( :mod(ident) ('+' #see hotkey.pom
+  ( :mod(ident) ('+'
+                #see hotkey.pom
                 ('[' :hotkey(.*) ']')?
                 )?
   )+ ':'
