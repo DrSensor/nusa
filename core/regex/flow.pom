@@ -6,8 +6,7 @@ disable unicode;
 let ident = ( [ascii_alpha] [digit]? )+;
 let flow = '<'? '~' '>'?;
 
-( [space]+ # implementation MUST prepend one space/newline before using this regex
-
+(
   #test/ok "delay500ms:" "debounce+[Ctrl-A]+set:"
   (
   ( :mod(ident) ('+'
@@ -28,6 +27,9 @@ let flow = '<'? '~' '>'?;
   ( :var(ident) ('.' :prop(ident))? )
   )
 
-  ( [ascii_blank]* :flow(flow) [ascii_blank]* )?
-
+  (
+  ( [ascii_blank]* :flow(flow) [ascii_blank]* )
+  |
+    [space]+
+  ) # ^^ implementation MUST insert one space/newline before using this regex
 )+
