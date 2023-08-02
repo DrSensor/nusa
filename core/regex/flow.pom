@@ -6,7 +6,7 @@ disable unicode;
 let ident = ( [ascii_alpha] [digit]? )+;
 let flow = "~>" | "<~" | "<~>";
 
-( [space]*
+( [space]+ # implementation MUST prepend one space/newline before using this regex
 
   #test/ok "delay500ms:prop" "debounce+[Ctrl-A]+set:prop"
   (
@@ -18,7 +18,7 @@ let flow = "~>" | "<~" | "<~>";
 
   (
   #recurse ./flow.pom
-  ('[' :flow(.*) ']')
+  ('[' :group(.*) ']')
   |
   #see ./math.pom
   ('(' :math(.*) ')')
@@ -27,6 +27,6 @@ let flow = "~>" | "<~" | "<~>";
   ( :var(ident) ('.' :prop(ident))? )
   )
 
-  :dir(flow)?
+  ( [ascii_blank]* :flow(flow) [ascii_blank]* )?
 
-[space]* )+
+)+
