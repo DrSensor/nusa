@@ -43,6 +43,7 @@
           devenv.shells.regex = ./core/regex/devenv.nix;
 
           devenv.shells.js-bundler = ./core/js/devenv.nix;
+          devenv.shells.rust-wasm = ./core/wasm/devenv.nix;
           devenv.shells.site-generator = ./.site/devenv.nix;
           devenv.shells.web-server = ./devenv.nix;
 
@@ -50,7 +51,8 @@
             inherit inputs pkgs;
             modules = with devenv.shells;
               [ nix javascript regex ]
-              ++ [ js-bundler site-generator web-server ] ++ [ check ];
+              ++ [ js-bundler rust-wasm site-generator web-server ]
+              ++ [ check ];
           };
 
           # Just temporary for .github/workflows/check.yaml

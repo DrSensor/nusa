@@ -1,7 +1,0 @@
-[package]
-name = "lowind"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-combine = "4"
