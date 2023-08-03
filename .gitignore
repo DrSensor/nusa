@@ -1,4 +1,5 @@
 # Generated files
+rust-project.json
 core/regex/*.js
 
 # Dependencies

@@ -15,4 +15,6 @@ with lib; {
     hooks.clippy.enable = true;
     hooks.rustfmt.enable = true;
   };
+
+  enterShell = mkIf (!env ? CI) "knit rust-project.json";
 }
