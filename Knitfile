@@ -1,0 +1,14 @@
+use(require("knit"))
+
+local grammar = { pom = glob("core/regex/*.pom") }
+local regex = { js = extrepl(grammar.pom, ".pom", ".js") }
+
+return b{
+  $ build:V: build.js
+  $ test:V: test.js
+
+
+  include("core/regex/Knitfile"),
+
+  $ build.js:V: $(regex.js)
+}
