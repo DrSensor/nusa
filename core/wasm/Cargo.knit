@@ -1,0 +1,25 @@
+function genSrc(files)
+  local result = ""
+  for _, file in ipairs(files) do
+    local name = base(file):gsub("%.rs", "")
+    result = result .. f([=[
+      [[example]]
+      name = "$name"
+      path = "$file"
+      crate-type = ["lib"]
+    ]=])
+  end
+  return result
+end
+
+return function(files)
+  local toml = f[[
+    [package]
+    name = "nusa"
+    version = "0.0.1-Jan.2023"
+
+    $(genSrc(files))
+  ]]
+  local formatted = toml:gsub("(\n+)%s+", "%1"):gsub("^%s*(.-)%s*$", "%1")
+  return formatted
+end

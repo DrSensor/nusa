@@ -1,5 +1,8 @@
 # Generated files
 rust-project.json
+Cargo.lock
+core/wasm/Cargo.toml
+*.wasm
 core/regex/*.js
 
 # Dependencies

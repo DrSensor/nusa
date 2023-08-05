@@ -1,0 +1,9 @@
+use(require("knit"))
+
+local src = glob("*.rs")
+local manifest = include("Cargo.knit")
+
+return b{
+  $ Cargo.toml: $src
+    echo '$(manifest(inputs))' > $output
+}

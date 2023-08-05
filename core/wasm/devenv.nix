@@ -5,7 +5,6 @@ with lib; {
   languages.rust = {
     enable = true;
     components = [ "rustc" "clippy" "rustfmt" "rust-analyzer" ];
-    toolchain.cargo = null;
   };
 
   packages = with pkgs; [ knit wabt binaryen ];
@@ -16,5 +15,8 @@ with lib; {
     hooks.rustfmt.enable = true;
   };
 
-  enterShell = mkIf (!env ? CI) "knit rust-project.json";
+  enterShell = mkIf (!env ? CI) ''
+    knit rust-project.json
+    knit ${./Cargo.toml}
+  '';
 }

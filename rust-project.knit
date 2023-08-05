@@ -3,15 +3,15 @@ function wasmCrates(files)
   for _, file in ipairs(files) do
     local name = base(file):gsub("%.rs", "")
     result = result .. f[[{
-      \"display_name\": \"wasm::$name\",
-      \"root_module\": \"$file\",
-      \"edition\": \"2021\",
-      \"target\": \"wasm32-unknown-unknown\",
-      \"is_workspace_member\": false,
-      \"is_proc_macro\": false,
-      \"env\": {},
-      \"cfg\": [],
-      \"deps\": []
+      "display_name": "wasm::$name",
+      "root_module": "$file",
+      "edition": "2021",
+      "target": "wasm32-unknown-unknown",
+      "is_workspace_member": false,
+      "is_proc_macro": false,
+      "env": {},
+      "cfg": [],
+      "deps": []
     },]]
   end
   return result:sub(1, -2)
@@ -19,8 +19,8 @@ end
 
 return function(files)
   local json = f[[{
-    \"sysroot_src\": \"$(env.RUST_SRC_PATH)\",
-    \"crates\": [$(wasmCrates(files))]
+    "sysroot_src": "$(env.RUST_SRC_PATH)",
+    "crates": [$(wasmCrates(files))]
   }]]
   local minified = json:gsub("\n", ""):gsub(" ", "")
   return minified
