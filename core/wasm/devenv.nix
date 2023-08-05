@@ -2,9 +2,14 @@
 with config;
 with lib; {
 
-  languages.rust = {
+  languages.rust = with pkgs.rust-bin.stable.latest; {
     enable = true;
-    components = [ "rustc" "clippy" "rustfmt" "rust-analyzer" ];
+    components = [ "rustc" "cargo" ]
+      ++ optionals (!env ? CI) [ "clippy" "rustfmt" "rust-analyzer" ];
+    toolchain = {
+      inherit cargo rust-src;
+      rustc = minimal.override { targets = [ "wasm32-unknown-unknown" ]; };
+    } // optionalAttrs (!env ? CI) { inherit clippy rustfmt rust-analyzer; };
   };
 
   packages = with pkgs; [ knit wabt binaryen ];

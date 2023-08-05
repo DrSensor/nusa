@@ -9,9 +9,13 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ flake-parts, devenv, nixpkgs, ... }:
+  outputs = inputs@{ flake-parts, devenv, nixpkgs, rust-overlay, ... }:
     with devenv.lib;
     with flake-parts.lib;
     mkFlake { inherit inputs; } {
@@ -77,7 +81,7 @@
           # kinda unfortunate that flake-parts doesn't provide a clean way to consume an overlay 🙁
           _module.args.pkgs = import nixpkgs {
             inherit system;
-            overlays = [ (import ./overlay.nix) ];
+            overlays = [ (import rust-overlay) (import ./overlay.nix) ];
             config = { };
           };
         };
