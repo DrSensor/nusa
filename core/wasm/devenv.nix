@@ -2,6 +2,8 @@
 with config;
 with lib; {
 
+  env.CARGO_TARGET_DIR = "${config.env.XDG_CACHE_HOME}/cargo";
+
   languages.rust = with pkgs.rust-bin.stable.latest; {
     enable = true;
     components = [ "rustc" "cargo" ]

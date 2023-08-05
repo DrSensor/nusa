@@ -25,8 +25,9 @@
 
       perSystem = { pkgs, lib, system, ... }:
         let
-          CI = {
-            env.CI = "true";
+          CI = { env.CI = "true"; };
+          default = { config, pkgs, ... }: {
+            env.XDG_CACHE_HOME = "${config.env.DEVENV_ROOT}/.cache";
 
             # help other CLI's to discover pinned bash
             env.SHELL = "${pkgs.bash}/bin/bash";
@@ -54,7 +55,7 @@
           devShells.default = mkShell { # direnv
             inherit inputs pkgs;
             modules = with devenv.shells;
-              [ nix javascript regex ]
+              [ default nix javascript regex ]
               ++ [ js-bundler rust-wasm site-generator web-server ]
               ++ [ check ];
           };
@@ -67,15 +68,16 @@
 
           devShells.CI-check = mkShell {
             inherit inputs pkgs;
-            modules = with devenv.shells; [ CI check ];
+            modules = with devenv.shells; [ default CI ] ++ [ check ];
           };
           devShells.CI-package = mkShell {
             inherit inputs pkgs;
-            modules = with devenv.shells; [ CI js-bundler ];
+            modules = with devenv.shells; [ default CI ] ++ [ js-bundler ];
           };
           devShells.CI-site = mkShell {
             inherit inputs pkgs;
-            modules = with devenv.shells; [ CI js-bundler site-generator ];
+            modules = with devenv.shells;
+              [ default CI ] ++ [ js-bundler site-generator ];
           };
 
           # kinda unfortunate that flake-parts doesn't provide a clean way to consume an overlay 🙁
