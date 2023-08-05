@@ -1,9 +1,33 @@
 use(require("knit"))
 
+local edition = " --edition 2021"
+
+local rustc = (cli.lint and "clippy-driver" or "rustc") .. edition
+
+local target = "--target wasm32-unknown-unknown"
+  .." --crate-type lib"
+  .." -C linker-flavor=wasm-ld" -- or `em` for Emscripten `emcc`
+
+-- see `rustc --target wasm32-unknown-unknown --print target-features`
+local feat = "-C target-feature="
+  .."+bulk-memory,"
+  .."+multivalue,"
+  .."+mutable-globals,"
+  .."+reference-types,"
+  .."+simd128,"
+
+local opt = "-C opt-level=s"
+  .." -C no-redzone"
+  .." -C overflow-checks=off"
+  .." -C relocation-model=pic"
+
 local src = glob("*.rs")
 local manifest = include("Cargo.knit")
 
 return b{
+  $ %.wasm: %.rs
+    $rustc $target $opt $feat $input -o $output
+
   $ Cargo.toml: $src
     echo '$(manifest(inputs))' > $output
 }
