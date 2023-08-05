@@ -2,6 +2,8 @@
 with config;
 with lib; {
 
+  # prevent `cargo clippy` to be wrapped in `sccache` (only if exist on host system)
+  env.RUSTC_WRAPPER = "";
   env.CARGO_TARGET_DIR = "${config.env.XDG_CACHE_HOME}/cargo";
 
   languages.rust = with pkgs.rust-bin.stable.latest; {
