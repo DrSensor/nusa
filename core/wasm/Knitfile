@@ -9,6 +9,8 @@ local target = "--target wasm32-unknown-unknown"
   .." -C linker-flavor=wasm-ld" -- or `em` for Emscripten `emcc`
 
 local ld = '-C link-args="' -- https://lld.llvm.org/WebAssembly.html
+  .." --initial-memory=65536" -- 1 page = 64KiB
+  .." -z stack-size=0" -- https://github.com/rustwasm/wasm-bindgen/issues/1345#issuecomment-472872310
   ..'"' -- https://sourceware.org/binutils/docs/ld/Options.html
 
 -- see `rustc --target wasm32-unknown-unknown --print target-features`
