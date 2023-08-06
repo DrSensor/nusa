@@ -5,7 +5,7 @@ local edition = " --edition 2021"
 local rustc = (cli.lint and "clippy-driver" or "rustc") .. edition
 
 local target = "--target wasm32-unknown-unknown"
-  .." --crate-type lib"
+  .." --crate-type cdylib"
   .." -C linker-flavor=wasm-ld" -- or `em` for Emscripten `emcc`
 
 -- see `rustc --target wasm32-unknown-unknown --print target-features`
