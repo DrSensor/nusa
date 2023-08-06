@@ -17,6 +17,8 @@ local feat = "-C target-feature="
   .."+simd128,"
 
 local opt = "-C opt-level=s"
+  ..f" -C debuginfo=$(cli.debug or 0)"
+  ..f" -C strip=$(cli.debug == '2' and 'none' or cli.debug == '1' and 'debuginfo' or 'symbols')"
   .." -C no-redzone"
   .." -C overflow-checks=off"
   .." -C relocation-model=pic"
