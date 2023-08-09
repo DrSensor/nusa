@@ -40,13 +40,13 @@ enum Type {
     Uint16 = 2,
     Int16 = -2,
 
-    Uint32 = 3,
-    Int32 = -3,
-    Float32 = -128 + 3,
+    Uint32 = 4,
+    Int32 = -4,
+    Float32 = -128 + 4,
 
-    Uint64 = 4,
-    Int64 = -4,
-    Float64 = -128 + 4,
+    Uint64 = 8,
+    Int64 = -8,
+    Float64 = -128 + 8,
 }
 
 type Setter = unsafe fn(Number, JSNumber);
