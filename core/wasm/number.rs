@@ -17,7 +17,7 @@ static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
 // ideally it should be `thread_local!(static mut OFFSET = 0)`
 
 /// You MUST call `exports._setOffset(exports.__heap_base)` on the JS side at startup
-#[export_name = "_setOffset"]
+#[export_name = "_offset"]
 unsafe fn set_offset(offset: usize) {
     OFFSET = offset
 }
@@ -25,9 +25,9 @@ static mut OFFSET: usize = 8; // __data_end = --stack-size + 4 * count(all stati
                               // stack = __heap_base-1 ~ __data_end
 
 /// Call `exports._setIndex(currentScopeIndex)` every time the event listener run
-#[export_name = "_setIndex"]
+#[export_name = "_at"]
 unsafe fn set_index(index: isize) {
-    INDEX = index
+    INDEX = index;
 }
 static mut INDEX: isize = 0;
 
