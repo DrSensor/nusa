@@ -74,8 +74,8 @@ fn accessor(ty: Type) -> (Getter, Setter) {
 #[export_name = "alloc"]
 unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> (Number, Null) {
     let addr = if nullable {
-        let nc_byte = 4 * (len as f32 / u64::BITS as f32).ceil() as u8; // length of null count in byte
-        OFFSET + nc_byte as usize
+        let nc_byte = (len as f32 / u8::BITS as f32).ceil() as usize; // length of null count in byte
+        OFFSET + nc_byte
     } else {
         OFFSET
     };
@@ -127,9 +127,9 @@ unsafe fn is_null(this: Null) -> bool {
     ((*nullptr(this) >> INDEX) & 1) != 0
 }
 
-unsafe fn nullptr(this: Null) -> *mut u64 {
-    let offset = (INDEX as f32 / u64::BITS as f32).floor() as usize;
-    (this.addr as *mut u64).add(offset)
+unsafe fn nullptr(this: Null) -> *mut isize {
+    let offset = (INDEX as f32 / isize::BITS as f32).floor() as usize;
+    (this.addr as *mut isize).add(offset)
 }
 
 mod truncate {
