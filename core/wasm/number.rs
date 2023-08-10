@@ -132,6 +132,11 @@ unsafe fn nullptr(this: Null) -> *mut isize {
     (this.addr as *mut isize).add(offset)
 }
 
+unsafe fn ptr<T>(this: Number) -> *mut T {
+    // TODO(unstable): refactor `this.addr as PointerLike` so it can be casted as `*const T` too
+    (this.addr as *mut T).offset(INDEX)
+}
+
 mod truncate {
     use super::*;
 
@@ -139,16 +144,14 @@ mod truncate {
     where
         T: TryFrom<u64>,
     {
-        let ptr = (this.addr as *mut T).offset(INDEX);
-        *ptr = (val as u64).try_into().unwrap_unchecked();
+        *ptr::<T>(this) = (val as u64).try_into().unwrap_unchecked();
     }
 
     pub unsafe fn getter<T>(this: Number) -> JSNumber
     where
         T: TryInto<u64>,
     {
-        let ptr = (this.addr as *const T).offset(INDEX);
-        ptr.read().try_into().unwrap_unchecked() as JSNumber
+        ptr::<T>(this).read().try_into().unwrap_unchecked() as JSNumber
     }
 }
 
@@ -158,23 +161,20 @@ mod rounding {
     /// There is no `TryFrom<f64> for f32` because it's ambiguous.
     /// Currently `f64 as f32` use `roundTiesToEven` mode.
     pub unsafe fn setter_f32(this: Number, val: JSNumber) {
-        let ptr = (this.addr as *mut f32).offset(INDEX);
-        *ptr = val as f32;
+        *ptr(this) = val as f32;
     }
 
     pub unsafe fn setter<T>(this: Number, val: JSNumber)
     where
         T: TryFrom<f64>,
     {
-        let ptr = (this.addr as *mut T).offset(INDEX);
-        *ptr = val.try_into().unwrap_unchecked();
+        *ptr::<T>(this) = val.try_into().unwrap_unchecked();
     }
 
     pub unsafe fn getter<T>(this: Number) -> JSNumber
     where
         T: TryInto<f64>,
     {
-        let ptr = (this.addr as *const T).offset(INDEX);
-        ptr.read().try_into().unwrap_unchecked()
+        ptr::<T>(this).read().try_into().unwrap_unchecked()
     }
 }
