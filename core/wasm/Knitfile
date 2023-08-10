@@ -39,7 +39,11 @@ local opt = "-C opt-level=s"
   .." -C relocation-model=pic"
 
 local src = glob("*.rs")
-local manifest = include("Cargo.knit")
+
+-- BUG(knit): include() behave the same way as #include in C
+-- TODO: find a way to make it behave like import() or require()
+local manifest = manifest or {}
+manifest.cargo = include("Cargo.knit")
 
 return b{
   $ %.wasm: %.rs
@@ -49,5 +53,5 @@ return b{
     wasm2wat $input -o $output --enable-all
 
   $ Cargo.toml: $src
-    echo '$(manifest(inputs))' > $output
+    echo '$(manifest.cargo(inputs))' > $output
 }
