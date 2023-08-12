@@ -1,3 +1,5 @@
+-- TODO: try wasm32-unknown-emscripten
+-- https://github.com/rust-lang/rust/issues/60231#issuecomment-656045286
 use(require("knit"))
 addpath(".")
 
@@ -44,6 +46,9 @@ local src = glob("*.rs")
 return b{
   $ %.wasm: %.rs
     $rustc $target $opt $feat $ld $input -o $output
+  --TODO: https://github.com/WebAssembly/wabt/issues/1015
+  --$rustc $target $opt $feat $ld $(inputs[1]) -o $output
+  --if not cli.debug then wasm-objcopy --redefine-syms=$(inputs[2]) $output $output
 
   $ %.wat: %.wasm
     wasm2wat $input -o $output --enable-all
