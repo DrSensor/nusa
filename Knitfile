@@ -1,10 +1,10 @@
 use(require("knit"))
+addpath(".")
 
 local grammar = { pom = glob("core/regex/*.pom") }
 local regex = { js = extrepl(grammar.pom, ".pom", ".js") }
 
 local wasm = { rs = glob("core/wasm/*.rs") }
-local manifest = { rust = include("rust-project.knit") }
 
 return b{
   $ build:V: build.js
@@ -15,8 +15,9 @@ return b{
 
   $ build.js:V: $(regex.js)
 
+
   include("core/wasm/Knitfile"),
 
   $ rust-project.json: $(wasm.rs)
-    echo '$(manifest.rust(inputs))' > $output
+    echo '$(require("rust-project")(inputs))' > $output
 }
