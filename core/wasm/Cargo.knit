@@ -17,6 +17,7 @@ return function(files)
     [package]
     name = "nusa"
     version = "0.0.1-Jan.2023"
+    edition = "2021"
 
     $(genSrc(files))
   ]]
