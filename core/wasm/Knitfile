@@ -1,58 +1,81 @@
--- TODO: try wasm32-unknown-emscripten
--- https://github.com/rust-lang/rust/issues/60231#issuecomment-656045286
 use(require("knit"))
+use(table)
 addpath(".")
 
-local edition = " --edition 2021"
+local source = {
+  rs = glob("*.rs"),
+  s = glob("mem/*.s"),
+}
 
-local rustc = (cli.lint and "clippy-driver" or "rustc") .. edition
+local target = { arch = "wasm32", sys = "unknown" }
 
-local target = "--target wasm32-unknown-unknown"
-  .." --crate-type cdylib"
-  .." -C linker-flavor=wasm-ld" -- or `em` for Emscripten `emcc`
+local features = {
+  "bulk-memory",
+  "multivalue",
+  "mutable-globals",
+  "reference-types",
+  "simd128",
+  "relaxed-simd",
+  "atomics",
+  "sign-ext",
+  "nontrapping-fptoint",
+  "extended-const",
+  "exception-handling",
+  "tail-call",
+}
 
-local ld = '-C link-args="' -- https://lld.llvm.org/WebAssembly.html
-  .." --import-memory"
-  .." --import-table"
-  .." --initial-memory=65536" -- 1 page = 64KiB
-  .." -z stack-size=0" -- https://github.com/rustwasm/wasm-bindgen/issues/1345#issuecomment-472872310
-  ..'"' -- https://sourceware.org/binutils/docs/ld/Options.html
+local ld := wasm-ld
+local as := llvm-mc
+local rustc = (cli.lint and "clippy-driver" or "rustc")
+rustc := $rustc --edition 2021
 
--- see `rustc --target wasm32-unknown-unknown --print target-features`
-local feat = "-C target-feature="
-  .."+bulk-memory,"
-  .."+multivalue,"
-  .."+mutable-globals,"
-  .."+reference-types,"
-  .."+simd128,"
-  .."+relaxed-simd,"
-  .."+atomics,"
-  .."+sign-ext,"
-  .."+nontrapping-fptoint,"
-  .."+extended-const,"
-  .."+exception-handling,"
-  .."+tail-call"
+target.triple = f"$(target.arch)-unknown-$(target.sys)"
+cli.debug = tonumber(cli.debug) or 0
 
-local opt = "-C opt-level=s"
-  ..f" -C debuginfo=$(cli.debug or 0)"
-  ..f" -C strip=$(cli.debug == '2' and 'none' or cli.debug == '1' and 'debuginfo' or 'symbols')"
-  .." -C panic=abort"
-  .." -C no-redzone"
-  .." -C overflow-checks=off"
-  .." -C relocation-model=pic"
+-- https://llvm.org/docs/CommandGuide/llvm-mc.html
+as := $as -triple=$(target.triple)
+as := $as -mattr=$(concat(features, ","))
+--
 
-local src = glob("*.rs")
+-- https://doc.rust-lang.org/rustc/command-line-arguments.html
+rustc := $rustc --crate-type cdylib --target $(target.triple)
+rustc := $rustc -C target-feature=$(concat(prefix(features, "+"), ","))
+rustc := $rustc -C opt-level=z -C panic=abort -C no-redzone -C overflow-checks=off
+
+rustc := $rustc -C strip=$(cli.debug == 2 and "none" or cli.debug == 1 and "debuginfo" or "symbols")
+rustc := $rustc -C debuginfo=$(cli.debug or 0)
+-- https://doc.rust-lang.org/rustc/codegen-options
+
+-- https://lld.llvm.org/WebAssembly
+ld := $ld --no-entry --export-dynamic --allow-undefined
+ld := $ld --import-memory --initial-memory=65536 -z stack-size=0
+ld := $ld --features=$(concat(features, ","))
+if cli.debug < 2 then
+  ld := $ld --strip-$(cli.debug == 1 and "debug" or "all")
+end
+if cli.debug > 0 then
+  ld := $ld -O2
+end
+-- https://sourceware.org/binutils/docs/ld/Options.html
+
+local obj = { s = extrepl(source.s, ".s", ".o") }
+local wat = { rs = extrepl(source.rs, ".rs", ".wat") }
 
 return b{
-  $ %.wasm: %.rs
-    $rustc $target $opt $feat $ld $input -o $output
-  --TODO: https://github.com/WebAssembly/wabt/issues/1015
-  --$rustc $target $opt $feat $ld $(inputs[1]) -o $output
-  --if not cli.debug then wasm-objcopy --redefine-syms=$(inputs[2]) $output $output
+  $ build:V: $(wat.rs)
+
+  $ %.wasm: $(obj.s) %.o
+    $ld $input -o $output
+
+  $ %.o: %.rs
+    $rustc --emit=obj $input -o $output
+
+  $ %.o: %.s
+    $as -filetype=obj $input -o $output
 
   $ %.wat: %.wasm
     wasm2wat $input -o $output --enable-all
 
-  $ Cargo.toml: $src
+  $ Cargo.toml: $(source.rs)
     echo '$(require("Cargo")(inputs))' > $output
 }

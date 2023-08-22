@@ -1,4 +1,7 @@
 _final: prev: {
+  lld = prev.lld_16;
+  llvm = prev.llvm_16;
+
   knit = prev.buildGoModule rec {
     pname = "knit";
     version = "1.1.1";

@@ -16,7 +16,7 @@ with lib; {
     } // optionalAttrs (!env ? CI) { inherit clippy rustfmt rust-analyzer; };
   };
 
-  packages = with pkgs; [ knit wabt binaryen ];
+  packages = with pkgs; [ knit wabt binaryen wasm-tools llvm lld ];
 
   pre-commit = mkIf (!env ? CI) {
     hooks.editorconfig-checker.enable = true;

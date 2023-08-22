@@ -13,23 +13,14 @@ type JSNumber = f64;
 
 static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
 
-// BUG(rust): NO `global.get` and `global.set` instruction! Instead it use the linear memory to store static mut value
-// ideally it should be `thread_local!(static mut OFFSET = 0)`
+extern "C" {
+    fn set_offset(byte: usize);
+    fn get_offset() -> usize;
+} // @link ./mem/offset.s
 
-/// You MUST call `exports._setOffset(exports.__heap_base)` on the JS side at startup
-#[export_name = "_offset"]
-unsafe fn set_offset(offset: usize) {
-    OFFSET = offset
-}
-static mut OFFSET: usize = 8; // __data_end = --stack-size + 4 * count(all static/global variables)
-                              // stack = __heap_base-1 ~ __data_end
-
-/// Call `exports._setIndex(currentScopeIndex)` every time the event listener run
-#[export_name = "_at"]
-unsafe fn set_index(index: isize) {
-    INDEX = index;
-}
-static mut INDEX: isize = 0;
+extern "C" {
+    fn current_index() -> isize;
+} // @link ./mem/index.s
 
 #[allow(dead_code)]
 #[repr(i8)]
@@ -75,11 +66,11 @@ fn accessor(ty: Type) -> (Getter, Setter) {
 unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> (Number, Null) {
     let addr = if nullable {
         let nc_byte = (len as f32 / u8::BITS as f32).ceil() as usize; // length of null count in byte
-        OFFSET + nc_byte
+        get_offset() + nc_byte
     } else {
-        OFFSET
+        get_offset()
     };
-    let null_addr = if nullable { OFFSET } else { 0 };
+    let null_addr = if nullable { get_offset() } else { 0 };
 
     let ty = ty as i8;
     let byte = if ty > -64 {
@@ -95,8 +86,8 @@ unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> (Number, Null) {
        // };
 
     let len_byte = len as usize * byte as usize; // shift offset for the next allocation
-    OFFSET = addr + len_byte; // WARNING: may need mutex guard
-    if OFFSET > memory_size::<0>() * PAGE {
+    set_offset(addr + len_byte);
+    if get_offset() > memory_size::<0>() * PAGE {
         memory_grow(0, 1);
     };
 
@@ -114,27 +105,27 @@ fn get(get: fn(Number) -> JSNumber, this: Number) -> JSNumber {
 
 #[export_name = "setNULL"]
 unsafe fn set_null(this: Null) {
-    *nullptr(this) |= 1 << INDEX
+    *nullptr(this) |= 1 << current_index()
 }
 
 #[export_name = "clrNULL"]
 unsafe fn clear_null(this: Null) {
-    *nullptr(this) &= !(1 << INDEX)
+    *nullptr(this) &= !(1 << current_index())
 }
 
 #[export_name = "isNULL"]
 unsafe fn is_null(this: Null) -> bool {
-    ((*nullptr(this) >> INDEX) & 1) != 0
+    ((*nullptr(this) >> current_index()) & 1) != 0
 }
 
 unsafe fn nullptr(this: Null) -> *mut isize {
-    let offset = (INDEX as f32 / isize::BITS as f32).floor() as usize;
+    let offset = (current_index() as f32 / isize::BITS as f32).floor() as usize;
     (this.addr as *mut isize).add(offset)
 }
 
 unsafe fn ptr<T>(this: Number) -> *mut T {
     // TODO(unstable): refactor `this.addr as PointerLike` so it can be casted as `*const T` too
-    (this.addr as *mut T).offset(INDEX)
+    (this.addr as *mut T).offset(current_index())
 }
 
 mod truncate {
