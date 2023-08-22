@@ -9,7 +9,8 @@ local source = {
 
 local target = { arch = "wasm32", sys = "unknown" }
 
-local features = {
+local feats = {}
+feats.llvm = { --$ rustc --print target-features --target wasm32-unknown-unknown
   "bulk-memory",
   "multivalue",
   "mutable-globals",
@@ -23,7 +24,16 @@ local features = {
   "exception-handling",
   "tail-call",
 }
+feats.binaryen = {
+  ["atomics"] = "threads",
+  ["simd128"] = "simd",
+  ["nontrapping-fptoint"] = "nontrapping-float-to-int",
+}
+for i, feat in ipairs(feats.llvm) do
+  feats.binaryen[i] = feats.binaryen[feat] or feat
+end
 
+local opt := wasm-opt
 local ld := wasm-ld
 local as := llvm-mc
 local rustc = (cli.lint and "clippy-driver" or "rustc")
@@ -34,12 +44,12 @@ cli.debug = tonumber(cli.debug) or 0
 
 -- https://llvm.org/docs/CommandGuide/llvm-mc.html
 as := $as -triple=$(target.triple)
-as := $as -mattr=$(concat(features, ","))
+as := $as -mattr=$(concat(feats.llvm, ","))
 --
 
 -- https://doc.rust-lang.org/rustc/command-line-arguments.html
 rustc := $rustc --crate-type cdylib --target $(target.triple)
-rustc := $rustc -C target-feature=$(concat(prefix(features, "+"), ","))
+rustc := $rustc -C target-feature=$(concat(prefix(feats.llvm, "+"), ","))
 rustc := $rustc -C opt-level=z -C panic=abort -C no-redzone -C overflow-checks=off
 
 rustc := $rustc -C strip=$(cli.debug == 2 and "none" or cli.debug == 1 and "debuginfo" or "symbols")
@@ -49,7 +59,7 @@ rustc := $rustc -C debuginfo=$(cli.debug or 0)
 -- https://lld.llvm.org/WebAssembly
 ld := $ld --no-entry --export-dynamic --allow-undefined
 ld := $ld --import-memory --initial-memory=65536 -z stack-size=0
-ld := $ld --features=$(concat(features, ","))
+ld := $ld --features=$(concat(feats.llvm, ","))
 if cli.debug < 2 then
   ld := $ld --strip-$(cli.debug == 1 and "debug" or "all")
 end
@@ -57,6 +67,14 @@ if cli.debug > 0 then
   ld := $ld -O2
 end
 -- https://sourceware.org/binutils/docs/ld/Options.html
+
+-- https://rustwasm.github.io/docs/book/reference/code-size.html#use-the-wasm-opt-tool
+opt := $opt -Oz
+opt := $opt $(concat(prefix(feats.binaryen, "--enable-"), " "))
+if cli.debug > 0 then
+  opt := $opt -g
+end
+--
 
 local obj = { s = extrepl(source.s, ".s", ".o") }
 local wat = { rs = extrepl(source.rs, ".rs", ".wat") }
@@ -66,6 +84,7 @@ return b{
 
   $ %.wasm: $(obj.s) %.o
     $ld $input -o $output
+    $opt $output -o $output
 
   $ %.o: %.rs
     $rustc --emit=obj $input -o $output
