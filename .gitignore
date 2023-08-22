@@ -3,6 +3,7 @@ rust-project.json
 Cargo.lock
 core/wasm/Cargo.toml
 *.wasm
+*.o
 core/regex/*.js
 
 # Dependencies
