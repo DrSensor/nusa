@@ -9,6 +9,9 @@ trim_trailing_whitespace = true
 [Makefile]
 indent_style = tab
 
+[*.s]
+indent_style = tab
+
 [{*.html,*.svg}]
 indent_style = space
 indent_size = 2
@@ -17,7 +20,7 @@ indent_size = 2
 indent_style = space
 indent_size = 2
 
-[*.lua]
+[{*.lua,*.knit,Knitfile,knitfile}]
 indent_style = space
 indent_size = 2
 
