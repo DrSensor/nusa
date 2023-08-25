@@ -1,50 +1,18 @@
-#![allow(clippy::missing_safety_doc)]
+#[path = "../types/number.rs"]
+mod types;
 
-use core::arch::wasm32::{memory_grow, memory_size};
-use Type::*;
-
-pub struct Number {
-    addr: usize,
-}
-pub struct Null {
-    addr: usize,
-}
-type JSNumber = f64;
-
-static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
-
-extern "C" {
-    fn set_offset(byte: usize);
-    fn get_offset() -> usize;
-} // @link ./mem/offset.s
+use types::{JSNumber, Null, Number, Type};
 
 extern "C" {
     fn current_index() -> isize;
-} // @link ./mem/index.s
-
-#[allow(dead_code)]
-#[repr(i8)]
-enum Type {
-    Uint8 = 1,
-    Int8 = -1,
-
-    Uint16 = 2,
-    Int16 = -2,
-
-    Uint32 = 4,
-    Int32 = -4,
-    Float32 = -128 + 4,
-
-    Uint64 = 8,
-    Int64 = -8,
-    Float64 = -128 + 8,
-}
+} // index.s
 
 type Setter = unsafe fn(Number, JSNumber);
 type Getter = unsafe fn(Number) -> JSNumber;
 
 #[export_name = "accr"] // WARNING: this func not inlined inside alloc() because rust wasm +multivalue can only return at most 2 value
 fn accessor(ty: Type) -> (Getter, Setter) {
+    use Type::*;
     match ty {
         Uint8 => (truncate::getter::<u8>, truncate::setter::<u8>),
         Int8 => (truncate::getter::<i8>, truncate::setter::<i8>),
@@ -60,38 +28,6 @@ fn accessor(ty: Type) -> (Getter, Setter) {
         Int64 => (truncate::getter::<i64>, truncate::setter::<i64>),
         Float64 => (rounding::getter::<f64>, rounding::setter::<f64>),
     }
-}
-
-#[export_name = "alloc"]
-unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> (Number, Null) {
-    let addr = if nullable {
-        let nc_byte = (len as f32 / u8::BITS as f32).ceil() as usize; // length of null count in byte
-        get_offset() + nc_byte
-    } else {
-        get_offset()
-    };
-    let null_addr = if nullable { get_offset() } else { 0 };
-
-    let ty = ty as i8;
-    let byte = if ty > -64 {
-        ty.unsigned_abs()
-    } else {
-        (128 + ty as i16) as u8
-    }; // <-- same as below but produce smaller wasm
-       // let byte: u8 = match ty {
-       //     Uint8 | Int8 => 1,
-       //     Uint16 | Int16 => 2,
-       //     Uint32 | Int32 | Float32 => 3,
-       //     Uint64 | Int64 | Float64 => 4,
-       // };
-
-    let len_byte = len as usize * byte as usize; // shift offset for the next allocation
-    set_offset(addr + len_byte);
-    if get_offset() > memory_size::<0>() * PAGE {
-        memory_grow(0, 1);
-    };
-
-    (Number { addr }, Null { addr: null_addr })
 }
 
 #[no_mangle]

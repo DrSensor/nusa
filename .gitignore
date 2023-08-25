@@ -4,6 +4,7 @@ Cargo.lock
 core/wasm/Cargo.toml
 *.wasm
 *.o
+*.d
 core/regex/*.js
 
 # Dependencies

@@ -2,11 +2,7 @@ use(require("knit"))
 use(table)
 addpath(".")
 
-local source = {
-  rs = glob("*.rs"),
-  s = glob("mem/*.s"),
-}
-
+local source = { rs = glob("*/*.rs") }
 local target = { arch = "wasm32", sys = "unknown" }
 
 local feats = {}
@@ -76,18 +72,24 @@ if cli.debug > 0 then
 end
 --
 
-local obj = { s = extrepl(source.s, ".s", ".o") }
 local wat = { rs = extrepl(source.rs, ".rs", ".wat") }
+
+function wasm_b(dir)
+  local obj = { s = extrepl(glob(f"$dir/*.s"), ".s", ".o") }
+
+  return $ $(dir)/%.wasm: $(obj.s) $(dir)/%.o
+          $ld $input -o $output
+          $opt $output -o $output
+end
 
 return b{
   $ build:V: $(wat.rs)
 
-  $ %.wasm: $(obj.s) %.o
-    $ld $input -o $output
-    $opt $output -o $output
+  wasm_b("accessor"),
+  wasm_b("instance"),
 
-  $ %.o: %.rs
-    $rustc --emit=obj $input -o $output
+  $ %.o:D[%.d]: %.rs
+    $rustc --emit=obj,dep-info $input -o $output
 
   $ %.o: %.s
     $as -filetype=obj $input -o $output
