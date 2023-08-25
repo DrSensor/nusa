@@ -45,7 +45,7 @@ as := $as -mattr=$(concat(feats.llvm, ","))
 
 -- https://doc.rust-lang.org/rustc/command-line-arguments.html
 rustc := $rustc --crate-type cdylib --target $(target.triple)
-rustc := $rustc -C target-feature=$(concat(prefix(feats.llvm, "+"), ","))
+rustc := $rustc -C target-feature=$(concat(prefix(feats.llvm, "+"), ",")) -A warnings
 rustc := $rustc -C opt-level=z -C panic=abort -C no-redzone -C overflow-checks=off
 
 rustc := $rustc -C strip=$(cli.debug == 2 and "none" or cli.debug == 1 and "debuginfo" or "symbols")
