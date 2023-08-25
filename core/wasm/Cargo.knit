@@ -1,7 +1,7 @@
 function genSrc(files)
   local result = ""
   for _, file in ipairs(files) do
-    local name = base(file):gsub("%.rs", "")
+    local name = file:gsub("%.rs", ""):gsub("/", "")
     result = result .. f([=[
       [[example]]
       name = "$name"
@@ -18,7 +18,6 @@ return function(files)
     name = "nusa"
     version = "0.0.1-Jan.2023"
     edition = "2021"
-
     $(genSrc(files))
   ]]
   local formatted = toml:gsub("(\n+)%s+", "%1"):gsub("^%s*(.-)%s*$", "%1")
