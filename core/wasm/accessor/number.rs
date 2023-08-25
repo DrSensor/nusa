@@ -1,11 +1,10 @@
 #[path = "../types/number.rs"]
 mod types;
 
+#[path = "./index.rs"]
+mod index;
+use index::current as index;
 use types::{JSNumber, Null, Number, Type};
-
-extern "C" {
-    fn current_index() -> isize;
-} // index.s
 
 type Setter = unsafe fn(Number, JSNumber);
 type Getter = unsafe fn(Number) -> JSNumber;
@@ -41,27 +40,27 @@ fn get(get: fn(Number) -> JSNumber, this: Number) -> JSNumber {
 
 #[export_name = "beNULL"]
 unsafe fn set_null(this: Null) {
-    *nullptr(this) |= 1 << current_index()
+    *nullptr(this) |= 1 << index()
 }
 
 #[export_name = "unNULL"]
 unsafe fn clear_null(this: Null) {
-    *nullptr(this) &= !(1 << current_index())
+    *nullptr(this) &= !(1 << index())
 }
 
 #[export_name = "isNULL"]
 unsafe fn check_null(this: Null) -> bool {
-    ((*nullptr(this) >> current_index()) & 1) != 0
+    ((*nullptr(this) >> index()) & 1) != 0
 }
 
 unsafe fn nullptr(this: Null) -> *mut isize {
-    let offset = (current_index() as f32 / isize::BITS as f32).floor() as usize;
+    let offset = (index() as f32 / isize::BITS as f32).floor() as usize;
     (this.addr as *mut isize).add(offset)
 }
 
 unsafe fn ptr<T>(this: Number) -> *mut T {
     // TODO(unstable): refactor `this.addr as PointerLike` so it can be casted as `*const T` too
-    (this.addr as *mut T).offset(current_index())
+    (this.addr as *mut T).offset(index())
 }
 
 mod truncate {
