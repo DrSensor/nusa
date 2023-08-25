@@ -11,7 +11,7 @@ extern "C" {
     fn get_offset() -> usize;
 } // offset.s
 
-#[export_name = "alloc"]
+#[export_name = "allocate"]
 unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> (Number, Null) {
     let addr = if nullable {
         let nc_byte = (len as f32 / u8::BITS as f32).ceil() as usize; // length of null count in byte

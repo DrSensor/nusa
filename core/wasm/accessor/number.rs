@@ -10,7 +10,7 @@ extern "C" {
 type Setter = unsafe fn(Number, JSNumber);
 type Getter = unsafe fn(Number) -> JSNumber;
 
-#[export_name = "accr"] // WARNING: this func not inlined inside alloc() because rust wasm +multivalue can only return at most 2 value
+#[export_name = "accessor"] // WARNING: this func not inlined inside alloc() because rust wasm +multivalue can only return at most 2 value
 fn accessor(ty: Type) -> (Getter, Setter) {
     use Type::*;
     match ty {
@@ -39,18 +39,18 @@ fn get(get: fn(Number) -> JSNumber, this: Number) -> JSNumber {
     get(this)
 }
 
-#[export_name = "setNULL"]
+#[export_name = "beNULL"]
 unsafe fn set_null(this: Null) {
     *nullptr(this) |= 1 << current_index()
 }
 
-#[export_name = "clrNULL"]
+#[export_name = "unNULL"]
 unsafe fn clear_null(this: Null) {
     *nullptr(this) &= !(1 << current_index())
 }
 
 #[export_name = "isNULL"]
-unsafe fn is_null(this: Null) -> bool {
+unsafe fn check_null(this: Null) -> bool {
     ((*nullptr(this) >> current_index()) & 1) != 0
 }
 
