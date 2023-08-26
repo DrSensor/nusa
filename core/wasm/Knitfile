@@ -2,7 +2,15 @@ use(require("knit"))
 use(table)
 addpath(".")
 
-local source = { rs = glob("*/*.rs") }
+local srcdirs = {"accessor", "instance"}
+
+local source = { rs = {}, s = {} }
+for _, dir in pairs(srcdirs) do
+  source.rs = glob(f"$dir/*.rs") + source.rs
+  source.s = glob(f"$dir/*.s") + source.s
+end
+source.rs = filterout(source.rs, extrepl(source.s, ".s", ".rs"))
+
 local target = { arch = "wasm32", sys = "unknown" }
 
 local feats = {}
