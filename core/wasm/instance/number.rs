@@ -1,7 +1,7 @@
-#[path = "../types/number.rs"]
+#[path = "types/number.rs"]
 mod types;
 
-#[path = "./offset.rs"]
+#[path = "offset.rs"]
 mod offset;
 use core::arch::wasm32::{memory_grow, memory_size};
 use types::{Null, Number, Type};

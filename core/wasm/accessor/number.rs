@@ -1,7 +1,7 @@
-#[path = "../types/number.rs"]
+#[path = "types/number.rs"]
 mod types;
 
-#[path = "./index.rs"]
+#[path = "index.rs"]
 mod index;
 use index::current as index;
 use types::{JSNumber, Null, Number, Type};
