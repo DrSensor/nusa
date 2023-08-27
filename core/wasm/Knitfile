@@ -1,15 +1,5 @@
 use(require("knit"))
 use(table)
-addpath(".")
-
-local srcdirs = {"accessor", "instance"}
-
-local source = { rs = {}, s = {} }
-for _, dir in pairs(srcdirs) do
-  source.rs = glob(f"$dir/*.rs") + source.rs
-  source.s = glob(f"$dir/*.s") + source.s
-end
-source.rs = filterout(source.rs, extrepl(source.s, ".s", ".rs"))
 
 local target = { arch = "wasm32", sys = "unknown" }
 
@@ -80,8 +70,6 @@ if cli.debug > 0 then
 end
 --
 
-local wat = { rs = extrepl(source.rs, ".rs", ".wat") }
-
 function wasm_b(dir)
   local obj = { s = extrepl(glob(f"$dir/*.s"), ".s", ".o") }
 
@@ -91,8 +79,6 @@ function wasm_b(dir)
 end
 
 return b{
-  $ build:V: $(wat.rs)
-
   wasm_b("accessor"),
   wasm_b("instance"),
 
@@ -104,7 +90,4 @@ return b{
 
   $ %.wat: %.wasm
     wasm2wat $input -o $output --enable-all
-
-  $ Cargo.toml: $(source.rs)
-    echo '$(require("Cargo")(inputs))' > $output
 }

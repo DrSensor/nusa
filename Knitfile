@@ -1,10 +1,17 @@
 use(require("knit"))
 addpath(".")
 
-local grammar = { pom = glob("core/regex/*.pom") }
-local regex = { js = extrepl(grammar.pom, ".pom", ".js") }
+local source = {
+  rs = glob("core/wasm/*/*.rs"),
+  s = glob("core/wasm/*/*.s"),
+  pom = glob("core/regex/*.pom"),
+}
 
-local wasm = { rs = glob("core/wasm/*.rs") }
+local regex = { js = extrepl(source.pom, ".pom", ".js") }
+
+local ffi = { rs = extrepl(source.s, ".s", ".rs") }
+local wasm = { rs = filterout(source.rs, ffi.rs) }
+local wat = { rs = extrepl(wasm.rs, ".rs", ".wat") }
 
 return b{
   $ build:V: build.js
@@ -18,6 +25,9 @@ return b{
 
   include("core/wasm/Knitfile"),
 
-  $ rust-project.json: $(wasm.rs)
+  $ rust-project.json: $(source.rs)
     echo '$(require("rust-project")(inputs))' > $output
+
+  $ Cargo.toml: $(wasm.rs)
+    echo '$(require("Cargo")(inputs))' > $output
 }

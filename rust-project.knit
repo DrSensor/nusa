@@ -12,16 +12,20 @@ function wasmCrates(files)
       "env": {},
       "cfg": [],
       "deps": []
-    },]]
+    },
+    ]]
   end
-  return result:sub(1, -2)
+  local formatted = result:gsub("(\n+)", "%1  "):gsub(",\n+%s+$", "")
+  return formatted
 end
 
 return function(files)
   local json = f[[{
     "sysroot_src": "$(env.RUST_SRC_PATH)",
-    "crates": [$(wasmCrates(files))]
+    "crates": [
+      $(wasmCrates(files))
+    ]
   }]]
-  local minified = json:gsub("\n", ""):gsub(" ", "")
-  return minified
+  local formatted = json:gsub("(\n+)  ", "%1")
+  return formatted
 end

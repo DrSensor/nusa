@@ -1,7 +1,7 @@
 # Generated files
 rust-project.json
 Cargo.lock
-core/wasm/Cargo.toml
+Cargo.toml
 *.wasm
 *.o
 *.d
