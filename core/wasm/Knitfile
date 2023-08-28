@@ -50,6 +50,14 @@ rustc := $rustc -C strip=$(cli.debug == 2 and "none" or cli.debug == 1 and "debu
 rustc := $rustc -C debuginfo=$(cli.debug or 0)
 -- https://doc.rust-lang.org/rustc/codegen-options
 
+-- https://rustwasm.github.io/docs/book/reference/code-size.html#use-the-wasm-opt-tool
+opt := $opt -Oz
+opt := $opt $(concat(prefix(feats.binaryen, "--enable-"), " "))
+if cli.debug > 0 then
+  opt := $opt -g
+end
+--
+
 -- https://lld.llvm.org/WebAssembly
 ld := $ld --no-entry --export-dynamic --allow-undefined
 ld := $ld --import-memory --initial-memory=65536 -z stack-size=0
@@ -61,14 +69,6 @@ if cli.debug > 0 then
   ld := $ld -O2
 end
 -- https://sourceware.org/binutils/docs/ld/Options.html
-
--- https://rustwasm.github.io/docs/book/reference/code-size.html#use-the-wasm-opt-tool
-opt := $opt -Oz
-opt := $opt $(concat(prefix(feats.binaryen, "--enable-"), " "))
-if cli.debug > 0 then
-  opt := $opt -g
-end
---
 
 function wasm_b(dir)
   local obj = { s = extrepl(glob(f"$dir/*.s"), ".s", ".o") }
