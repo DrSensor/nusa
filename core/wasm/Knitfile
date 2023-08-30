@@ -41,6 +41,7 @@ local ld := wasm-ld
 local as := llvm-mc
 local rustc = (cli.lint and "clippy-driver" or "rustc") --edition 2021
 
+local strip := wasm-metadce
 local merge := wasm-merge
 local as_w := wat2wasm
 local asc := asc
@@ -82,6 +83,7 @@ end
 
 -- https://github.com/WebAssembly/binaryen#wasm-merge
 merge := $merge $(concat(prefix(feats.binaryen, "--enable-"), " "))
+strip := $strip $(concat(prefix(feats.binaryen, "--enable-"), " "))
 --
 
 -- https://lld.llvm.org/WebAssembly
@@ -109,6 +111,7 @@ function merge_asm(dir)
 
   return $ $(dir)/%.wasm: $(wasm.s) $(dir)/%.ts.wasm
           $merge $(suffix_import_name(inputs)) -o $output
+          $strip -f $(output:match("(.-)%.")).json $output -o $output
           $opt $output -o $output
 end
 function suffix_import_name(paths)
