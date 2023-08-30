@@ -3,27 +3,37 @@ addpath(".")
 
 local source = {
   rs = glob("core/wasm/*/*.rs"),
+  ts = glob("core/wasm/*/*.ts"),
   s = glob("core/wasm/*/*.s"),
+  wat = glob("core/wasm/*/*.s.wat"),
   pom = glob("core/regex/*.pom"),
 }
 
 local regex = { js = extrepl(source.pom, ".pom", ".js") }
 
 local ffi = { rs = extrepl(source.s, ".s", ".rs") }
-local wasm = { rs = filterout(source.rs, ffi.rs) }
-local wat = { rs = extrepl(wasm.rs, ".rs", ".wat") }
+local wasm = {
+  rs = filterout(source.rs, ffi.rs),
+  ts = source.ts,
+}
+local wat = {
+  rs = extrepl(wasm.rs, ".rs", ".wat"),
+  ts = extrepl(wasm.ts, ".ts", ".wat"),
+}
 
 return b{
-  $ build:V: build.js
-  $ test:V: test.js
+  $ all:V: all-js all-wasm
+  $ manifest:V: rust-project.json Cargo.toml
 
+  $ %.br: %
+    brotli $input
 
   include("core/regex/Knitfile"),
-
-  $ build.js:V: $(regex.js)
-
+  $ all-js:V: $(regex.js)
 
   include("core/wasm/Knitfile"),
+  $ all-wasm:V: $(wasm.rs) $(wasm.ts)
+  $ all-wat:V: $(wat.rs) $(wat.ts)
 
   $ rust-project.json: $(source.rs)
     echo '$(require("rust-project")(inputs))' > $output
