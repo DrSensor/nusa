@@ -26,12 +26,25 @@ feats.binaryen = {
 for i, feat in ipairs(feats.llvm) do
   feats.binaryen[i] = feats.binaryen[feat] or feat
 end
+feats.assemblyscript = filterout(feats.binaryen, {
+  "multivalue",                -- unknown
+  "sign-ext",                  -- unknown
+  "nontrapping-float-to-int",  -- unknown
+  "tail-call",                 -- unknown
+  "extended-const",            -- crash
+})
 
+-- toolchain
 local opt := wasm-opt
+
 local ld := wasm-ld
 local as := llvm-mc
-local rustc = (cli.lint and "clippy-driver" or "rustc")
-rustc := $rustc --edition 2021
+local rustc = (cli.lint and "clippy-driver" or "rustc") --edition 2021
+
+local merge := wasm-merge
+local as_w := wat2wasm
+local asc := asc
+--
 
 target.triple = f"$(target.arch)-unknown-$(target.sys)"
 cli.debug = tonumber(cli.debug) or 0
@@ -50,12 +63,25 @@ rustc := $rustc -C strip=$(cli.debug == 2 and "none" or cli.debug == 1 and "debu
 rustc := $rustc -C debuginfo=$(cli.debug or 0)
 -- https://doc.rust-lang.org/rustc/codegen-options
 
+-- https://www.assemblyscript.org/compiler.html#compiler-options
+asc := $asc -Ospeed
+asc := $asc --uncheckedBehavior --lowMemoryLimit --noExportMemory
+asc := $asc --enable $(concat(feats.assemblyscript, ","))
+if cli.debug > 0 then
+  asc := $asc --debug
+end
+--
+
 -- https://rustwasm.github.io/docs/book/reference/code-size.html#use-the-wasm-opt-tool
 opt := $opt -Oz
 opt := $opt $(concat(prefix(feats.binaryen, "--enable-"), " "))
 if cli.debug > 0 then
   opt := $opt -g
 end
+--
+
+-- https://github.com/WebAssembly/binaryen#wasm-merge
+merge := $merge $(concat(prefix(feats.binaryen, "--enable-"), " "))
 --
 
 -- https://lld.llvm.org/WebAssembly
@@ -70,7 +96,7 @@ if cli.debug > 0 then
 end
 -- https://sourceware.org/binutils/docs/ld/Options.html
 
-function wasm_b(dir)
+function link_asm(dir)
   local obj = { s = extrepl(glob(f"$dir/*.s"), ".s", ".o") }
 
   return $ $(dir)/%.wasm: $(obj.s) $(dir)/%.o
@@ -78,9 +104,26 @@ function wasm_b(dir)
           $opt $output -o $output
 end
 
+function merge_asm(dir)
+  local wasm = { s = extrepl(glob(f"$dir/*.s.wat"), ".s.wat", ".s.wasm") }
+
+  return $ $(dir)/%.wasm: $(wasm.s) $(dir)/%.ts.wasm
+          $merge $(suffix_import_name(inputs)) -o $output
+          $opt $output -o $output
+end
+function suffix_import_name(paths)
+  local result = ""; for _, path in pairs(paths) do
+    result := $result $path $(base(path):match("(.-)%."))
+  end
+  return result
+end
+
 return b{
-  wasm_b("accessor"),
-  wasm_b("instance"),
+  link_asm("accessor"),
+  link_asm("instance"),
+
+  link_asm("fastops"),
+  merge_asm("vtable"),
 
   $ %.o:D[%.d]: %.rs
     $rustc --emit=obj,dep-info $input -o $output
@@ -88,6 +131,12 @@ return b{
   $ %.o: %.s
     $as -filetype=obj $input -o $output
 
-  $ %.wat: %.wasm
+  $ %.ts.wasm: %.ts
+    $asc $input -o $output
+
+  $ %.s.wasm: %.s.wat
+    $as_w $input -o $output
+
+  $ %.debug.wat: %.wasm
     wasm2wat $input -o $output --enable-all
 }

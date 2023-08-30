@@ -5,11 +5,13 @@ Cargo.toml
 *.wasm
 *.o
 *.d
+*.wat
+!*.s.wat
 core/regex/*.js
 
 # Dependencies
 vendor/
-node_modules/
+node_modules
 
 # Things emitted by the build system
 result/

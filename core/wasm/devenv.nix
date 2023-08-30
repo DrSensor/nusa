@@ -16,7 +16,9 @@ with lib; {
     } // optionalAttrs (!env ? CI) { inherit clippy rustfmt rust-analyzer; };
   };
 
-  packages = with pkgs; [ knit wabt binaryen wasm-tools llvm lld ];
+  packages = with pkgs;
+    [ knit ] ++ [ wabt binaryen wasm-tools ] ++ [ llvm lld ]
+    ++ [ assemblyscript ];
 
   pre-commit = mkIf (!env ? CI) {
     hooks.editorconfig-checker.enable = true;
@@ -26,5 +28,6 @@ with lib; {
 
   enterShell = mkIf (!env ? CI) ''
     knit rust-project.json Cargo.toml
+    ln -rs $DEVENV_PROFILE/lib/node_modules node_modules
   '';
 }
