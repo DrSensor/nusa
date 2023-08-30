@@ -39,7 +39,7 @@ local opt := wasm-opt
 
 local ld := wasm-ld
 local as := llvm-mc
-local rustc := (cli.lint and "clippy-driver" or "rustc") --edition 2021
+local rustc := $(cli.lint and "clippy-driver" or "rustc") --edition 2021
 
 local strip := wasm-metadce
 local merge := wasm-merge
