@@ -25,7 +25,6 @@ with lib; {
   };
 
   enterShell = mkIf (!env ? CI) ''
-    knit rust-project.json
-    knit ${./Cargo.toml}
+    knit rust-project.json Cargo.toml
   '';
 }
