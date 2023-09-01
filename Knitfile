@@ -9,17 +9,23 @@ local source = {
   pom = glob("core/regex/*.pom"),
 }
 
+-- regex
 local regex = { js = extrepl(source.pom, ".pom", ".js") }
+--
 
+-- wasm
 local ffi = { rs = extrepl(source.s, ".s", ".rs") }
+local types = { rs = glob("core/wasm/types/*.rs") }
+
 local wasm = {
-  rs = filterout(source.rs, ffi.rs),
-  ts = source.ts,
+  rs = extrepl(filterout(filterout(source.rs, ffi.rs), types.rs), ".rs", ".wasm"),
+  ts = extrepl(source.ts, ".ts", ".wasm"),
 }
 local wat = {
   rs = extrepl(wasm.rs, ".rs", ".wat"),
   ts = extrepl(wasm.ts, ".ts", ".wat"),
 }
+--
 
 return b{
   $ all:V: all-js all-wasm
