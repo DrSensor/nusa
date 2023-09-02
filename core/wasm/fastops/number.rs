@@ -87,4 +87,27 @@ mod add {
             })
         }
     }
+
+    pub unsafe fn by_column<T, C>(
+        len: u16,
+        this_nullable: bool,
+        col_nullable: bool,
+        this: Number,
+        col: Number,
+    ) where
+        T: AddAssign<T>,
+        C: TryInto<T>,
+    {
+        let mutate = |skip_null: bool, my: Number, other: Number| {
+            iter(skip_null, my, len, move |item: *mut T, i| {
+                let val = (other.addr as *const C).add(i);
+                *item += val.read().try_into().unwrap_unchecked();
+            });
+        };
+        match (this_nullable, col_nullable) {
+            (false, false) | (true, false) => mutate(this_nullable, this, col),
+            (false, true) => {} // TODO
+            (true, true) => {}  // TODO
+        };
+    }
 }
