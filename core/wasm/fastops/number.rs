@@ -110,4 +110,29 @@ mod add {
             (true, true) => {}  // TODO
         };
     }
+
+    pub unsafe fn by_swizzle<T, C>(
+        len: u16,
+        this_nullable: bool,
+        col_nullable: bool,
+        this: Number,
+        col: Number,
+    ) where
+        T: AddAssign<T> + TryInto<C>,
+        C: AddAssign<C> + TryInto<T>,
+    {
+        let mutate = |skip_null: bool, my: Number, other: Number| {
+            iter(skip_null, my, len, move |my_item: *mut T, i| {
+                let other_item = (other.addr as *mut C).add(i);
+                let my_value = my_item.read();
+                *my_item += other_item.read().try_into().unwrap_unchecked();
+                *other_item += my_value.try_into().unwrap_unchecked();
+            });
+        };
+        match (this_nullable, col_nullable) {
+            (false, false) | (true, false) => mutate(this_nullable, this, col),
+            (false, true) => mutate(col_nullable, col, this),
+            (true, true) => {} // TODO
+        };
+    }
 }
