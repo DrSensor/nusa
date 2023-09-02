@@ -107,7 +107,7 @@ function link_asm(dir)
 end
 
 function merge_asm(dir, ext)
-  local wasm = { s = extrepl(glob(f"$dir/*.s.wat"), ".wat", ".wasm") }
+  local wasm = { s = suffix(glob(f"$dir/*.wat"), ".wasm") }
 
   return $ $(dir)/%.wasm: $(wasm.s) $(dir)/%.$ext.wasm
           $merge $(suffix_import_name(inputs)) -o $output
@@ -124,9 +124,7 @@ end
 return b{
   link_asm("accessor"),
   link_asm("instance"),
-
   link_asm("fastops"),
-  merge_asm("vtable", "ts"),
 
   $ %.o:D[%.d]: %.rs
     $rustc --emit=obj,dep-info $input -o $output
@@ -134,12 +132,17 @@ return b{
   $ %.s.o: %.s
     $as -filetype=obj $input -o $output
 
+  $ %.wasm: %.wat.wasm %.ts.wasm
+    $merge $(inputs[1]) $(base(match)) $(inputs[2]) main -o $output
+    $strip -f $(output:match("(.-)%.")).json $output -o $output
+    $opt $output -o $output
+
   $ %.ts.wasm: %.ts
     $asc $input -o $output
 
-  $ %.s.wasm: %.s.wat
+  $ %.wat.wasm: %.wat
     $as_w $input -o $output
 
-  $ %.final.wat: %.wasm
+  $ %.wasm.wat: %.wasm
     wasm2wat $input -o $output --enable-all
 }

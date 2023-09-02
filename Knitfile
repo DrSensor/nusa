@@ -17,13 +17,14 @@ local regex = { js = extrepl(source.pom, ".pom", ".js") }
 local ffi = { rs = extrepl(source.s, ".s", ".rs") }
 local types = { rs = glob("core/wasm/types/*.rs") }
 
-local wasm = {
-  rs = extrepl(filterout(filterout(source.rs, ffi.rs), types.rs), ".rs", ".wasm"),
-  ts = extrepl(source.ts, ".ts", ".wasm"),
-}
+local wasm = {}
+wasm.source = { rs = filterout(filterout(source.rs, ffi.rs), types.rs) }
+wasm.rs = extrepl(wasm.source.rs, ".rs", ".wasm")
+wasm.ts = extrepl(source.ts, ".ts", ".wasm")
+
 local wat = {
-  rs = extrepl(wasm.rs, ".rs", ".wat"),
-  ts = extrepl(wasm.ts, ".ts", ".wat"),
+  rs = suffix(wasm.rs, ".wat"),
+  ts = suffix(wasm.ts, ".wat"),
 }
 --
 
@@ -44,6 +45,6 @@ return b{
   $ rust-project.json: $(source.rs)
     echo '$(require("rust-project")(inputs))' > $output
 
-  $ Cargo.toml: $(wasm.rs)
+  $ Cargo.toml: $(wasm.source.rs)
     echo '$(require("Cargo")(inputs))' > $output
 }

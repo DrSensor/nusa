@@ -2,15 +2,14 @@
 rust-project.json
 Cargo.lock
 Cargo.toml
+*.wasm.wat
 *.wasm
 *.o
 *.d
-*.wat
-!*.s.wat
 core/regex/*.js
 
 # Dependencies
-vendor/
+vendor
 node_modules
 
 # Things emitted by the build system

@@ -1,11 +1,7 @@
 [
   {
     "name": "funcref",
-    "reaches": [
-      "queue",
-      "exec",
-      "flush"
-    ],
+    "reaches": ["queue", "exec", "flush"],
     "root": true
   },
   {
