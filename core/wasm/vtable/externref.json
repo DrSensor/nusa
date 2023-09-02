@@ -1,0 +1,19 @@
+[
+  {
+    "name": "externref",
+    "reaches": ["queue", "exec", "flush"],
+    "root": true
+  },
+  {
+    "name": "queue",
+    "export": "queue"
+  },
+  {
+    "name": "exec",
+    "export": "exec"
+  },
+  {
+    "name": "flush",
+    "export": "flush"
+  }
+]
