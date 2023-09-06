@@ -1,28 +1,73 @@
+function crate(conf, extra)
+  if extra ~= nil then
+    for k, v in pairs(extra) do conf[k] = v end
+  end
+  return f[[{
+    "display_name": "$(conf.display_name)",
+    "root_module": "$(conf.root_module)",
+    "edition": "2021",
+    "target": "wasm32-unknown-unknown",
+    "is_workspace_member": $(conf.is_workspace_member or false),
+    "is_proc_macro": $(conf.is_proc_macro or false),
+    "env": {},
+    "cfg": [],
+    "deps": []
+  }]]
+end
+
+function normalize(result)
+  local formatted = result:gsub("(\n+)", "%1    "):gsub(",\n+%s+$", "")
+  return formatted
+end
+
+function workspaceMembers() -- workaround because rust-analyzer can't mix rust-project.json and cargo-based project
+  local conf = {
+    is_workspace_member = true,
+    is_proc_macro = true,
+  }
+  function cargoFrom(dirs, crate_name)
+    local result = ""
+    local list = {}; for i = 1, #dirs do
+      for j, path in ipairs(glob(f"$(dirs[i])/src/*.rs") + glob(f"$(dirs[i])/src/*/*.rs")) do -- I HATE THIS 😢
+        list[i+j-1] = path
+      end
+    end
+    for _, file in ipairs(list) do
+      local name = base(file):gsub("%.rs", "")
+      if name == "lib"
+        then name = crate_name
+        else name = f"$crate_name::$name"
+      end
+      result = result .. crate({
+        display_name = name,
+        root_module = file,
+      }, conf) .. ",\n  "
+    end
+    return result
+  end
+  return normalize(
+    cargoFrom({"libs/rust"}, "libnusa") ..
+    cargoFrom(glob("examples/rust/*"), "example")
+  )
+end
+
 function wasmCrates(files)
   local result = ""
   for _, file in ipairs(files) do
     local name = base(file):gsub("%.rs", "")
-    result = result .. f[[{
-      "display_name": "wasm::$name",
-      "root_module": "$file",
-      "edition": "2021",
-      "target": "wasm32-unknown-unknown",
-      "is_workspace_member": false,
-      "is_proc_macro": false,
-      "env": {},
-      "cfg": [],
-      "deps": []
-    },
-    ]]
+    result = result .. crate{
+      display_name = f"wasm::$name",
+      root_module = file,
+    } .. ",\n  "
   end
-  local formatted = result:gsub("(\n+)", "%1  "):gsub(",\n+%s+$", "")
-  return formatted
+  return normalize(result)
 end
 
 return function(files)
   local json = f[[{
     "sysroot_src": "$(env.RUST_SRC_PATH)",
     "crates": [
+      $(workspaceMembers()),
       $(wasmCrates(files))
     ]
   }]]

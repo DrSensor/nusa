@@ -20,6 +20,9 @@ return function(files)
     version = "0.0.1-Jan.2023"
     edition = "2021"
 
+    [workspace]
+    members = ["libs/rust", "examples/rust/*"]
+
     $(genSrc(files))
   ]]
   local formatted = toml:gsub("(\n+)%s+", "%1"):gsub("^%s*(.-)%s*$", "%1")
