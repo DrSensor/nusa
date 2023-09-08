@@ -2,10 +2,8 @@
 
 pub type JSNumber = f64;
 
+#[repr(transparent)]
 pub struct Number {
-    pub addr: usize,
-}
-pub struct Null {
     pub addr: usize,
 }
 

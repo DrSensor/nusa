@@ -1,10 +1,8 @@
-#[path = "types/number.rs"]
+mod index;
 mod types;
 
-#[path = "index.rs"]
-mod index;
 use index::current as index;
-use types::{JSNumber, Null, Number, Type};
+use types::{number::Type, CTuple, JSNumber, Null, Number};
 
 type Setter = unsafe fn(Number, JSNumber);
 type Getter = unsafe fn(Number) -> JSNumber;

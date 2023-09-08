@@ -1,8 +1,7 @@
-#[path = "types/number.rs"]
 pub mod types;
 
 use core::slice;
-use types::{JSNumber, Null, Number, Type};
+use types::{number::Type, JSNumber, Null, Number};
 
 /// export_name is based on https://pola-rs.github.io/polars/py-polars/html/reference/expressions/operators.html#numeric
 

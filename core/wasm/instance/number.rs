@@ -1,10 +1,8 @@
-#[path = "types/number.rs"]
+mod offset;
 mod types;
 
-#[path = "offset.rs"]
-mod offset;
 use core::arch::wasm32::{memory_grow, memory_size};
-use types::{Null, Number, Type};
+use types::{number::Type, CTuple, Null, Number};
 
 static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
 
