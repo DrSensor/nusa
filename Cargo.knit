@@ -21,7 +21,7 @@ return function(files)
     edition = "2021"
 
     [workspace]
-    members = ["libs/rust", "examples/rust/*"]
+    members = ["libs/rust", "examples/rust/*/*"]
 
     $(genSrc(files))
   ]]

@@ -98,18 +98,18 @@ if cli.debug > 0 then
 end
 -- https://sourceware.org/binutils/docs/ld/Options.html
 
-function link_asm(dir)
-  local obj = { s = suffix(glob(f"$dir/*.s"), ".o") }
+function link_asm(path)
+  local obj = { s = suffix(glob(f"$path/*.s"), ".o") }
 
-  return $ $(dir)/%.wasm: $(obj.s) $(dir)/%.o
+  return $ $(path)/%.wasm: $(obj.s) $(path)/%.o
           $ld $input -o $output
           $opt $output -o $output
 end
 
-function merge_asm(dir, ext)
-  local wasm = { s = suffix(glob(f"$dir/*.wat"), ".wasm") }
+function merge_asm(path, ext)
+  local wasm = { s = suffix(glob(f"$path/*.wat"), ".wasm") }
 
-  return $ $(dir)/%.wasm: $(wasm.s) $(dir)/%.$ext.wasm
+  return $ $(path)/%.wasm: $(wasm.s) $(path)/%.$ext.wasm
           $merge $(suffix_import_name(inputs)) -o $output
           $strip -f $(output:match("(.-)%.")).json $output -o $output
           $opt $output -o $output

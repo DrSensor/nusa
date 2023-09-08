@@ -1,4 +1,4 @@
-function crate(conf, extra)
+function crateJSON(conf, extra)
   if extra ~= nil then
     for k, v in pairs(extra) do conf[k] = v end
   end
@@ -25,44 +25,71 @@ function workspaceMembers() -- workaround because rust-analyzer can't mix rust-p
     is_workspace_member = true,
     is_proc_macro = true,
   }
-  function cargoFrom(dirs, crate_name)
+  function cargoFrom(dirs, conf, recursive)
     local result = ""
-    local list = {}; for i = 1, #dirs do
-      for j, path in ipairs(glob(f"$(dirs[i])/src/*.rs") + glob(f"$(dirs[i])/src/*/*.rs")) do -- I HATE THIS 😢
-        list[i+j-1] = path
+    function process(files, depth)
+      local list = {}; for i = 1, #dirs do
+        for j, path in ipairs(glob(dirs[i]..f"/$files")) do -- I HATE THIS 😢
+          list[i+j-1] = path
+        end
+      end
+      for _, file in ipairs(list) do
+        local name = base(file):gsub("%.rs", "")
+        local crate = conf.name
+        if crate == nil then
+          local root = dir(dir(file)) -- root/[src/*]
+          crate = base(root)
+          for _ = 2, conf.depth or 2 do
+            root = dir(root)
+            crate = base(root).."::"..crate
+          end
+        end
+        local module = crate
+        if conf.prefix ~= nil then
+          module = conf.prefix.."::"..module
+        end
+        local src = file; for _ = 2, depth do
+          src = dir(src)
+          module = module.."::"..base(src)
+        end
+        if not ((name == "lib" and depth == 1) or (name == "mod" and depth > 1)) then
+          module = f"$module::$name"
+        end
+        result = result .. crateJSON({
+          display_name = module,
+          root_module = file,
+        }, conf)..",\n  "
       end
     end
-    for _, file in ipairs(list) do
-      local name = base(file):gsub("%.rs", "")
-      if name == "lib"
-        then name = crate_name
-        else name = f"$crate_name::$name"
-      end
-      result = result .. crate({
-        display_name = name,
-        root_module = file,
-      }, conf) .. ",\n  "
-    end
+    process("src/*.rs", 1)
+    process("src/*/*.rs", 2)
     return result
   end
   return normalize(
-    cargoFrom({"libs/rust"}, "libnusa") ..
-    cargoFrom(glob("examples/rust/*"), "example")
+    cargoFrom({"libs/rust"}, {name="libnusa"}) ..
+    cargoFrom(glob("examples/rust/*/*"), {prefix="example", depth=2})
   )
 end
 
 function wasmCrates(files)
   local result = ""
   for _, file in ipairs(files) do
+    local parent = base(dir(file))
     local name = base(file):gsub("%.rs", "")
-    result = result .. crate{
-      display_name = f"wasm::$name",
+    local module = f"wasm::$parent"
+    if name ~= "mod" then
+      module = module.."::"..name
+    end
+    result = result .. crateJSON{
+      display_name = module,
       root_module = file,
-    } .. ",\n  "
+    }..",\n  "
   end
   return normalize(result)
 end
 
+-- TODO: set `rust-analyzer.linkedProjects:["./rust-project.json", "./libs/rust/Cargo.toml", "./examples/rust/*/*/Cargo.toml"]` when rust-analyzer support local config
+-- https://rust-analyzer.github.io/manual.html#configuration
 return function(files)
   local json = f[[{
     "sysroot_src": "$(env.RUST_SRC_PATH)",
