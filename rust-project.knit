@@ -21,7 +21,7 @@ function normalize(result)
 end
 
 function workspaceMembers() -- workaround because rust-analyzer can't mix rust-project.json and cargo-based project
-  local conf = {
+  local crateConf = {
     is_workspace_member = true,
     is_proc_macro = true,
   }
@@ -30,7 +30,9 @@ function workspaceMembers() -- workaround because rust-analyzer can't mix rust-p
     function process(files, depth)
       local list = {}; for i = 1, #dirs do
         for j, path in ipairs(glob(dirs[i]..f"/$files")) do -- I HATE THIS 😢
-          list[i+j-1] = path
+          if not path:match(dirs[i].."/"..(conf.symlink or "\0")) then
+            list[i+j-1] = path
+          end
         end
       end
       for _, file in ipairs(list) do
@@ -58,7 +60,7 @@ function workspaceMembers() -- workaround because rust-analyzer can't mix rust-p
         result = result .. crateJSON({
           display_name = module,
           root_module = file,
-        }, conf)..",\n  "
+        }, crateConf)..",\n  "
       end
     end
     process("src/*.rs", 1)
@@ -66,7 +68,7 @@ function workspaceMembers() -- workaround because rust-analyzer can't mix rust-p
     return result
   end
   return normalize(
-    cargoFrom({"libs/rust"}, {name="libnusa"}) ..
+    cargoFrom({"libs/rust"}, {name="libnusa", symlink="src/types/"}) ..
     cargoFrom(glob("examples/rust/*/*"), {prefix="example", depth=2})
   )
 end
