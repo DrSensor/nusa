@@ -1,0 +1,8 @@
+[package]
+name = "libnusa"
+version = "0.0.1-Jan.2023"
+edition = "2021"
+repository = "https://github.com/DrSensor/nusa/tree/main/libs/rust"
+keywords = ["webdev", "wasm", "no_std", "nusa"]
+categories = ["web-programming", "api-bindings", "no-std::no-alloc", "wasm"]
+license = "MIT"
