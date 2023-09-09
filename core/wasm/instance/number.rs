@@ -31,7 +31,7 @@ unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> (Number, Null) {
 
     let len_byte = len as usize * byte as usize; // shift offset for the next allocation
     offset::set(addr + len_byte);
-    if offset::get() > memory_size::<0>() * PAGE {
+    if offset::get() > memory_size(0) * PAGE {
         memory_grow(0, 1);
     };
 
