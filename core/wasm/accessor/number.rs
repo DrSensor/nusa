@@ -2,7 +2,7 @@ mod index;
 mod types;
 
 use index::current as index;
-use types::{number::Type, CTuple, JSNumber, Null, Number};
+use types::{number::Type, JSNumber, Null, Number};
 
 type Setter = unsafe fn(Number, JSNumber);
 type Getter = unsafe fn(Number) -> JSNumber;

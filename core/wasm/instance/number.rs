@@ -2,7 +2,7 @@ mod offset;
 mod types;
 
 use core::arch::wasm32::{memory_grow, memory_size};
-use types::{number::Type, CTuple, Null, Number};
+use types::{number::Type, Null, Number};
 
 static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
 
@@ -25,8 +25,8 @@ unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> (Number, Null) {
        // let byte: u8 = match ty {
        //     Uint8 | Int8 => 1,
        //     Uint16 | Int16 => 2,
-       //     Uint32 | Int32 | Float32 => 3,
-       //     Uint64 | Int64 | Float64 => 4,
+       //     Uint32 | Int32 | Float32 => 4,
+       //     Uint64 | Int64 | Float64 => 8,
        // };
 
     let len_byte = len as usize * byte as usize; // shift offset for the next allocation
