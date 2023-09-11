@@ -10,7 +10,7 @@ trait Accessor<T> {
 pub trait Series {
     type As;
     fn ptr(&self) -> *const Self::As;
-    fn allocate(len: host::Size) -> (usize, usize);
+    fn allocate(len: host::Size) -> usize;
     fn len(&self) -> host::Size;
     fn is_empty(&self) -> bool {
         self.len() == 0
@@ -30,7 +30,7 @@ mod host {
     }
 
     pub mod num {
-        use crate::types::{ffi::CTuple, number::Type, JSNumber, Null, Number};
+        use crate::types::{ffi::CTuple, number::Type, JSNumber, Number};
         use core::ffi::c_void;
         pub type Setter = extern "C" fn(Number, JSNumber);
         pub type Getter = extern "C" fn(Number) -> JSNumber;
@@ -38,13 +38,8 @@ mod host {
         #[link(wasm_import_module = "nusa")]
         #[allow(improper_ctypes)]
         extern "C" {
-            #[cfg(target_feature = "multivalue")]
             #[link_name = "num.allocate"]
-            pub fn allocate(ty: Type, len: u16, nullable: bool) -> (Number, Null);
-
-            #[cfg(not(target_feature = "multivalue"))]
-            #[link_name = "num.cABIallocate"]
-            pub fn allocate(ty: Type, len: u16, nullable: bool) -> CTuple<Number, Null>;
+            pub fn allocate(ty: Type, len: u16, nullable: bool) -> Number;
 
             #[cfg(target_feature = "multivalue")]
             #[link_name = "num.accessor"]

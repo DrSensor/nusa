@@ -18,9 +18,9 @@ macro_rules! bridge {
                 self.addr as *const primitive::$ty
             }
 
-            fn allocate(len: host::Size) -> (usize, usize) {
-                let (number, null) = unsafe { host::num::allocate(Type::$Ty, len, false).into() };
-                (number.addr, null.addr)
+            fn allocate(len: host::Size) -> usize {
+                let number = unsafe { host::num::allocate(Type::$Ty, len, false) };
+                number.addr
             }
 
             fn len(&self) -> host::Size {
@@ -32,7 +32,7 @@ macro_rules! bridge {
             #[allow(clippy::new_without_default)]
             pub fn new() -> Self {
                 let len = unsafe { host::scope::size() };
-                let (addr, _) = Self::allocate(len);
+                let addr = Self::allocate(len);
                 let (getter, setter) = unsafe { host::num::accessor(Type::$Ty).into() };
                 let accr = unsafe { (transmute(getter), transmute(setter)) };
                 $ty { len, addr, accr }

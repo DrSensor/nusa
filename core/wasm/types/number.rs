@@ -1,11 +1,15 @@
 #![allow(dead_code)]
+use super::{convert_between, Layout};
 
 pub type JSNumber = f64;
 
 #[repr(transparent)]
+#[derive(Clone, Copy)]
 pub struct Number {
     pub addr: usize,
 }
+convert_between!(Number |T| *const T);
+impl Layout for Number {}
 
 #[repr(i8)]
 pub enum Type {

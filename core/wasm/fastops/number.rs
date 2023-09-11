@@ -1,7 +1,7 @@
 pub mod types;
 
 use core::slice;
-use types::{number::Type, JSNumber, Null, Number};
+use types::{number::Type, JSNumber, Layout, Null, Number};
 
 /// export_name is based on https://pola-rs.github.io/polars/py-polars/html/reference/expressions/operators.html#numeric
 
@@ -31,7 +31,7 @@ unsafe fn iter_nonnull(null: Null, len_byte: u16, mut callback: impl FnMut(usize
         let nullptr = (null.addr as *const i8).add(i);
         let mut nullbit = nullptr.read();
         while nullbit != 0 {
-            callback((i as u32 * u8::BITS + nullbit.trailing_zeros()) as usize);
+            callback((i as u32 * Null::BITS + nullbit.trailing_zeros()) as usize);
             nullbit ^= nullbit & -nullbit;
         }
     }
@@ -40,9 +40,7 @@ unsafe fn iter_nonnull(null: Null, len_byte: u16, mut callback: impl FnMut(usize
 unsafe fn iter<T>(skip_null: bool, this: Number, len: u16, mut mutate: impl FnMut(*mut T, usize)) {
     let array = slice::from_raw_parts_mut(this.addr as *mut T, len as usize);
     if skip_null {
-        let nc_byte = (len as f32 / u8::BITS as f32).ceil(); // length of null count in byte
-        let addr = this.addr - nc_byte as usize;
-        iter_nonnull(Null { addr }, nc_byte as u16, move |i| {
+        iter_nonnull(this.nullbit(len), Null::byte(len) as u16, move |i| {
             let item = array.get_unchecked_mut(i);
             mutate(item, i);
         });

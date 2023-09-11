@@ -1,11 +1,6 @@
 pub mod number;
 pub use number::{JSNumber, Number};
 
-#[repr(transparent)]
-pub struct Null {
-    pub addr: usize,
-}
-
 macro_rules! convert_between {
     ($into:ty |$($G:ident)?| $from:ty) => {
         impl$(<$G>)? From<$from> for $into {
@@ -21,14 +16,45 @@ macro_rules! convert_between {
         }
     };
 }
-
 pub(crate) use convert_between;
+
+#[repr(transparent)]
+#[derive(Clone, Copy)]
+pub struct Null {
+    pub addr: usize,
+}
 convert_between!(Null |T| *const T);
-convert_between!(Number |T| *const T);
+impl Null {
+    /// length of null count in byte
+    pub fn byte(len: u16) -> usize {
+        (len as f32 / u8::BITS as f32).ceil() as usize
+    }
+    /// minimum bits (can be used to determine alignment)
+    pub const BITS: u32 = u8::BITS;
+}
+
+pub trait Layout
+where
+    Self: Into<*const c_void> + Copy,
+{
+    /// WARNING: it may NOT have nullbit
+    /// # Safety
+    /// ```rs
+    /// let this = allocate(ty, len, nullable);
+    /// let null = if nullable { Some(this.nullbit(len)) } else { None };
+    /// ```
+    unsafe fn nullbit(&self, len: u16) -> Null {
+        let addr = (*self).into() as usize - Null::byte(len);
+        Null { addr }
+    }
+    // TODO: fn renderbit() -> Render {}
+}
+
+use core::ffi::c_void;
 
 #[cfg(any(target_pointer_width = "32", target_pointer_width = "16"))]
 pub mod ffi {
-    use core::ffi::c_void;
+    use super::c_void;
     use core::marker::PhantomData;
 
     #[repr(transparent)]

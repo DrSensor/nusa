@@ -2,19 +2,13 @@ mod offset;
 mod types;
 
 use core::arch::wasm32::{memory_grow, memory_size};
-use types::{ffi::CTuple, number::Type, Null, Number};
+use types::{number::Type, Null, Number};
 
 static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
 
-#[export_name = "allocate"]
-unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> (Number, Null) {
-    let addr = if nullable {
-        let nc_byte = (len as f32 / u8::BITS as f32).ceil() as usize; // length of null count in byte
-        offset::get() + nc_byte
-    } else {
-        offset::get()
-    };
-    let null_addr = if nullable { offset::get() } else { 0 };
+#[export_name = "allocate"] // TODO: return only Number
+unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> Number {
+    let addr = offset::get() + if nullable { Null::byte(len) } else { 0 };
 
     let ty = ty as i8;
     let byte = if ty > -64 {
@@ -35,11 +29,5 @@ unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> (Number, Null) {
         memory_grow(0, 1);
     };
 
-    (Number { addr }, Null { addr: null_addr })
-}
-
-#[cfg(any(target_pointer_width = "32", target_pointer_width = "16"))]
-#[export_name = "cABIallocate"]
-unsafe fn c_array_of(ty: Type, len: u16, nullable: bool) -> CTuple<Number, Null> {
-    CTuple::from(array_of(ty, len, nullable))
+    Number { addr }
 }
