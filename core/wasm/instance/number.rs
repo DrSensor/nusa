@@ -2,7 +2,7 @@ mod offset;
 mod types;
 
 use core::arch::wasm32::{memory_grow, memory_size};
-use types::{number::Type, Null, Number};
+use types::{ffi::CTuple, number::Type, Null, Number};
 
 static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
 
@@ -36,4 +36,10 @@ unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> (Number, Null) {
     };
 
     (Number { addr }, Null { addr: null_addr })
+}
+
+#[cfg(any(target_pointer_width = "32", target_pointer_width = "16"))]
+#[export_name = "cABIallocate"]
+unsafe fn c_array_of(ty: Type, len: u16, nullable: bool) -> CTuple<Number, Null> {
+    CTuple::from(array_of(ty, len, nullable))
 }

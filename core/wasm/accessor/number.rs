@@ -1,8 +1,9 @@
 mod index;
 mod types;
 
+use core::ffi::c_void;
 use index::current as index;
-use types::{number::Type, JSNumber, Null, Number};
+use types::{ffi::CTuple, number::Type, JSNumber, Null, Number};
 
 type Setter = unsafe fn(Number, JSNumber);
 type Getter = unsafe fn(Number) -> JSNumber;
@@ -25,6 +26,13 @@ fn accessor(ty: Type) -> (Getter, Setter) {
         Int64 => (truncate::getter::<i64>, truncate::setter::<i64>),
         Float64 => (rounding::getter::<f64>, rounding::setter::<f64>),
     }
+}
+
+#[cfg(any(target_pointer_width = "32", target_pointer_width = "16"))]
+#[export_name = "cABIaccessor"]
+fn c_accessor(ty: Type) -> CTuple<*const c_void, *const c_void> {
+    let (getter, setter) = accessor(ty);
+    CTuple::from((getter as *const c_void, setter as *const c_void))
 }
 
 #[no_mangle]
