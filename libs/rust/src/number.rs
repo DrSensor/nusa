@@ -1,5 +1,5 @@
 use crate::{host, types, Accessor, Series};
-use core::primitive;
+use core::{intrinsics::transmute, primitive};
 use types::number::{JSNumber, Type};
 
 macro_rules! bridge {
@@ -19,7 +19,7 @@ macro_rules! bridge {
             }
 
             fn allocate(len: host::Size) -> (usize, usize) {
-                let (number, null) = unsafe { host::num::allocate(Type::$Ty, len, false) };
+                let (number, null) = unsafe { host::num::allocate(Type::$Ty, len, false).into() };
                 (number.addr, null.addr)
             }
 
@@ -33,8 +33,8 @@ macro_rules! bridge {
             pub fn new() -> Self {
                 let len = unsafe { host::scope::size() };
                 let (addr, _) = Self::allocate(len);
-                let (getter, setter) = unsafe { host::num::accessor(Type::$Ty) };
-                let accr = (getter, setter);
+                let (getter, setter) = unsafe { host::num::accessor(Type::$Ty).into() };
+                let accr = unsafe { (transmute(getter), transmute(setter)) };
                 $ty { len, addr, accr }
             }
         }

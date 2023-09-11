@@ -30,17 +30,29 @@ mod host {
     }
 
     pub mod num {
-        use crate::types::{number::Type, JSNumber, Null, Number};
+        use crate::types::{ffi::CTuple, number::Type, JSNumber, Null, Number};
+        use core::ffi::c_void;
         pub type Setter = extern "C" fn(Number, JSNumber);
         pub type Getter = extern "C" fn(Number) -> JSNumber;
 
         #[link(wasm_import_module = "nusa")]
         #[allow(improper_ctypes)]
         extern "C" {
+            #[cfg(target_feature = "multivalue")]
             #[link_name = "num.allocate"]
             pub fn allocate(ty: Type, len: u16, nullable: bool) -> (Number, Null);
+
+            #[cfg(not(target_feature = "multivalue"))]
+            #[link_name = "num.cABIallocate"]
+            pub fn allocate(ty: Type, len: u16, nullable: bool) -> CTuple<Number, Null>;
+
+            #[cfg(target_feature = "multivalue")]
             #[link_name = "num.accessor"]
             pub fn accessor(ty: Type) -> (Getter, Setter);
+
+            #[cfg(not(target_feature = "multivalue"))]
+            #[link_name = "num.cABIaccessor"]
+            pub fn accessor(ty: Type) -> CTuple<*const c_void, *const c_void>;
         }
 
         #[link(wasm_import_module = "nusa")]
