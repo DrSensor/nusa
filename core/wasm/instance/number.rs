@@ -6,7 +6,7 @@ use types::{number::Type, Null, Number};
 
 static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
 
-#[export_name = "allocate"] // TODO: return only Number
+#[export_name = "num.allocate"] // TODO: return only Number
 unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> Number {
     let addr = offset::get() + if nullable { Null::byte(len) } else { 0 };
 

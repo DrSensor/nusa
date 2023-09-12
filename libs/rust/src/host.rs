@@ -13,11 +13,11 @@ pub mod scope {
 pub mod null {
     #[link(wasm_import_module = "nusa")]
     extern "C" {
-        #[link_name = "beNULL"]
+        #[link_name = "null.set"]
         pub fn set(ptr: usize);
-        #[link_name = "unNULL"]
+        #[link_name = "null.clr"]
         pub fn clr(ptr: usize);
-        #[link_name = "isNULL"]
+        #[link_name = "null.chk"]
         pub fn chk(ptr: usize) -> bool;
     }
 }

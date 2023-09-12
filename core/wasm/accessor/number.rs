@@ -8,7 +8,7 @@ use types::{ffi::CTuple, number::Type, JSNumber, Number};
 type Setter = unsafe fn(Number, JSNumber);
 type Getter = unsafe fn(Number) -> JSNumber;
 
-#[export_name = "accessor"] // WARNING: this func not inlined inside alloc() because rust wasm +multivalue can only return at most 2 value
+#[export_name = "num.accessor"] // WARNING: this func not inlined inside alloc() because rust wasm +multivalue can only return at most 2 value
 fn accessor(ty: Type) -> (Getter, Setter) {
     use Type::*;
     match ty {
@@ -29,17 +29,18 @@ fn accessor(ty: Type) -> (Getter, Setter) {
 }
 
 #[cfg(any(target_pointer_width = "32", target_pointer_width = "16"))]
-#[export_name = "cABIaccessor"]
+#[export_name = "num.cABIaccessor"]
 fn c_accessor(ty: Type) -> CTuple<*const c_void, *const c_void> {
     let (getter, setter) = accessor(ty);
     CTuple::from((getter as *const c_void, setter as *const c_void))
 }
 
-#[no_mangle]
+#[export_name = "num.set"]
 fn set(set: fn(Number, JSNumber), this: Number, val: JSNumber) {
     set(this, val)
 }
-#[no_mangle]
+
+#[export_name = "num.get"]
 fn get(get: fn(Number) -> JSNumber, this: Number) -> JSNumber {
     get(this)
 }

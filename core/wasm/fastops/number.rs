@@ -5,8 +5,8 @@ use types::{number::Type, JSNumber, Layout, Null, Number};
 
 /// export_name is based on https://pola-rs.github.io/polars/py-polars/html/reference/expressions/operators.html#numeric
 
-#[export_name = "addVal"]
-unsafe fn add_by_value(ty: Type, len: u16, skip_null: bool, this: Number, val: JSNumber) {
+#[export_name = "num.bulk.mut.addVal"]
+unsafe fn add_assign_by_value(ty: Type, len: u16, skip_null: bool, this: Number, val: JSNumber) {
     use Type::*;
     match ty {
         Uint8 => add::by_value::truncate::<u8>(len, skip_null, this, val),
