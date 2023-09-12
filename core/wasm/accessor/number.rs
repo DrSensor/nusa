@@ -3,7 +3,7 @@ mod types;
 
 use core::ffi::c_void;
 use index::current as index;
-use types::{ffi::CTuple, number::Type, JSNumber, Null, Number};
+use types::{ffi::CTuple, number::Type, JSNumber, Number};
 
 type Setter = unsafe fn(Number, JSNumber);
 type Getter = unsafe fn(Number) -> JSNumber;
@@ -42,26 +42,6 @@ fn set(set: fn(Number, JSNumber), this: Number, val: JSNumber) {
 #[no_mangle]
 fn get(get: fn(Number) -> JSNumber, this: Number) -> JSNumber {
     get(this)
-}
-
-#[export_name = "beNULL"]
-unsafe fn set_null(this: Null) {
-    *nullptr(this) |= 1 << index()
-}
-
-#[export_name = "unNULL"]
-unsafe fn clear_null(this: Null) {
-    *nullptr(this) &= !(1 << index())
-}
-
-#[export_name = "isNULL"]
-unsafe fn check_null(this: Null) -> bool {
-    ((*nullptr(this) >> index()) & 1) != 0
-}
-
-unsafe fn nullptr(this: Null) -> *mut isize {
-    let offset = (index() as f32 / isize::BITS as f32).floor() as usize;
-    (this.addr as *mut isize).add(offset)
 }
 
 unsafe fn ptr<T>(this: Number) -> *mut T {
