@@ -1,4 +1,4 @@
-use crate::{host, types, Accessor, Series};
+use crate::{host, types, Accessor, Build, Series};
 use core::{intrinsics::transmute, primitive};
 use types::number::{JSNumber, Type};
 
@@ -6,46 +6,55 @@ macro_rules! bridge {
     ($ty:ident, $Ty:ident) => {
         #[allow(non_camel_case_types)]
         pub struct $ty {
-            len: host::Size,
+            len: host::DataSize,
             addr: usize,
             accr: (host::num::Getter, host::num::Setter),
         }
 
-        impl Series for self::$ty {
-            type As = primitive::$ty;
-
-            fn ptr(&self) -> *const primitive::$ty {
-                self.addr as *const primitive::$ty
+        impl Build for self::$ty {
+            const TYPE_ID: primitive::i8 = Type::$Ty as primitive::i8;
+            type Accessor = (host::num::Getter, host::num::Setter);
+            unsafe fn accessor() -> Self::Accessor {
+                let (getter, setter) =
+                    unsafe { host::num::accessor(Type::$Ty as primitive::i8).into() };
+                (transmute(getter), transmute(setter))
             }
-
-            fn allocate(len: host::Size) -> usize {
-                let number = unsafe { host::num::allocate(Type::$Ty, len, false) };
+            unsafe fn allocate(len: host::DataSize) -> usize {
+                let number = host::num::allocate(Type::$Ty as primitive::i8, len, false);
                 number.addr
             }
-
-            fn len(&self) -> host::Size {
-                self.len
+            unsafe fn build(len: host::DataSize, addr: usize, accr: Self::Accessor) -> Self {
+                $ty { len, addr, accr }
             }
         }
 
         impl self::$ty {
             #[allow(clippy::new_without_default)]
             pub fn new() -> Self {
-                let len = unsafe { host::scope::size() };
-                let addr = Self::allocate(len);
-                let (getter, setter) = unsafe { host::num::accessor(Type::$Ty).into() };
-                let accr = unsafe { (transmute(getter), transmute(setter)) };
-                $ty { len, addr, accr }
+                unsafe {
+                    let len = host::scope::size();
+                    Self::build(len, Self::allocate(len), Self::accessor())
+                }
             }
         }
 
-        impl Accessor<primitive::$ty> for self::$ty {
-            fn set(self, value: primitive::$ty) {
+        impl Series for self::$ty {
+            type As = primitive::$ty;
+            fn ptr(&self) -> *const Self::As {
+                self.addr as *const Self::As
+            }
+            fn len(&self) -> host::DataSize {
+                self.len
+            }
+        }
+
+        impl Accessor for self::$ty {
+            type Type = primitive::$ty;
+            fn set(&self, value: Self::Type) {
                 let (_, setter) = self.accr;
                 unsafe { host::num::set(setter, self.addr, value as JSNumber) }
             }
-
-            fn get(self) -> primitive::$ty {
+            fn get(&self) -> Self::Type {
                 let (getter, _) = self.accr;
                 unsafe { host::num::get(getter, self.addr) as primitive::$ty }
             }

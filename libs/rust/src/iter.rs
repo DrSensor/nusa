@@ -22,7 +22,7 @@ macro_rules! bridge {
                 let All(data) = self;
                 unsafe {
                     host::num::mutate::addVAL(
-                        Type::$Ty,
+                        Type::$Ty as i8,
                         data.len(),
                         false,
                         data.ptr().into(),
@@ -39,7 +39,7 @@ macro_rules! bridge {
                 let All(data) = self;
                 unsafe {
                     host::num::compute::addVAL(
-                        Type::$Ty,
+                        Type::$Ty as i8,
                         data.len(),
                         false,
                         data.ptr().into(),
