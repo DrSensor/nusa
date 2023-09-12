@@ -25,7 +25,7 @@ macro_rules! bridge {
                         Type::$Ty as i8,
                         data.len(),
                         false,
-                        data.ptr().into(),
+                        data.addr(),
                         rhs as JSNumber,
                     )
                 }
@@ -42,7 +42,7 @@ macro_rules! bridge {
                         Type::$Ty as i8,
                         data.len(),
                         false,
-                        data.ptr().into(),
+                        data.addr(),
                         rhs as JSNumber,
                     ) as Self::Output
                 }

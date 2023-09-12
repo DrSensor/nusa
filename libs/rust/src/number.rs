@@ -39,9 +39,8 @@ macro_rules! bridge {
         }
 
         impl Series for self::$ty {
-            type As = primitive::$ty;
-            fn ptr(&self) -> *const Self::As {
-                self.addr as *const Self::As
+            fn addr(&self) -> usize {
+                self.addr
             }
             fn len(&self) -> host::DataSize {
                 self.len

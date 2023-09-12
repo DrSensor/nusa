@@ -12,8 +12,7 @@ pub trait Accessor {
 }
 
 pub trait Series {
-    type As;
-    fn ptr(&self) -> *const Self::As;
+    fn addr(&self) -> usize;
     fn len(&self) -> host::DataSize;
     fn is_empty(&self) -> bool {
         self.len() == 0
@@ -90,7 +89,7 @@ mod host {
             #[link(wasm_import_module = "nusa")]
             extern "C" {
                 #[link_name = "num.bulk.mut.addVAL"]
-                pub fn addVAL(ty: TypeId, len: u16, nullable: bool, this: Number, val: JSNumber);
+                pub fn addVAL(ty: TypeId, len: u16, nullable: bool, this: usize, val: JSNumber);
             }
         }
 
@@ -105,7 +104,7 @@ mod host {
                     ty: TypeId,
                     len: u16,
                     nullable: bool,
-                    this: Number,
+                    this: usize,
                     val: JSNumber,
                 ) -> host::BufAddr;
             }

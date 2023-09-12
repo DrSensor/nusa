@@ -34,9 +34,8 @@ impl<T: Build> self::Null<T> {
 }
 
 impl<T: Series + Build> Series for self::Null<T> {
-    type As = T::As;
-    fn ptr(&self) -> *const Self::As {
-        self.data.ptr()
+    fn addr(&self) -> usize {
+        self.data.addr()
     }
     fn len(&self) -> host::DataSize {
         self.data.len()
