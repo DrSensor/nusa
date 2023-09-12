@@ -25,6 +25,7 @@ impl<T: Build> self::Null<T> {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         unsafe {
+            host::null::noop();
             let len = host::scope::size();
             let addr = Self::allocate(len);
             let data = T::build(len, addr + types::Null::byte(len), T::accessor());

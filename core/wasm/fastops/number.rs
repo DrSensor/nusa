@@ -3,7 +3,8 @@ pub mod types;
 use core::slice;
 use types::{number::Type, JSNumber, Layout, Null, Number};
 
-/// export_name is based on https://pola-rs.github.io/polars/py-polars/html/reference/expressions/operators.html#numeric
+#[export_name = "num.bulk.noop"]
+fn noop() {}
 
 #[export_name = "num.bulk.mut.addVal"]
 unsafe fn add_assign_by_value(ty: Type, len: u16, skip_null: bool, this: Number, val: JSNumber) {

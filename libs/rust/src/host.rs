@@ -13,6 +13,9 @@ pub mod scope {
 pub mod null {
     #[link(wasm_import_module = "nusa")]
     extern "C" {
+        #[link_name = "null.noop"]
+        pub fn noop();
+
         #[link_name = "null.set"]
         pub fn set(ptr: usize);
         #[link_name = "null.clr"]
@@ -34,7 +37,10 @@ pub mod num {
     extern "C" {
         #[link_name = "num.allocate"]
         pub fn allocate(ty: TypeId, len: u16, nullable: bool) -> Number;
+    }
 
+    #[link(wasm_import_module = "nusa")]
+    extern "C" {
         #[cfg(target_feature = "multivalue")]
         #[link_name = "num.accessor"]
         pub fn accessor(ty: TypeId) -> (Getter, Setter);
@@ -42,14 +48,17 @@ pub mod num {
         #[cfg(not(target_feature = "multivalue"))]
         #[link_name = "num.cABIaccessor"]
         pub fn accessor(ty: TypeId) -> CTuple<*const c_void, *const c_void>;
-    }
 
-    #[link(wasm_import_module = "nusa")]
-    extern "C" {
         #[link_name = "num.set"]
         pub fn set(setter: Setter, ptr: usize, value: JSNumber);
         #[link_name = "num.get"]
         pub fn get(getter: Getter, ptr: usize) -> JSNumber;
+    }
+
+    #[link(wasm_import_module = "nusa")]
+    extern "C" {
+        #[link_name = "num.bulk.noop"]
+        pub fn iter_noop();
     }
 
     pub mod mutate {

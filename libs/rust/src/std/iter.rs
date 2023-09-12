@@ -21,6 +21,7 @@ macro_rules! bridge {
             fn add_assign(&mut self, rhs: primitive::$ty) {
                 let All(data) = self;
                 unsafe {
+                    host::num::iter_noop();
                     host::num::mutate::addVAL(
                         Type::$Ty as i8,
                         data.len(),
@@ -38,6 +39,7 @@ macro_rules! bridge {
             fn add(self, rhs: primitive::$ty) -> Self::Output {
                 let All(data) = self;
                 unsafe {
+                    host::num::iter_noop();
                     host::num::compute::addVAL(
                         Type::$Ty as i8,
                         data.len(),
