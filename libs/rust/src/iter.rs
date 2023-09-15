@@ -1,10 +1,7 @@
 use crate::{host, number, types, Series};
-use core::ops;
-use std::primitive;
-use types::number::{JSNumber, Type};
-
-#[repr(transparent)]
-pub struct All<T: Series>(T);
+use core::marker::PhantomData;
+use core::{ops, primitive};
+use types::number::JSNumber;
 
 pub fn for_all<T, F, E, const N: usize>(from: F, exec: E)
 where
@@ -15,15 +12,44 @@ where
     exec(from.into().map(All))
 }
 
+pub struct All<T: Series>(T);
+impl<T: Series> Series for All<T> {
+    const TYPE_ID: primitive::i8 = T::TYPE_ID;
+    fn addr(&self) -> usize {
+        self.0.addr()
+    }
+    fn len(&self) -> host::DataSize {
+        self.0.len()
+    }
+}
+
+pub struct Buffer<T: Series> {
+    addr: usize,
+    len: host::DataSize,
+    _data: PhantomData<T>,
+}
+impl<T: Series> Series for Buffer<T> {
+    const TYPE_ID: i8 = T::TYPE_ID;
+    fn addr(&self) -> usize {
+        self.addr
+    }
+    fn len(&self) -> host::DataSize {
+        self.len
+    }
+}
+
+// TODO: combine into one macro by using `concat_idents!($ops, Assign)`
+// https://github.com/rust-lang/rust/issues/29599
+
 macro_rules! bridge {
-    ($ty:ident, $Ty:ident) => {
-        impl ops::AddAssign<primitive::$ty> for All<number::$ty> {
+    (num.mutate: $ops:ident, $ty:ident) => {
+        impl ops::$ops<primitive::$ty> for All<number::$ty> {
             fn add_assign(&mut self, rhs: primitive::$ty) {
                 let All(data) = self;
                 unsafe {
                     host::num::iter_noop();
                     host::num::mutate::addVAL(
-                        Type::$Ty as i8,
+                        Self::TYPE_ID,
                         data.len(),
                         false,
                         data.addr(),
@@ -32,37 +58,46 @@ macro_rules! bridge {
                 }
             }
         }
+    };
 
-        // TODO: is this correct?
-        impl ops::Add<primitive::$ty> for All<number::$ty> {
-            type Output = host::BufAddr;
+    (num.compute: $ops:ident, $ty:ident) => {
+         impl ops::$ops<primitive::$ty> for All<number::$ty> {
+            type Output = Buffer<number::$ty>;
             fn add(self, rhs: primitive::$ty) -> Self::Output {
                 let All(data) = self;
-                unsafe {
+                let len = data.len();
+                let addr = unsafe {
                     host::num::iter_noop();
                     host::num::compute::addVAL(
-                        Type::$Ty as i8,
-                        data.len(),
+                        Self::TYPE_ID,
+                        len,
                         false,
                         data.addr(),
                         rhs as JSNumber,
-                    ) as Self::Output
-                }
+                    )
+                };
+                let _data = PhantomData;
+                Buffer { addr, len, _data }
             }
         }
     };
+
+    (num::$ty:ident) => {
+        bridge!(num.mutate: AddAssign, $ty);
+        bridge!(num.compute: Add, $ty);
+    };
 }
 
-bridge!(u8, Uint8);
-bridge!(i8, Int8);
+bridge!(num::u8);
+bridge!(num::i8);
 
-bridge!(u16, Uint16);
-bridge!(i16, Int16);
+bridge!(num::u16);
+bridge!(num::i16);
 
-bridge!(u32, Uint32);
-bridge!(i32, Int32);
-bridge!(f32, Float32);
+bridge!(num::u32);
+bridge!(num::i32);
+bridge!(num::f32);
 
-bridge!(u64, Uint64);
-bridge!(i64, Int64);
-bridge!(f64, Float64);
+bridge!(num::u64);
+bridge!(num::i64);
+bridge!(num::f64);

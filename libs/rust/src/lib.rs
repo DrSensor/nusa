@@ -14,6 +14,7 @@ pub trait Accessor {
 }
 
 pub trait Series {
+    const TYPE_ID: primitive::i8;
     fn addr(&self) -> usize;
     fn len(&self) -> host::DataSize;
     fn is_empty(&self) -> bool {

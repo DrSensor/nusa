@@ -35,6 +35,7 @@ impl<T: Build> self::Null<T> {
 }
 
 impl<T: Series + Build> Series for self::Null<T> {
+    const TYPE_ID: i8 = <T as Series>::TYPE_ID;
     fn addr(&self) -> usize {
         self.data.addr()
     }

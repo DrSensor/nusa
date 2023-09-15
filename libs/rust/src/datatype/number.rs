@@ -39,6 +39,7 @@ macro_rules! bridge {
         }
 
         impl Series for self::$ty {
+            const TYPE_ID: primitive::i8 = Type::$Ty as primitive::i8;
             fn addr(&self) -> usize {
                 self.addr
             }

@@ -1,5 +1,4 @@
 pub type DataSize = u16;
-pub type BufAddr = usize; // buffer to store temporary array from all `host::*::compute` module 🤔
 pub type TypeId = i8;
 
 pub mod scope {
@@ -73,7 +72,6 @@ pub mod num {
 
     pub mod compute {
         use super::*;
-        use crate::host;
 
         #[link(wasm_import_module = "nusa")]
         extern "C" {
@@ -84,7 +82,7 @@ pub mod num {
                 nullable: bool,
                 this: usize,
                 val: JSNumber,
-            ) -> host::BufAddr;
+            ) -> usize;
         }
     }
 }
