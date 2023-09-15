@@ -1,6 +1,8 @@
 pub mod number;
 pub use number::{JSNumber, Number};
 
+pub static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
+
 macro_rules! convert_between {
     ($into:ty |$($G:ident)?| $from:ty) => {
         impl$(<$G>)? From<$from> for $into {
@@ -17,6 +19,14 @@ macro_rules! convert_between {
     };
 }
 pub(crate) use convert_between;
+
+#[repr(transparent)]
+#[derive(Clone, Copy)]
+pub struct Buffer {
+    pub addr: usize,
+}
+convert_between!(Buffer |T| *const T);
+impl Layout for Buffer {}
 
 #[repr(transparent)]
 #[derive(Clone, Copy)]

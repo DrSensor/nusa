@@ -2,9 +2,7 @@ mod offset;
 mod types;
 
 use core::arch::wasm32::{memory_grow, memory_size};
-use types::{number::Type, Null, Number};
-
-static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
+use types::{number::Type, Null, Number, PAGE};
 
 #[export_name = "num.allocate"] // TODO: return only Number
 unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> Number {
