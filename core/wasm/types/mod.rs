@@ -1,6 +1,7 @@
 pub mod number;
 pub use number::{JSNumber, Number};
 
+#[allow(dead_code)]
 pub static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
 
 macro_rules! convert_between {
