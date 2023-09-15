@@ -1,9 +1,10 @@
+mod datatype;
 mod host;
-mod std;
 mod types;
 use core::primitive;
 
-pub use crate::std::{iter, null::Null, number};
+pub mod iter;
+pub use datatype::{null::Null, number};
 pub use number::*;
 
 pub trait Accessor {
