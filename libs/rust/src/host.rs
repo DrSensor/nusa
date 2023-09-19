@@ -1,41 +1,48 @@
-pub type DataSize = u16;
+pub type Len = u16;
 pub type TypeId = i8;
 
-pub mod scope {
-    #[link(wasm_import_module = "nusa")]
-    extern "C" {
-        #[link_name = "scope.size"]
-        pub fn size() -> u16;
-    }
-}
-
 pub mod null {
+    use crate::types::Null;
+
     #[link(wasm_import_module = "nusa")]
     extern "C" {
         #[link_name = "null.noop"]
         pub fn noop();
 
         #[link_name = "null.set"]
-        pub fn set(ptr: usize);
+        pub fn set(ptr: Null);
         #[link_name = "null.clr"]
-        pub fn clr(ptr: usize);
+        pub fn clr(ptr: Null);
         #[link_name = "null.chk"]
-        pub fn chk(ptr: usize) -> bool;
+        pub fn chk(ptr: Null) -> bool;
     }
 }
 
+use crate::types::C;
+C::Item_primitive!(Len);
+
 pub mod num {
-    use super::TypeId;
-    use crate::types::{ffi::CTuple, JSNumber, Number};
-    use core::ffi::c_void;
+    use super::{Len, TypeId};
+    use crate::types::{JSNumber, Number, C};
 
     pub type Setter = extern "C" fn(Number, JSNumber);
     pub type Getter = extern "C" fn(Number) -> JSNumber;
 
+    C::Item_fn!(Setter);
+    C::Item_fn!(Getter);
+
     #[link(wasm_import_module = "nusa")]
     extern "C" {
         #[link_name = "num.allocate"]
-        pub fn allocate(ty: TypeId, len: u16, nullable: bool) -> Number;
+        pub fn allocate(ty: TypeId, len: Len, nullable: bool) -> Number;
+
+        #[cfg(target_feature = "multivalue")]
+        #[link_name = "num.allocateAUTO"]
+        pub fn allocateAUTO(ty: TypeId, nullable: bool) -> (Number, Len);
+
+        #[cfg(not(target_feature = "multivalue"))]
+        #[link_name = "num.allocateAUTO"]
+        pub fn allocateAUTO(ty: TypeId, nullable: bool) -> C::Tuple<Number, Len>;
     }
 
     #[link(wasm_import_module = "nusa")]
@@ -46,12 +53,12 @@ pub mod num {
 
         #[cfg(not(target_feature = "multivalue"))]
         #[link_name = "num.cABIaccessor"]
-        pub fn accessor(ty: TypeId) -> CTuple<*const c_void, *const c_void>;
+        pub fn accessor(ty: TypeId) -> C::Tuple<Getter, Setter>;
 
         #[link_name = "num.set"]
-        pub fn set(setter: Setter, ptr: usize, value: JSNumber);
+        pub fn set(setter: Setter, ptr: Number, value: JSNumber);
         #[link_name = "num.get"]
-        pub fn get(getter: Getter, ptr: usize) -> JSNumber;
+        pub fn get(getter: Getter, ptr: Number) -> JSNumber;
     }
 
     #[link(wasm_import_module = "nusa")]
@@ -66,7 +73,7 @@ pub mod num {
         #[link(wasm_import_module = "nusa")]
         extern "C" {
             #[link_name = "num.bulk.mut.addVAL"]
-            pub fn addVAL(ty: TypeId, len: u16, nullable: bool, this: usize, val: JSNumber);
+            pub fn addVAL(ty: TypeId, len: Len, nullable: bool, this: Number, val: JSNumber);
         }
     }
 
@@ -78,9 +85,9 @@ pub mod num {
             #[link_name = "num.bulk.calc.addVAL"] // TODO
             pub fn addVAL(
                 ty: TypeId,
-                len: u16,
+                len: Len,
                 nullable: bool,
-                this: usize,
+                this: Number,
                 val: JSNumber,
             ) -> usize;
         }

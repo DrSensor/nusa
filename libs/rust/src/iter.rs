@@ -1,7 +1,7 @@
 use crate::{host, number, types, Series};
 use core::marker::PhantomData;
 use core::{ops, primitive};
-use types::number::JSNumber;
+use types::number::{JSNumber, Number};
 
 pub fn for_all<T, F, E, const N: usize>(from: F, exec: E)
 where
@@ -18,14 +18,14 @@ impl<T: Series> Series for All<T> {
     fn addr(&self) -> usize {
         self.0.addr()
     }
-    fn len(&self) -> host::DataSize {
+    fn len(&self) -> host::Len {
         self.0.len()
     }
 }
 
 pub struct Buffer<T: Series> {
     addr: usize,
-    len: host::DataSize,
+    len: host::Len,
     _data: PhantomData<T>,
 }
 impl<T: Series> Series for Buffer<T> {
@@ -33,7 +33,7 @@ impl<T: Series> Series for Buffer<T> {
     fn addr(&self) -> usize {
         self.addr
     }
-    fn len(&self) -> host::DataSize {
+    fn len(&self) -> host::Len {
         self.len
     }
 }
@@ -46,15 +46,11 @@ macro_rules! bridge {
         impl ops::$ops<primitive::$ty> for All<number::$ty> {
             fn add_assign(&mut self, rhs: primitive::$ty) {
                 let All(data) = self;
+                let len = data.len();
+                let ptr = Number { addr: data.addr() };
                 unsafe {
                     host::num::iter_noop();
-                    host::num::mutate::addVAL(
-                        Self::TYPE_ID,
-                        data.len(),
-                        false,
-                        data.addr(),
-                        rhs as JSNumber,
-                    )
+                    host::num::mutate::addVAL(Self::TYPE_ID, len, false, ptr, rhs as JSNumber)
                 }
             }
         }
@@ -66,15 +62,10 @@ macro_rules! bridge {
             fn add(self, rhs: primitive::$ty) -> Self::Output {
                 let All(data) = self;
                 let len = data.len();
+                let ptr = Number { addr: data.addr() };
                 let addr = unsafe {
                     host::num::iter_noop();
-                    host::num::compute::addVAL(
-                        Self::TYPE_ID,
-                        len,
-                        false,
-                        data.addr(),
-                        rhs as JSNumber,
-                    )
+                    host::num::compute::addVAL(Self::TYPE_ID, len, false, ptr, rhs as JSNumber)
                 };
                 let _data = PhantomData;
                 Buffer { addr, len, _data }

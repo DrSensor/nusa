@@ -1,13 +1,13 @@
 use crate::{host, types, Accessor, Build, Series};
-use core::{intrinsics::transmute, primitive};
+use core::primitive;
 use types::number::{JSNumber, Type};
 
 macro_rules! bridge {
     ($ty:ident, $Ty:ident) => {
         #[allow(non_camel_case_types)]
         pub struct $ty {
-            len: host::DataSize,
-            addr: usize,
+            len: host::Len,
+            ptr: types::Number,
             accr: (host::num::Getter, host::num::Setter),
         }
 
@@ -15,35 +15,43 @@ macro_rules! bridge {
             const TYPE_ID: primitive::i8 = Type::$Ty as primitive::i8;
             type Accessor = (host::num::Getter, host::num::Setter);
             unsafe fn accessor() -> Self::Accessor {
-                let (getter, setter) =
-                    unsafe { host::num::accessor(Type::$Ty as primitive::i8).into() };
-                (transmute(getter), transmute(setter))
+                unsafe { host::num::accessor(Type::$Ty as primitive::i8).into() }
             }
-            unsafe fn allocate(len: host::DataSize) -> usize {
-                let number = host::num::allocate(Type::$Ty as primitive::i8, len, false);
-                number.addr
+            unsafe fn allocate(len: host::Len) -> usize {
+                let ptr = host::num::allocate(Type::$Ty as primitive::i8, len, false);
+                ptr.addr
             }
-            unsafe fn build(len: host::DataSize, addr: usize, accr: Self::Accessor) -> Self {
-                $ty { len, addr, accr }
+            unsafe fn auto_allocate() -> (usize, host::Len) {
+                let (ptr, len) = host::num::allocateAUTO(Type::$Ty as primitive::i8, false).into();
+                (ptr.addr, len)
+            }
+            unsafe fn build(len: host::Len, addr: usize, accr: Self::Accessor) -> Self {
+                let ptr = types::Number { addr };
+                $ty { len, ptr, accr }
+            }
+        }
+
+        impl Default for $ty {
+            fn default() -> Self {
+                unsafe {
+                    let (addr, len) = Self::auto_allocate();
+                    Self::build(len, addr, Self::accessor())
+                }
             }
         }
 
         impl self::$ty {
-            #[allow(clippy::new_without_default)]
-            pub fn new() -> Self {
-                unsafe {
-                    let len = host::scope::size();
-                    Self::build(len, Self::allocate(len), Self::accessor())
-                }
+            pub fn new(len: host::Len) -> Self {
+                unsafe { Self::build(len, Self::allocate(len), Self::accessor()) }
             }
         }
 
         impl Series for self::$ty {
             const TYPE_ID: primitive::i8 = Type::$Ty as primitive::i8;
             fn addr(&self) -> usize {
-                self.addr
+                self.ptr.addr
             }
-            fn len(&self) -> host::DataSize {
+            fn len(&self) -> host::Len {
                 self.len
             }
         }
@@ -52,11 +60,11 @@ macro_rules! bridge {
             type Type = primitive::$ty;
             fn set(&self, value: Self::Type) {
                 let (_, setter) = self.accr;
-                unsafe { host::num::set(setter, self.addr, value as JSNumber) }
+                unsafe { host::num::set(setter, self.ptr, value as JSNumber) }
             }
             fn get(&self) -> Self::Type {
                 let (getter, _) = self.accr;
-                unsafe { host::num::get(getter, self.addr) as primitive::$ty }
+                unsafe { host::num::get(getter, self.ptr) as primitive::$ty }
             }
         }
     };

@@ -101,6 +101,19 @@ pub mod C {
     pub(crate) use primitive_Item;
 
     #[allow(unused_macros)]
+    macro_rules! Item_primitive {
+        ($ty:ty) => {
+            impl From<C::Item> for $ty {
+                fn from(C::Item(value): C::Item) -> Self {
+                    value as Self
+                }
+            }
+        };
+    }
+    #[allow(unused_imports)]
+    pub(crate) use Item_primitive;
+
+    #[allow(unused_macros)]
     macro_rules! fn_Item {
         ($ty:ty) => {
             impl From<$ty> for C::Item {
@@ -113,6 +126,20 @@ pub mod C {
     }
     #[allow(unused_imports)]
     pub(crate) use fn_Item;
+
+    #[allow(unused_macros)]
+    macro_rules! Item_fn {
+        ($ty:ty) => {
+            impl From<C::Item> for $ty {
+                fn from(C::Item(value): C::Item) -> Self {
+                    let ptr = value as *const C::void;
+                    unsafe { core::mem::transmute(ptr) }
+                }
+            }
+        };
+    }
+    #[allow(unused_imports)]
+    pub(crate) use Item_fn;
 
     #[repr(transparent)]
     pub struct Tuple<L, R> {
@@ -135,13 +162,13 @@ pub mod C {
 
     impl<L, R> From<Tuple<L, R>> for (L, R)
     where
-        L: From<Return>,
-        R: From<Return>,
+        L: From<Item>,
+        R: From<Item>,
     {
         fn from(ctuple: Tuple<L, R>) -> Self {
             let lead = ctuple.addr >> bits_of::<R>();
             let trail = ctuple.addr;
-            (L::from(lead), R::from(trail))
+            (L::from(Item(lead)), R::from(Item(trail)))
         }
     }
 

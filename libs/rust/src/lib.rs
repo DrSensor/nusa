@@ -16,7 +16,7 @@ pub trait Accessor {
 pub trait Series {
     const TYPE_ID: primitive::i8;
     fn addr(&self) -> usize;
-    fn len(&self) -> host::DataSize;
+    fn len(&self) -> host::Len;
     fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -27,6 +27,7 @@ pub trait Build {
     const TYPE_ID: primitive::i8;
     type Accessor;
     unsafe fn accessor() -> Self::Accessor;
-    unsafe fn allocate(len: host::DataSize) -> usize;
-    unsafe fn build(len: host::DataSize, addr: usize, accessor: Self::Accessor) -> Self;
+    unsafe fn allocate(len: host::Len) -> usize;
+    unsafe fn auto_allocate() -> (usize, host::Len);
+    unsafe fn build(len: host::Len, addr: usize, accessor: Self::Accessor) -> Self;
 }
