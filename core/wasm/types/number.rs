@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use super::{convert_between, Layout};
+use super::{convert_ptr, Layout, C};
 
 pub type JSNumber = f64;
 
@@ -8,8 +8,22 @@ pub type JSNumber = f64;
 pub struct Number {
     pub addr: usize,
 }
-convert_between!(Number |T| *const T);
+
+convert_ptr!(Number);
 impl Layout for Number {}
+
+impl From<C::Item> for Number {
+    fn from(C::Item(value): C::Item) -> Self {
+        Self {
+            addr: value as usize,
+        }
+    }
+}
+impl From<Number> for C::Item {
+    fn from(this: Number) -> Self {
+        Self(unsafe { this.addr.try_into().unwrap_unchecked() })
+    }
+}
 
 #[repr(i8)]
 pub enum Type {

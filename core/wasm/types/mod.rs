@@ -4,7 +4,18 @@ pub use number::{JSNumber, Number};
 #[allow(dead_code)]
 pub static PAGE: usize = u16::MAX as usize + 1; // 1 page = 64KiB = 65536
 
-macro_rules! convert_between {
+#[allow(non_camel_case_types)]
+pub type byte = u8;
+
+pub fn bits_of<T>() -> usize {
+    core::mem::size_of::<T>() * byte::BITS as usize
+}
+
+macro_rules! convert_ptr {
+    ($ty:ty) => {
+        convert_ptr!($ty |T| *const T);
+        convert_ptr!($ty |T| *mut T);
+    };
     ($into:ty |$($G:ident)?| $from:ty) => {
         impl$(<$G>)? From<$from> for $into {
             fn from(ptr: $from) -> Self {
@@ -19,14 +30,14 @@ macro_rules! convert_between {
         }
     };
 }
-pub(crate) use convert_between;
+pub(crate) use convert_ptr;
 
 #[repr(transparent)]
 #[derive(Clone, Copy)]
 pub struct Buffer {
     pub addr: usize,
 }
-convert_between!(Buffer |T| *const T);
+convert_ptr!(Buffer);
 impl Layout for Buffer {}
 
 #[repr(transparent)]
@@ -34,11 +45,11 @@ impl Layout for Buffer {}
 pub struct Null {
     pub addr: usize,
 }
-convert_between!(Null |T| *const T);
+convert_ptr!(Null);
 impl Null {
     /// length of null count in byte
     pub fn byte(len: u16) -> usize {
-        (len as f32 / u8::BITS as f32).ceil() as usize
+        (len as f32 / byte::BITS as f32).ceil() as usize
     }
     /// minimum bits (can be used to determine alignment)
     pub const BITS: u32 = u8::BITS;
@@ -46,13 +57,13 @@ impl Null {
 
 pub trait Layout
 where
-    Self: Into<*const c_void> + Copy,
+    Self: Into<*const C::void> + Copy,
 {
     /// WARNING: it may NOT have nullbit
     /// # Safety
     /// ```rs
     /// let this = allocate(ty, len, nullable);
-    /// let null = if nullable { Some(this.nullbit(len)) } else { None };
+    /// C null = if nullable { Some(this.nullbit(len)) } else { None };
     /// ```
     unsafe fn nullbit(&self, len: u16) -> Null {
         let addr = (*self).into() as usize - Null::byte(len);
@@ -61,67 +72,86 @@ where
     // TODO: fn renderbit() -> Render {}
 }
 
-use core::ffi::c_void;
-
 #[cfg(any(target_pointer_width = "32", target_pointer_width = "16"))]
-pub mod ffi {
-    use super::c_void;
+#[allow(non_snake_case)]
+pub mod C {
+    use super::bits_of;
+    pub use core::ffi::c_void as void;
     use core::marker::PhantomData;
 
+    #[cfg(target_pointer_width = "32")]
+    pub type Return = u64;
+    #[cfg(target_pointer_width = "16")]
+    pub type Return = u32;
+
     #[repr(transparent)]
-    pub struct CTuple<L, R> {
+    pub struct Item(pub Return);
+
+    #[allow(unused_macros)]
+    macro_rules! primitive_Item {
+        ($ty:ty) => {
+            impl From<$ty> for C::Item {
+                fn from(value: $ty) -> Self {
+                    C::Item(value as C::Return)
+                }
+            }
+        };
+    }
+    #[allow(unused_imports)]
+    pub(crate) use primitive_Item;
+
+    #[allow(unused_macros)]
+    macro_rules! fn_Item {
+        ($ty:ty) => {
+            impl From<$ty> for C::Item {
+                fn from(func: $ty) -> Self {
+                    let addr = func as usize;
+                    C::Item(addr as C::Return)
+                }
+            }
+        };
+    }
+    #[allow(unused_imports)]
+    pub(crate) use fn_Item;
+
+    #[repr(transparent)]
+    pub struct Tuple<L, R> {
         lhs: PhantomData<L>,
         rhs: PhantomData<R>,
-
-        #[cfg(target_pointer_width = "32")]
-        pub addr: u64,
-
-        #[cfg(target_pointer_width = "16")]
-        pub addr: u32,
+        addr: Return,
     }
 
-    impl<L, R> From<(L, R)> for CTuple<L, R>
+    impl<L, R> From<(L, R)> for Tuple<L, R>
     where
-        L: Into<*const c_void>,
-        R: Into<*const c_void>,
+        L: Into<Item>,
+        R: Into<Item>,
     {
-        fn from(tuple: (L, R)) -> Self {
-            let (lhs, rhs) = tuple;
-            let lead = (lhs.into() as u64) << usize::BITS;
-            let trail = rhs.into() as u64;
+        fn from((lhs, rhs): (L, R)) -> Self {
+            let lead = lhs.into().0 << bits_of::<R>();
+            let Item(trail) = rhs.into();
             Self::from(lead & trail)
         }
     }
 
-    impl<L, R> From<CTuple<L, R>> for (L, R)
+    impl<L, R> From<Tuple<L, R>> for (L, R)
     where
-        L: From<*const c_void>,
-        R: From<*const c_void>,
+        L: From<Return>,
+        R: From<Return>,
     {
-        fn from(ctuple: CTuple<L, R>) -> Self {
-            let lead = (ctuple.addr >> usize::BITS) as *const c_void;
-            let trail = ctuple.addr as *const c_void;
+        fn from(ctuple: Tuple<L, R>) -> Self {
+            let lead = ctuple.addr >> bits_of::<R>();
+            let trail = ctuple.addr;
             (L::from(lead), R::from(trail))
         }
     }
 
-    macro_rules! impl_From {
-        ($ty:ident, $Ty:ident<$($G:ident),+>) => {
-            impl<$($G),+> From<$ty> for $Ty<$($G),+> {
-                fn from(addr: $ty) -> Self {
-                    Self {
-                        addr,
-                        lhs: PhantomData,
-                        rhs: PhantomData,
-                    }
-                }
+    impl<L, R> From<Return> for Tuple<L, R> {
+        fn from(addr: Return) -> Self {
+            Self {
+                addr,
+                lhs: PhantomData,
+                rhs: PhantomData,
             }
         }
     }
-
-    #[cfg(target_pointer_width = "32")]
-    impl_From!(u64, CTuple<L, R>);
-
-    #[cfg(target_pointer_width = "16")]
-    impl_From!(u32, CTuple<L, R>);
 }

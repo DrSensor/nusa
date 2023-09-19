@@ -1,12 +1,14 @@
 mod index;
 mod types;
 
-use core::ffi::c_void;
 use index::current as index;
-use types::{ffi::CTuple, number::Type, JSNumber, Number};
+use types::{number::Type, JSNumber, Number, C};
 
-type Setter = unsafe fn(Number, JSNumber);
 type Getter = unsafe fn(Number) -> JSNumber;
+type Setter = unsafe fn(Number, JSNumber);
+
+C::fn_Item!(Getter);
+C::fn_Item!(Setter);
 
 #[export_name = "num.accessor"] // WARNING: this func not inlined inside alloc() because rust wasm +multivalue can only return at most 2 value
 fn accessor(ty: Type) -> (Getter, Setter) {
@@ -30,9 +32,9 @@ fn accessor(ty: Type) -> (Getter, Setter) {
 
 #[cfg(any(target_pointer_width = "32", target_pointer_width = "16"))]
 #[export_name = "num.cABIaccessor"]
-fn c_accessor(ty: Type) -> CTuple<*const c_void, *const c_void> {
+fn c_accessor(ty: Type) -> C::Tuple<Getter, Setter> {
     let (getter, setter) = accessor(ty);
-    CTuple::from((getter as *const c_void, setter as *const c_void))
+    C::Tuple::from((getter, setter))
 }
 
 #[export_name = "num.set"]
