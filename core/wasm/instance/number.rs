@@ -1,10 +1,12 @@
 mod offset;
+mod scope;
 mod types;
 
 use core::arch::wasm32::{memory_grow, memory_size};
 use types::{number::Type, Null, Number, PAGE};
 
-#[export_name = "num.allocate"] // TODO: return only Number
+#[export_name = "num.allocate"]
+#[inline(never)]
 unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> Number {
     let addr = offset::get() + if nullable { Null::byte(len) } else { 0 };
 
@@ -28,4 +30,9 @@ unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> Number {
     };
 
     Number { addr }
+}
+
+#[export_name = "num.allocateAUTO"]
+unsafe fn array_new(ty: Type, nullable: bool) -> Number {
+    array_of(ty, scope::size(), nullable)
 }
