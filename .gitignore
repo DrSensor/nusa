@@ -2,6 +2,9 @@
 rust-project.json
 Cargo.lock
 Cargo.toml
+!libs/rust/Cargo.toml
+!examples/rust/*/*/Cargo.toml
+!examples/rust/*/*/*.wasm
 *.wasm.wat
 *.wasm
 *.o
