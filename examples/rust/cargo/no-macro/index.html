@@ -1,0 +1,29 @@
+<script type=importmap>{
+  "imports": {
+    "@libnusa/core/": "/core/wasm/",
+    "nusa": "/rt/main.js"
+  }
+}</script>
+<!------------------------ snip ------------------------>
+
+<script async>
+  import("nusa")
+</script>
+
+<render-scope>
+  <link href=module.wasm>
+
+  <!---------- optional ---------->
+  <script type=hoistmap>{
+    "fetchs": [
+      "@libnusa/core/number-accessor.wasm",
+      "@libnusa/core/number.wasm"
+    ]
+  }</script>
+  <!------------------------------>
+
+  <button ~ @click=increment>
+    <span ~ #text=count>0</span>
+  </button>
+  <input inputmode=numeric type=number ~ .value=count @change=set:count>
+</render-scope>
