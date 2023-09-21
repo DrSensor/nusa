@@ -1,8 +1,11 @@
 [package]
-name = "cargo_example"
+name = "example_cargo_no-macro"
 version = "0.0.1-Jan.2023"
 edition = "2021"
 publish = false
 
 [dependencies]
 libnusa = { path = "../../../../libs/rust" }
+
+[lib]
+crate-type = ["cdylib"]
