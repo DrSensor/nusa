@@ -1,14 +1,24 @@
 function genSrc(files)
   local result = ""
+  local mods = {}
   for _, file in ipairs(files) do
-    local name = file:gsub("%.rs", ""):gsub("/", "-")
-    result = result .. f([=[
-      [[example]]
-      name = "$name"
-      path = "$file"
-      crate-type = ["lib"]
+    local skip = false; for _, mod in ipairs(mods) do
+      if file:match(mod) then skip = true end
+    end
+    if not skip then
+      local name = file:gsub("%.rs", ""):gsub("/", "-")
+      if base(file) == "mod.rs" then
+        name = name:gsub("-mod", "")
+        table.insert(mods, dir(file))
+      end
+      result = result .. f([=[
+        [[example]]
+        name = "$name"
+        path = "$file"
+        crate-type = ["lib"]
 
-    ]=])
+      ]=])
+    end
   end
   return result
 end
