@@ -41,7 +41,7 @@ pub mod num {
         pub fn allocateAUTO(ty: TypeId, nullable: bool) -> (Number, Len);
 
         #[cfg(not(target_feature = "multivalue"))]
-        #[link_name = "num.allocateAUTO"]
+        #[link_name = "num.cABIallocateAUTO"]
         pub fn allocateAUTO(ty: TypeId, nullable: bool) -> C::Tuple<Number, Len>;
     }
 
