@@ -20,6 +20,10 @@ return function(files)
     version = "0.0.1-Jan.2023"
     edition = "2021"
 
+    [profile.release]
+    lto = true
+    strip = true
+
     [workspace]
     members = ["libs/rust", "examples/rust/*/*"]
 
