@@ -3,6 +3,7 @@
 /** @typedef {import("./constant/colon.js")} _Colon */
 
 import { index, setCurrentValue } from "./registry.js";
+import * as attrprefix from "./constant/attrprefix.js";
 import * as task from "./task.js";
 
 /** Override accessor behaviour described in {@link descs}
@@ -26,15 +27,20 @@ After override, you still need to apply it via {@link Object.defineProperties}
 @param accessor{string}
 @param attr{Attr}
 @param id{number}
+@param prefix{string}
 */ function init(members, accessor, attr, id) {
   members[accessor] ??= { databank_: [], targets_: [] };
   const data = members[accessor];
   data.targets_[id] ??= [];
 
   const targetElement = /** @type Element */ (attr.ownerElement);
-  const targetName = attr.name.slice(0, /** @type _Colon["Attr"] */ (-1));
+  const targetName = attr.name.slice(attrprefix.propAttr.length);
   data.targets_[id].push(
-    targetElement.getAttributeNode(targetName) ?? [targetElement, targetName],
+    targetElement.getAttributeNode(targetName) ?? [
+      targetElement,
+      targetName,
+      attr.name.startsWith(attrprefix.builtin) ? builtinSet : undefined,
+    ],
   );
 }
 
@@ -143,29 +149,35 @@ const mark = Symbol();
 @param databank{_AccessorBinder["databank_"]}
 @param targets{_AccessorBinder["targets_"]}
 @param id{number}
+@todo use DOM Parts Imperative API (only when it's adopted by Chrome)
 */ export function update(databank, targets, id) {
   const value = /** @type string */ (databank[id]);
   const targetAt = targets[id];
   targetAt.forEach((target, i) => {
-    if (target instanceof Node) {
-      // target maybe Attr or Text
+    // NOTE `target` can be Attr or Text
+    else if (target instanceof Node) {
       const { ownerElement, name } = /** @type Attr */ (target); // @ts-ignore bind Element.prototype.property by default
       if (ownerElement && name in ownerElement) {
         ownerElement[name] = value; // WARNING(browser): binding just Attr of <input value> is buggy since it treat the attribute as initial value, not current value
-      } else target.nodeValue = value; // then fallback to bind the attribute (or Text if target not instanceof Attr)
+      } else target.nodeValue = value; // fallback to bind the attribute (or Text if target not instanceof Attr)
     } else {
-      const [element, attrName] = target;
-      element.setAttribute(attrName, value);
-
-      targetAt[i] = /** @type Attr */ (element.getAttributeNode(attrName));
-      const attr = targetAt[i]; // make members[,targets] uniform when all attributes all set
-
-      if (attrName === "text") {
-        // but it break uniform structure when binding Text content
-        const text = new Text(value);
-        /** @type Element */ (attr.ownerElement).replaceChildren(text);
-        targetAt.push(text);
-      }
+      const [element, attrName, builtinSet] = target;
+      let builtinTarget;
+      if (!(builtinTarget = builtinSet?.[attrName](element, value))) {
+        element.setAttribute(attrName, value);
+        targetAt[i] = /** @type Attr */ (element.getAttributeNode(attrName));
+      } else targetAt.push(builtinTarget); // may break uniform structure when binding Text or HTML content
     }
   });
 }
+
+export const builtinSet = {
+  /** replace element Text content
+  @param element{HTMLElement}
+  @param value{string}
+  @returns {Text} */ text(element, value) {
+    const text = new Text(value);
+    element.replaceChildren(text);
+    return text;
+  },
+};

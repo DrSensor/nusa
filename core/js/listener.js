@@ -10,10 +10,12 @@ TODO: implemennt other prefix
 */
 
 import { setCurrentEvent } from "./registry.js";
+import * as attrprefix from "./constant/attrprefix.js";
 import * as task from "./task.js";
 
 /** Queue methods that need to be attached as {@link EventListener} into {@link events}
 @param attr{Attr}
+@param prefix{string}
 */ export function queue(attr) {
   const methodNamesPrefix = attr.value.split(" ").reduce((final, value) => {
     if (value.startsWith("self:")) {
@@ -27,7 +29,7 @@ import * as task from "./task.js";
     return final;
   }, /** @type Partial<_HandlePrefix> */ ({}));
 
-  const eventName = attr.name.slice(/** @type _Colon["Event"] */ (3));
+  const eventName = attr.name.slice(attrprefix.listener.length);
   const cachedNamesPrefix = events[eventName]?.get(
     /** @type Element */ (attr.ownerElement),
   );
