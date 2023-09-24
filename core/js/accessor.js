@@ -154,6 +154,7 @@ const mark = Symbol();
   const value = /** @type string */ (databank[id]);
   const targetAt = targets[id];
   targetAt.forEach((target, i) => {
+    if (target instanceof Element) builtinSet.html(target, value);
     // NOTE `target` can be Attr or Text
     else if (target instanceof Node) {
       const { ownerElement, name } = /** @type Attr */ (target); // @ts-ignore bind Element.prototype.property by default
@@ -180,4 +181,16 @@ export const builtinSet = {
     element.replaceChildren(text);
     return text;
   },
+  /** replace element innerHTML
+  @param element{Element}
+  @param value{string}
+  @returns {Element} */ html(element, value) {
+    element.setHTML(value, { sanitizer });
+    return element;
+  },
 };
+
+const sanitizer = new Sanitizer({
+  dropElements: ["link", "script", "style"],
+  blockElements: ["template"],
+});
