@@ -1,10 +1,11 @@
 <script type=importmap>{
   "imports": {
     "libnusa/current": "/libs/javascript/current.js",
-    "nusa/render-scope": "/elements/render-scope.js"
+    "nusa/render-scope": "/nusa/elements/render-scope.js"
   }
 }</script>
-<!----------------------------------------------------------------------->
+<!------------------------ snip ------------------------>
+
 <script async>
   import("nusa/render-scope")
 </script>
@@ -18,8 +19,8 @@
   }</script>
   <!------------------------------>
 
-  <button :: on:click=increment>
-    <span :: text:=count>0</span>
+  <button ~ @click=increment>
+    <span ~ #text=count>0</span>
   </button>
-  <input inputmode=numeric type=number :: value:=count on:change=set>
+  <input inputmode=numeric type=number ~ .value=count @change=set>
 </render-scope>

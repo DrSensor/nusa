@@ -8,7 +8,7 @@ const importmap = {
   imports: {
     "libnusa/current": "/libs/javascript/current.js",
     "libnusa/iterate": "/libs/javascript/iterate.js",
-    "nusa/render-scope": "/elements/render-scope.js",
+    "nusa/render-scope": "/nusa/elements/render-scope.js",
   },
 };
 
@@ -28,6 +28,7 @@ export default (
 
 function Counter({ count }) {
   const hoistmap = memo(() => json(Counter.hoistmap));
+
   return html`
   <render-scope>
     <link as=script href=module.js>
@@ -36,10 +37,10 @@ function Counter({ count }) {
     <script type=hoistmap>${hoistmap()}</script>
     <!------------------------------>
 
-    <button :: on:click=increment${count % 2 ? " text:=count" : ""}>
-      ${count % 2 ? count : html`<span :: text:=count>${count}</span>`}
+    <button ~ @click=increment ${count % 2 ? "#text=count" : ""}>
+      ${count % 2 ? count : html`<span ~ #text=count>${count}</span>`}
     </button>
-    <input inputmode=numeric type=number :: value:=count on:change=set>
+    <input inputmode=numeric type=number ~ .value=count @change=set>
   </render-scope>
   `;
 }

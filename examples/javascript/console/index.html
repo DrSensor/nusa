@@ -1,10 +1,11 @@
 <script type=importmap>{
   "imports": {
     "libnusa/current": "/libs/javascript/current.js",
-    "nusa/render-scope": "/elements/render-scope.js"
+    "nusa/render-scope": "/nusa/elements/render-scope.js"
   }
 }</script>
-<!----------------------------------------------------------------------->
+<!------------------------ snip ------------------------>
+
 <script async>
   import("nusa/render-scope")
 </script>
@@ -18,9 +19,9 @@
   }</script>
   <!------------------------------>
 
-  <button :: on:click=log> console.log </button>
-  <button :: on:click=debug> console.debug </button>
-  <button :: on:click=info> console.info </button>
-  <button :: on:click=warn> console.warn </button>
-  <button :: on:click=error> console.error </button>
+  <button ~ @click=log> console.log </button>
+  <button ~ @click=debug> console.debug </button>
+  <button ~ @click=info> console.info </button>
+  <button ~ @click=warn> console.warn </button>
+  <button ~ @click=error> console.error </button>
 </render-scope>
