@@ -16,7 +16,9 @@
 }
 
 {$REPO} {
-	reverse_proxy /examples/javascript/* localhost:5745
+	handle_path /examples/javascript/* {
+		reverse_proxy localhost:5745
+	}
 
 	root * .
 	file_server browse
