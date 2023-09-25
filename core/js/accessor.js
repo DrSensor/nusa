@@ -56,7 +56,10 @@ After override, you still need to apply it via {@link Object.defineProperties}
     const { databank_ } = members[field];
     if (databank_.length <= id) databank_[id] = instance[field];
   };
-  accessors.forEach(initData);
+  accessors.forEach((property) => {
+    initData(property);
+    if (Object.hasOwn(instance, property)) delete instance[property];
+  });
   properties.forEach((property) => {
     if (Object.hasOwn(instance, property)) {
       initData(property);
