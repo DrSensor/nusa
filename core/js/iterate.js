@@ -6,7 +6,7 @@
 /** @typedef {import("./types.d.ts").iterate.Pipeline} _Pipeline */
 
 import registry from "./registry.js";
-import { update } from "./accessor.js";
+import { update } from "./bind/accessor.js";
 import * as task from "./task.js";
 
 /** iterate over class instances

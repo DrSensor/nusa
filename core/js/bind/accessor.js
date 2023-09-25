@@ -2,9 +2,9 @@
 /** @typedef {import("./registry.js").AccessorBinder} _AccessorBinder */
 /** @typedef {import("./constant/colon.js")} _Colon */
 
-import { index, setCurrentValue } from "./registry.js";
-import * as attrprefix from "./constant/attrprefix.js";
-import * as task from "./task.js";
+import { index, setCurrentValue } from "../registry.js";
+import * as attrprefix from "../constant/attrprefix.js";
+import * as task from "../task.js";
 
 /** Override accessor behaviour described in {@link descs}
 After override, you still need to apply it via {@link Object.defineProperties}

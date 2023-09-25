@@ -9,9 +9,9 @@
 TODO: implemennt other prefix
 */
 
-import { setCurrentEvent } from "./registry.js";
-import * as attrprefix from "./constant/attrprefix.js";
-import * as task from "./task.js";
+import { setCurrentEvent } from "../registry.js";
+import * as attrprefix from "../constant/attrprefix.js";
+import * as task from "../task.js";
 
 /** Queue methods that need to be attached as {@link EventListener} into {@link events}
 @param attr{Attr}

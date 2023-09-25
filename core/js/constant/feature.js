@@ -1,5 +1,5 @@
-/** @typedef {import("../accessor.js")} _accessor */
-/** @typedef {import("../listener.js")} _listener */
+/** @typedef {import("../bind/accessor.js")} _accessor */
+/** @typedef {import("../bind/listener.js")} _listener */
 
 /** @typedef {[modules.accessor, modules.listener]} modules
 @typedef {[_accessor["override"], _accessor["infer"]]} modules.accessor

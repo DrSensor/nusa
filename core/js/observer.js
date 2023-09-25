@@ -25,12 +25,15 @@ let /** @type Promise<{bind_: _bindFn, features_: Parameters<_bindFn>[0]}> */ mo
       // tree-shake dynamic import https://parceljs.org/features/code-splitting/#tree-shaking
       import("./bind.js").then((module) => module.default),
       queue.flags_ & Flags.hasBinding &&
-        import("./accessor.js").then((module) => [
+        import("./bind/accessor.js").then((module) => [
           module.override,
           module.infer,
         ]),
       queue.flags_ & Flags.hasListener &&
-        import("./listener.js").then((module) => [module.queue, module.listen]),
+        import("./bind/listener.js").then((module) => [
+          module.queue,
+          module.listen,
+        ]),
     ]).then(([bind_, ...features_]) => ({ bind_, features_ }));
 
     scripts_.forEach(async (script) =>
