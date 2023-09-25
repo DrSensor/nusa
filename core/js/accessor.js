@@ -154,25 +154,27 @@ const mark = Symbol();
   const value = /** @type string */ (databank[id]);
   const targetAt = targets[id];
   targetAt.forEach((target, i) => {
-    if (target instanceof Element) builtinSet.html(target, value);
-    // NOTE `target` can be Attr or Text
-    else if (target instanceof Node) {
+    if (/** @type {Attr|Text} */ (target) instanceof Node) {
       const { ownerElement, name } = /** @type Attr */ (target); // @ts-ignore bind Element.prototype.property by default
       if (ownerElement && name in ownerElement) {
         ownerElement[name] = value; // WARNING(browser): binding just Attr of <input value> is buggy since it treat the attribute as initial value, not current value
       } else target.nodeValue = value; // fallback to bind the attribute (or Text if target not instanceof Attr)
     } else {
       const [element, attrName, builtinSet] = target;
-      let builtinTarget;
-      if (!(builtinTarget = builtinSet?.[attrName](element, value))) {
-        element.setAttribute(attrName, value);
-        targetAt[i] = /** @type Attr */ (element.getAttributeNode(attrName));
-      } else targetAt.push(builtinTarget); // may break uniform structure when binding Text or HTML content
+      const builtinTarget = builtinSet?.[attrName](element, value);
+      if (builtinTarget instanceof Node) targetAt[i] = builtinTarget;
+      else {
+        const attr = element.getAttributeNode(attrName);
+        if (attr) {
+          attr.value = value;
+          targetAt[i] = attr;
+        } else element[attrName] = value;
+      } // may break uniform structure when binding Text or HTML content
     }
   });
 }
 
-export const builtinSet = {
+const builtinSet = {
   /** replace element Text content
   @param element{HTMLElement}
   @param value{string}
@@ -186,7 +188,6 @@ export const builtinSet = {
   @param value{string}
   @returns {Element} */ html(element, value) {
     element.setHTML(value, { sanitizer });
-    return element;
   },
 };
 

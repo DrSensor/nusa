@@ -97,15 +97,16 @@ export namespace registry {
     targets_: Targets[];
     dedupeRender_?: VoidFunction;
   };
-  type Targets = (
+  type Targets = Array<
     | Attr
+    | Text
+    | Element
     | [
         target: Element,
         attrName: string,
         builtin?: Record<string, (value: string) => Node>,
       ]
-    | Text
-  )[];
+  >;
 }
 
 export type SoA<T extends Prototype = Prototype,> = Omit<
