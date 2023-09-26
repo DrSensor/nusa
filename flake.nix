@@ -58,7 +58,12 @@
           # Just temporary for .github/workflows/check.yaml
           # Eventually it will perform browser test that most likely require devShells.default as a whole.
           devenv.shells.check = {
-            packages = with pkgs; [ rome taplo luajitPackages.luacheck eclint ];
+            packages = with pkgs; [
+              biome
+              taplo
+              luajitPackages.luacheck
+              eclint
+            ];
           };
 
           devShells.CI-check = mkShell {

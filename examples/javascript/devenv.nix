@@ -7,7 +7,7 @@ with lib; {
 
   languages.deno.enable = true;
 
-  packages = with pkgs; [ gnumake watchexec ] ++ [ rome ];
+  packages = with pkgs; [ gnumake watchexec ];
 
   pre-commit = mkIf (!env ? CI) {
     hooks.editorconfig-checker.enable = true;
