@@ -6,14 +6,11 @@ with lib; {
   env.RUSTC_WRAPPER = "";
   env.CARGO_TARGET_DIR = "${config.env.XDG_CACHE_HOME}/cargo";
 
-  languages.rust = with pkgs.rust-bin.stable.latest; {
+  languages.rust = {
     enable = true;
     components = [ "rustc" "cargo" ]
       ++ optionals (!env ? CI) [ "clippy" "rustfmt" "rust-analyzer" ];
-    toolchain = {
-      inherit cargo rust-src;
-      rustc = minimal.override { targets = [ "wasm32-unknown-unknown" ]; };
-    } // optionalAttrs (!env ? CI) { inherit clippy rustfmt rust-analyzer; };
+    toolchain = { rustc = pkgs.rustc-wasm32; };
   };
 
   packages = with pkgs;
