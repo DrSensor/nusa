@@ -8,7 +8,7 @@ with lib; {
   languages.deno.enable = true; # to render page.jsx as page.html
 
   packages = with pkgs;
-    [ soupault minify ] ++ [ gnumake highlight ] ++ [ jq toybox ];
+    [ soupault minify ] ++ [ gnumake highlight ] ++ [ jq coreutils ];
 
   pre-commit = mkIf (!env ? CI) {
     hooks.editorconfig-checker.enable = true;
