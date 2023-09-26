@@ -36,7 +36,6 @@
             pre-commit.hooks = {
               nixfmt.enable = true;
               nil.enable = true;
-              statix.enable = true;
               deadnix.enable = true;
             };
           };
