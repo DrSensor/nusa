@@ -26,7 +26,7 @@
             env.XDG_CACHE_HOME = "${config.env.DEVENV_ROOT}/.cache";
 
             # help other CLI's to discover pinned bash
-            env.SHELL = "${pkgs.bash}/bin/bash";
+            env.SHELL = "${pkgs.bash}/bin/sh";
             packages = [ pkgs.bash ];
           };
 
