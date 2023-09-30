@@ -1,5 +1,5 @@
-import query from "./query.js";
 import * as loadWhen from "./observer.js";
+import query from "./query.js";
 
 export default class RenderScope extends HTMLElement {
   constructor() {

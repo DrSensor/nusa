@@ -1,17 +1,16 @@
-/** @typedef {import("./bind.js")["default"]} _bindFn */
-/** @typedef {import("./query.js").Queue} _query$Queue */
+/// <reference types="./observer.d.ts" />
+/** @typedef {import("./observer.js")} $ */
+/** @typedef {import("./query.js").Queue} Queue */
+import { Flags } from "./constant.js";
 
-import * as Flags from "./constant/flags.js";
-
-/** @type WeakMap<Element, [ShadowRoot, _query$Queue]> */
+/** @type $["registry"] */
 const registry = new WeakMap();
 
-let /** @type Promise<{bind_: _bindFn, features_: Parameters<_bindFn>[0]}> */ module;
+/** @type $["module"] */
+let module; // Promise
 
-/** fetch and run module runtime for binding along with user linked modules then bind all linked modules
-@param shadow{ShadowRoot}
-@param queue{_query$Queue}
-*/ function lazyBind(shadow, queue) {
+/** @type $["lazyBind"] */
+function lazyBind(shadow, queue) {
   //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
   const { scripts_ } = queue.module_;
   if (scripts_) {
@@ -48,18 +47,15 @@ const viewport = new IntersectionObserver((entries) =>
   entries.forEach((scope) => {
     if (scope.isIntersecting) {
       const host = scope.target;
-      lazyBind(.../** @type [ShadowRoot, _query$Queue] */ (registry.get(host)));
+      lazyBind(.../** @type [ShadowRoot, Queue] */ (registry.get(host)));
       registry.delete(host);
       viewport.unobserve(host);
     }
   }),
 );
 
-/** observe viewport intersection
-@link https://web.dev/intersectionobserver-v2/
-@param shadow{ShadowRoot}
-@param queue{_query$Queue}
-*/ export function inview(shadow, queue) {
+/** @type $["inview"] */
+export function inview(shadow, queue) {
   const host = shadow.host;
   const rect = host.getBoundingClientRect();
   if (
@@ -76,10 +72,5 @@ const viewport = new IntersectionObserver((entries) =>
   }
 }
 
-/** observe true visibility
-@link https://web.dev/intersectionobserver-v2/
-@param shadow{ShadowRoot}
-@param queue{_query$Queue}
-*/
-// deno-lint-ignore no-unused-vars
-export function visible(shadow, queue) {}
+/** @type $["visible"] */
+export function visible(_shadow, _queue) {}

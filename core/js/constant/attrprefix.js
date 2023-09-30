@@ -1,6 +1,7 @@
 export const listener = "@",
   propAttr = ".",
-  justAttr = "attr.",
+  justAttr = "+",
+  toggleAttr = "!",
   builtin = "#",
   bakedin = "-",
   marker = "~";

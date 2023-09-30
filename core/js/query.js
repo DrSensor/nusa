@@ -1,15 +1,10 @@
-/** @typedef {import("./types.d.ts").query.Attributes} Attributes */
-/** @typedef {import("./types.d.ts").query.Queue} Queue */
-/** @typedef {"script" | "style"} LinkAs @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link#attr-as */
+/// <reference types="./query.d.ts" />
+/** @typedef {import("./query.js")} $ */
+/** @typedef {import("./query.js").LinkAs} LinkAs */
+import { AttrPrefix as attrprefix, Flags } from "./constant.js";
 
-import * as attrprefix from "./constant/attrprefix.js";
-
-/** Get bindable attribute nodes and url module paths
-@param host{Element} - query scope
-@param HostElement{CustomElementConstructor} - exclude custom-element
-@param queue{Queue} - queue every query into an object
-@param sep{string} - make query faster by looking that specific attribute
-*/ export default (host, HostElement, queue) => {
+/** @type $["default"] */
+export default function (host, HostElement, queue) {
   const elements = host.getElementsByTagName("*");
   const { module_ } = queue;
 
@@ -18,7 +13,6 @@ import * as attrprefix from "./constant/attrprefix.js";
   for (const element of elements) {
     if (element instanceof HostElement) continue;
     if (element instanceof HTMLLinkElement) {
-      /** @type LinkAs */
       const as = /** @type LinkAs */ (element.getAttribute("as"));
       switch (as) {
         case "script":
@@ -34,16 +28,10 @@ import * as attrprefix from "./constant/attrprefix.js";
 
     registerBindable(element, queue);
   }
-};
+}
 
-/** @enum import("./constant/flags.js").Flags */
-import * as Flags from "./constant/flags.js";
-
-/** Queue and register {@link Attr} and it's {@link Flags}
-@param host{Element}
-@param sep{string}
-@param queue{Queue}
-*/ function registerBindable(host, queue) {
+/** @type $["registerBindable"] */
+function registerBindable(host, queue) {
   if (host.hasAttribute(attrprefix.marker)) {
     for (const attr of host.attributes) {
       if (attr.name === attrprefix.marker) continue;

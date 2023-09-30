@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "hono": "https://deno.land/x/hono/mod.ts",
+    "hono/serve-static": "https://deno.land/x/hono/adapter/deno/serve-static.ts",
+    "hono/html": "https://deno.land/x/hono/helper/html/index.ts",
+    "hono/jsx": "https://deno.land/x/hono/jsx/index.ts"
+  },
+  "compilerOptions": {
+    "checkJs": true,
+    "lib": ["dom", "deno.window", "deno.ns"]
+  }
+}

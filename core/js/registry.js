@@ -1,26 +1,24 @@
-/** @template {_Prototype} T
- ** @typedef {import("./types.d.ts").registry.Registry<T>} Registry */
-/** @typedef {import("./types.d.ts").registry.AccessorBinder} AccessorBinder */
-/** @typedef {import("./types.d.ts").Prototype} _Prototype */
+/// <reference types="./registry.d.ts" />
+/** @typedef {import("./registry.js")} $ */
 
-export const index = Symbol();
-
-/** Setter function to set current {@link event}
-@param event_{typeof event}
-*/ export const setCurrentEvent = (event_) => {
+/** @type $["setCurrentEvent"] */
+export const setCurrentEvent = (event_) => {
   event = event_;
 };
 
-/** Setter function to set current {@link value}
-@template T
-@param value_{T}
-*/ export const setCurrentValue = (value_) => {
+/** @type $["event"] */
+export let event;
+
+/** @type $["setCurrentValue"] */
+export const setCurrentValue = (value_) => {
   value = value_;
 };
 
-export let /** @type Event | null */ event = null,
-  /** @type unknown */ value;
+/** @type $["value"] */
+export let value;
 
-// TODO: consider using Attr or target Element or host Element as a key (maybe 🤔)
-/** @type Registry<_Prototype> */
+/** @type $["index"] */
+export const index = Symbol();
+
+/** @type $["default"] */
 export default new WeakMap();

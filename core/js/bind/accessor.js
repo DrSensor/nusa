@@ -1,19 +1,15 @@
-/** @typedef {import("./types.d.ts").Instance} _Instance */
-/** @typedef {import("./registry.js").AccessorBinder} _AccessorBinder */
-/** @typedef {import("./constant/colon.js")} _Colon */
-
-import { index, setCurrentValue } from "../registry.js";
+/// <reference types="./accessor.d.ts" />
+/** @typedef {import("./accessor.js")} $ */
+/** @typedef {import("../types.d.ts").Instance} Instance */
 import * as attrprefix from "../constant/attrprefix.js";
+import { index, setCurrentValue } from "../registry.js";
 import * as task from "../task.js";
 
-/** Override accessor behaviour described in {@link descs}
-After override, you still need to apply it via {@link Object.defineProperties}
-@param accessor{string}
-@param descs{Record<string, undefined | PropertyDescriptor & { [mark]?: true }>}
-@param members{Record<string, _AccessorBinder>}
-@param attr{Attr}
-@param id{number}
-*/ export function override(accessor, descs, members, attr, id) {
+/** @ts-ignore @type $["mark"] */
+const mark = Symbol();
+
+/** @type $["override"] */
+export function override(accessor, descs, members, attr, id) {
   init(members, accessor, attr, id);
   const desc = descs[accessor];
   if (desc && !desc[mark]) {
@@ -22,13 +18,8 @@ After override, you still need to apply it via {@link Object.defineProperties}
   }
 }
 
-/** Populate registry {@link members}
-@param members{Record<string, _AccessorBinder>}
-@param accessor{string}
-@param attr{Attr}
-@param id{number}
-@param prefix{string}
-*/ function init(members, accessor, attr, id) {
+/** @type $["init"] */
+function init(members, accessor, attr, id) {
   members[accessor] ??= { databank_: [], targets_: [] };
   const data = members[accessor];
   data.targets_[id] ??= [];
@@ -44,14 +35,8 @@ After override, you still need to apply it via {@link Object.defineProperties}
   );
 }
 
-/** Autocast accessor value from {@link Attr.value} (string) at runtime
-@param properties{Set<string>}
-@param accessors{Set<string>}
-@param descs{Record<string, undefined | PropertyDescriptor & { [mark]?: true }>}
-@param members{Record<string, _AccessorBinder>}
-@param instance{_Instance}
-@param id{number}
-*/ export function infer(properties, accessors, descs, members, instance, id) {
+/** @type $["infer"] */
+export function infer(properties, accessors, descs, members, instance, id) {
   const initData = /** @param field{string} */ (field) => {
     const { databank_ } = members[field];
     if (databank_.length <= id) databank_[id] = instance[field];
@@ -77,13 +62,8 @@ After override, you still need to apply it via {@link Object.defineProperties}
   });
 }
 
-const mark = Symbol();
-
-/** Patch {@link PropertyDescriptor} of certain {@link accessor}
-@param desc{PropertyDescriptor}
-@param cache{_AccessorBinder}
-@param id{number}
-*/ function patch(desc, cache, id) {
+/** @type $["patch"] */
+function patch(desc, cache, id) {
   const { databank_, targets_ } = cache;
 
   const { get, set, value, writable: notAccessor } = desc;
@@ -92,7 +72,7 @@ const mark = Symbol();
   let /** @type boolean */ assignedInConstructor;
 
   if (is(get)) {
-    desc.get = /** @this _Instance */ function () {
+    desc.get = /** @this Instance */ function () {
       let value;
       if (this[index] !== undefined) {
         // if accessed OUTSIDE class constructor()
@@ -111,7 +91,7 @@ const mark = Symbol();
     };
 
     if (is(set)) {
-      desc.set = /** @this _Instance */ function (value) {
+      desc.set = /** @this Instance */ function (value) {
         // TODO: if (no getter) ??
         if (this[index] !== undefined) {
           // if accessed OUTSIDE class constructor()
@@ -141,55 +121,53 @@ const mark = Symbol();
     }
 
     if (notAccessor) {
-      // rome-ignore lint/performance/noDelete: property descriptors must not specify a value or be writable when a getter or setter has been specified //
-      delete desc.value; // rome-ignore lint/performance/noDelete:--------------------------------------------------------------------------------------//
+      // biome-ignore lint/performance/noDelete: property descriptors must not specify a value or be writable when a getter or setter has been specified //
+      delete desc.value; // biome-ignore lint/performance/noDelete:--------------------------------------------------------------------------------------//
       delete desc.writable; //--------------------------------------------------------------------------------------------------------------------------//
     }
   }
 }
 
-/** Update accessor value (pointer) which point into {@link databank} (virtual heap)
-@param databank{_AccessorBinder["databank_"]}
-@param targets{_AccessorBinder["targets_"]}
-@param id{number}
+/** @type $["update"]
 @todo use DOM Parts Imperative API (only when it's adopted by Chrome)
 */ export function update(databank, targets, id) {
   const value = /** @type string */ (databank[id]);
   const targetAt = targets[id];
   targetAt.forEach((target, i) => {
-    if (/** @type {Attr|Text} */ (target) instanceof Node) {
-      const { ownerElement, name } = /** @type Attr */ (target); // @ts-ignore bind Element.prototype.property by default
+    if (/** @type Attr|Text */ (target) instanceof Node) {
+      const { ownerElement, name } = /** @type Attr */ (target);
+
       if (ownerElement && name in ownerElement) {
+        // @ts-ignore else fallback to Attr.prototype.nodeValue WARNING: `name` with all CAPITAL letter are readonly
         ownerElement[name] = value; // WARNING(browser): binding just Attr of <input value> is buggy since it treat the attribute as initial value, not current value
-      } else target.nodeValue = value; // fallback to bind the attribute (or Text if target not instanceof Attr)
+      } // fallback to bind the attribute (or Text if target not instanceof Attr)
+      else target.nodeValue = value;
     } else {
       const [element, attrName, builtinSet] = target;
+      // @ts-ignore `attrName` will always be member of `builtinSet` if `builtinSet` not `undefined`
       const builtinTarget = builtinSet?.[attrName](element, value);
+
       if (builtinTarget instanceof Node) targetAt[i] = builtinTarget;
       else {
         const attr = element.getAttributeNode(attrName);
         if (attr) {
           attr.value = value;
           targetAt[i] = attr;
-        } else element[attrName] = value;
-      } // may break uniform structure when binding Text or HTML content
+        } // @ts-ignore `attrName` is always lowercase (no readonly CAPITAL_PROP)
+        else element[attrName] = value;
+      } // may break uniform structure of array `targetAt` when binding Text or HTML content
     }
   });
 }
 
+/** @type $["builtinSet"] */
 const builtinSet = {
-  /** replace element Text content
-  @param element{HTMLElement}
-  @param value{string}
-  @returns {Text} */ text(element, value) {
+  text(element, value) {
     const text = new Text(value);
     element.replaceChildren(text);
     return text;
   },
-  /** replace element innerHTML
-  @param element{Element}
-  @param value{string}
-  @returns {Element} */ html(element, value) {
+  html(element, value) {
     element.setHTML(value, { sanitizer });
   },
 };

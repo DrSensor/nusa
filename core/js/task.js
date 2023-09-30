@@ -1,20 +1,18 @@
+/// <reference types="./task.d.ts" />
+/** @typedef {import("./task.js")} $ */
+
 const { port1, port2 } = new MessageChannel();
 port2.start();
 
-/** Schedule task
-@param callback{VoidFunction}
-@param options{AddEventListenerOptions=}
-@returns {() => void}
-*/ function macro(callback, options) {
+/** @type $["macro"] */
+function macro(callback, options) {
   port2.addEventListener("message", callback, options);
   port1.postMessage(null);
   return () => port2.removeEventListener("message", callback);
 }
 
-/** Schedule micro task
-@param callback{VoidFunction}
-@returns {() => true}
-*/ function micro(callback) {
+/** @type $["micro"] */
+function micro(callback) {
   let /** @type true | undefined */ cancel;
   queueMicrotask(() => cancel ?? callback());
   return () => {
@@ -27,10 +25,8 @@ let skipFrame = false;
 let prepareFrame = false;
 const queue = /** @type FrameRequestCallback[] */ ([]);
 
-/** Prepare (mark) for next render
-@param callback{VoidFunction} - inside callback, it may call {@link render} function
-@returns {() => VoidFunction | undefined}
-*/ export function prepare(callback) {
+/** @type $["prepare"] */
+export function prepare(callback) {
   skipFrame = prepareFrame = true;
   callback();
   return () => {
@@ -41,10 +37,8 @@ const queue = /** @type FrameRequestCallback[] */ ([]);
   };
 }
 
-/** Defer execution into next task
-@param callback{VoidFunction}
-@param options{AddEventListenerOptions=}
-*/ export function defer(callback, options) {
+/** @type $["defer"] */
+export function defer(callback, options) {
   let /** @type VoidFunction | undefined */ abort;
   const cancel = macro(() => {
     skipFrame = true;
@@ -62,11 +56,8 @@ const queue = /** @type FrameRequestCallback[] */ ([]);
   };
 }
 
-/** Schedule when browser on idle
-@param callback{IdleRequestCallback}
-@param options{IdleRequestOptions=}
-@returns {() => void}
-*/ export function idle(callback, options) {
+/** @type $["idle"] */
+export function idle(callback, options) {
   let /** @type VoidFunction | undefined */ abort;
   const id = requestIdleCallback((deadline) => {
     skipFrame = true;
@@ -84,18 +75,14 @@ const queue = /** @type FrameRequestCallback[] */ ([]);
   };
 }
 
-/** Schedule into render/animation frame via rAF
-@param callback{FrameRequestCallback}
-@returns {() => void}
-*/ function prerender(callback) {
+/** @type $["prerender"] */
+function prerender(callback) {
   const id = requestAnimationFrame(callback);
   return () => cancelAnimationFrame(id);
 }
 
-/** Schedule into render/animation frame
-@param callback{FrameRequestCallback}
-@returns {VoidFunction | undefined}
-*/ export function render(callback) {
+/** @type $["render"] */
+export function render(callback) {
   if (prepareFrame && skipFrame) {
     queue.push(callback);
     return;
@@ -122,10 +109,8 @@ const queue = /** @type FrameRequestCallback[] */ ([]);
 }
 
 // TODO: replace with requestPostAnimationFrame
-/** Schedule after render/animation frame
-@param callback{FrameRequestCallback}
-@returns {() => void}
-*/ function postrender(callback) {
+/** @type $["postrender"] */
+function postrender(callback) {
   let /** @type VoidFunction | undefined */ abort;
   const cancel = prerender((t) => {
     abort = macro(() => callback(t));
@@ -136,11 +121,8 @@ const queue = /** @type FrameRequestCallback[] */ ([]);
   };
 }
 
-/** Check if callback is async
-@param callbackReturn{unknown}
-@param resolve{() => void}
-@returns {true | undefined}
-*/ function ifAsync(callbackReturn, resolve) {
+/** @type $["ifAsync"] */
+function ifAsync(callbackReturn, resolve) {
   if (callbackReturn instanceof Promise) {
     callbackReturn.then(resolve);
     return true;

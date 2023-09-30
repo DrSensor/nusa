@@ -1,8 +1,0 @@
-{
-  "imports": {
-    "hono": "https://deno.land/x/hono/mod.ts",
-    "hono/serve-static": "https://deno.land/x/hono/adapter/deno/serve-static.ts",
-    "hono/html": "https://deno.land/x/hono/middleware/html/index.ts",
-    "hono/jsx": "https://deno.land/x/hono/middleware/jsx/index.ts"
-  }
-}
