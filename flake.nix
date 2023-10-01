@@ -69,6 +69,9 @@
               luajitPackages.luacheck
               eclint
             ];
+            pre-commit.hooks.rome = {
+              entry = mkForce "${pkgs.biome}/bin/biome check";
+            };
           };
 
           devShells.CI-check = mkShell {
