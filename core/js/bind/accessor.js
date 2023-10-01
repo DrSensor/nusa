@@ -3,7 +3,7 @@
 /** @typedef {import("../types.d.ts").Instance} Instance */
 import * as attrprefix from "../constant/attrprefix.js";
 import { index, setCurrentValue } from "../registry.js";
-import * as task from "../task.js";
+import * as task from "../utils/task.js";
 
 /** @ts-ignore @type $["mark"] */
 const mark = Symbol();

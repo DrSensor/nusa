@@ -16,7 +16,7 @@ function lazyBind(shadow, queue) {
   if (scripts_) {
     import("./registry.js");
     if (queue.flags_ & (Flags.hasBinding | Flags.hasListener)) {
-      import("./task.js");
+      import("./utils/task.js");
     }
 
     //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)

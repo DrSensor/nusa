@@ -5,7 +5,7 @@
     @typedef {import("../types.d.ts").IntoSet<T>} IntoSet */
 import { AttrPrefix as attrprefix, Mod } from "../constant.js";
 import { setCurrentEvent } from "../registry.js";
-import * as task from "../task.js";
+import * as task from "../utils/task.js";
 
 /** @type $["queue"] */
 export function queue(attr) {

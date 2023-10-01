@@ -10,7 +10,7 @@
 /** @typedef {import("./types.d.ts").SoA} SoA */
 import { update } from "./bind/accessor.js";
 import registry from "./registry.js";
-import * as task from "./task.js";
+import * as task from "./utils/task.js";
 
 /** @type $["default"] */
 export default function (Class, callback, { controller }) {
