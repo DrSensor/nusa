@@ -23,43 +23,6 @@ export interface Module {
   [key: string]: unknown;
 }
 
-/** @path ./constant/ */
-export namespace constant {
-  /** @path ./constant/flags.js */
-  export enum Flags {
-    none = 0,
-    hasBinding = 1 << 0,
-    hasListener = 1 << 1,
-  }
-
-  /** @path ./constant/colon.js */
-  export enum Colon {
-    None = 0,
-    Attr = -1,
-    WebC = 1,
-    Event = 3,
-    CaptureSelf = 5,
-    PreventDefault = 7,
-    BubbleEvent = 7,
-    CaptureOutside = 8,
-    SetProp = 4,
-  }
-
-  /** @path ./constant/prefix.js */
-  export enum Prefix {
-    None = "",
-    Self = "self:",
-
-    // TODO: prevent default behaviour via `e.preventDefault()`
-    Stealth = "stealth:", // HTMLElement event default behaviour mostly are visual, except `onsubmit` and others
-    // TODO: prevent runtime from calling `e.stopPropagation()`
-    Bubble = "bubble:",
-    // TODO: how?
-    Outside = "outside:",
-    // TODO: instance.<property> = infer(target.value)
-    Set = "set:",
-  }
-}
 export type IntoSet<R> = {
   [k in keyof R]: R[k] extends ArrayLike<infer T> | infer U ? Set<T> | U : R[k];
 };
