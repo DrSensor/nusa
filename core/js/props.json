@@ -1,4 +1,8 @@
 {
+  "ptr_": "b",
+  "len_": "w",
+  "getter_": "g",
+  "setter_": "h",
   "attrs_": "a",
   "flags_": "f",
   "module_": "m",
