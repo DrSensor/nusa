@@ -4,7 +4,7 @@ declare const declare: <T extends typeof number.Number & { TYPE_ID: number }>(
   Class: T,
 ) => (() => InstanceType<T>) & Pick<T, "new" | "TYPE_ID">;
 
-export const u8: ReturnType<typeof declare<typeof number.Uint8>>; //TODO: replace `biome` with `deno fmt|lint` since biome can't format this file because of this line
+export const u8: ReturnType<typeof declare<typeof number.Uint8>>;
 export const i8: ReturnType<typeof declare<typeof number.Int8>>;
 
 export const u16: ReturnType<typeof declare<typeof number.Uint16>>;

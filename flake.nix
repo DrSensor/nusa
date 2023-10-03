@@ -63,14 +63,10 @@
           # Just temporary for .github/workflows/check.yaml
           # Eventually it will perform browser test that most likely require devShells.default as a whole.
           devenv.shells.check = {
-            packages = with pkgs; [
-              biome
-              taplo
-              luajitPackages.luacheck
-              eclint
-            ];
-            pre-commit.hooks.rome = {
-              entry = mkForce "${pkgs.biome}/bin/biome check";
+            packages = with pkgs; [ taplo luajitPackages.luacheck eclint ];
+            pre-commit.settings = {
+              denofmt.configPath = ./deno.json;
+              denolint.configPath = ./deno.json;
             };
           };
 

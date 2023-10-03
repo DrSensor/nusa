@@ -1,7 +1,5 @@
 export interface BuildConstructor<T> {
   readonly TYPE_ID: number;
-  // biome-ignore format: that double quote MUST NOT be removed
-  // biome-ignore lint/complexity/useLiteralKeys: yup! it's biome bug
   "new"(len: number): Build<T>;
   new (): Build<T>;
 }

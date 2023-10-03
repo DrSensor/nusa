@@ -60,17 +60,13 @@ pretty:
 	eclint -fix
 	caddy fmt --overwrite
 	taplo format **.toml
-	rome format core/js/ nusa/ libs/javascript/ examples/javascript/ rollup.config.mjs tsconfig.json rome.json package.json .luarc.json --write
+	deno fmt core/js/ nusa/ libs/javascript/ examples/javascript/ rollup.config.mjs tsconfig.json package.json .luarc.json --write
 
 
 check:
 	$(MAKE) -k check-js check-lua check-toml check-editorconfig
 check-js:
-ifeq ($(CI) , true)
-	rome check core/js/ nusa/ libs/javascript/ examples/javascript/ rollup.config.mjs
-else
-	rome check core/js/ nusa/ libs/javascript/ examples/javascript/ rollup.config.mjs --colors force
-endif
+	deno lint core/js/ nusa/ libs/javascript/ examples/javascript/ rollup.config.mjs
 check-toml:
 ifeq ($(CI) , true)
 	taplo lint **.toml
@@ -85,11 +81,6 @@ ifeq ($(CI) , true)
 else
 	eclint -color always
 endif
-
-
-fix: fix-js
-fix-js:
-	rome check --apply core/js/ nusa/ libs/javascript/ examples/javascript/ rollup.config.mjs
 
 
 run: pretty build

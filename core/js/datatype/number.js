@@ -7,7 +7,6 @@ import { Accessor, build } from "./traits.js";
 const accessor = await wasm.accessor;
 const instance = await wasm.instance;
 
-// biome-ignore lint/suspicious/noShadowRestrictedNames: this file doesn't have `Number(coercien)`
 class Number extends Accessor {
   #intrnl = /** @type Internal */ ({});
   get length() {
@@ -38,46 +37,36 @@ class Number extends Accessor {
   }
 }
 
-// biome-ignore lint/complexity/noStaticOnlyClass: typescript problem because it doesn't allow `static abstract field`
 export class Uint8 extends Number {
   static TYPE_ID = 1;
 }
-// biome-ignore lint/complexity/noStaticOnlyClass: typescript problem because it doesn't allow `static abstract field`
 export class Int8 extends Number {
   static TYPE_ID = -1;
 }
 
-// biome-ignore lint/complexity/noStaticOnlyClass: typescript problem because it doesn't allow `static abstract field`
 export class Uint16 extends Number {
   static TYPE_ID = 2;
 }
-// biome-ignore lint/complexity/noStaticOnlyClass: typescript problem because it doesn't allow `static abstract field`
 export class Int16 extends Number {
   static TYPE_ID = -2;
 }
 
-// biome-ignore lint/complexity/noStaticOnlyClass: typescript problem because it doesn't allow `static abstract field`
 export class Uint32 extends Number {
   static TYPE_ID = 4;
 }
-// biome-ignore lint/complexity/noStaticOnlyClass: typescript problem because it doesn't allow `static abstract field`
 export class Int32 extends Number {
   static TYPE_ID = -4;
 }
-// biome-ignore lint/complexity/noStaticOnlyClass: typescript problem because it doesn't allow `static abstract field`
 export class Float32 extends Number {
   static TYPE_ID = -128 + 4;
 }
 
-// biome-ignore lint/complexity/noStaticOnlyClass: typescript problem because it doesn't allow `static abstract field`
 export class Uint64 extends Number {
   static TYPE_ID = 8;
 }
-// biome-ignore lint/complexity/noStaticOnlyClass: typescript problem because it doesn't allow `static abstract field`
 export class Int64 extends Number {
   static TYPE_ID = -8;
 }
-// biome-ignore lint/complexity/noStaticOnlyClass: typescript problem because it doesn't allow `static abstract field`
 export class Float64 extends Number {
   static TYPE_ID = -128 + 8;
 }

@@ -120,10 +120,9 @@ function patch(desc, cache, id) {
       };
     }
 
-    if (notAccessor) {
-      // biome-ignore lint/performance/noDelete: property descriptors must not specify a value or be writable when a getter or setter has been specified //
-      delete desc.value; // biome-ignore lint/performance/noDelete:--------------------------------------------------------------------------------------//
-      delete desc.writable; //--------------------------------------------------------------------------------------------------------------------------//
+    if (notAccessor) { // property descriptors must not specify a value or be writable when a getter or setter has been specified
+      delete desc.value;
+      delete desc.writable;
     }
   }
 }

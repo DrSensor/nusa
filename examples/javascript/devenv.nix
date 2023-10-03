@@ -11,6 +11,7 @@ with lib; {
 
   pre-commit = mkIf (!env ? CI) {
     hooks.editorconfig-checker.enable = true;
-    hooks.rome.enable = true;
+    hooks.denofmt.enable = true;
+    hooks.denolint.enable = true;
   };
 }

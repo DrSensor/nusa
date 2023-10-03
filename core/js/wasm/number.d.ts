@@ -1,4 +1,3 @@
-// TODO: replace `biome` with `deno fmt|lint`, the formatter doesn't work here
 type i32 = number;
 type i64 = number;
 type i8 = number;

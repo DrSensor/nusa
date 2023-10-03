@@ -36,7 +36,6 @@ export type StructFrom<T> = {
   [key in keyof T]: T[key] extends (infer value)[] ? value : never;
 };
 
-type StructOfArray<T> = {
-  /* biome-ignore lint/complexity/noBannedTypes: who cares? */ // deno-lint-ignore ban-types
+type StructOfArray<T> = { // deno-lint-ignore ban-types
   [key in keyof T]: T[key] extends Function ? never : T[key][];
 };
