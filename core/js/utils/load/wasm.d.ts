@@ -1,9 +1,11 @@
 declare function exports(instance: WebAssembly.Instance): WebAssembly.Exports;
 
+declare const cache: Record<string, WebAssembly.Exports>;
+
 export function instantiate(
   url: URL,
   imports?: WebAssembly.Imports,
-): Promise<WebAssembly.Exports>;
+): () => Promise<WebAssembly.Exports>;
 
 export function compile(
   url: URL,
@@ -13,4 +15,4 @@ export function compile(
       getImports: () => WebAssembly.ModuleImportDescriptor[],
       getExports: () => WebAssembly.ModuleExportDescriptor[],
     ) => WebAssembly.Imports),
-): Promise<WebAssembly.Exports>;
+): () => Promise<WebAssembly.Exports>;

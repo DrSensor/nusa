@@ -4,8 +4,10 @@
 /** @typedef {import("./traits.js").Internal} Internal */
 import * as wasm from "../wasm/number.js";
 import { Accessor, build } from "./traits.js";
-const accessor = await wasm.accessor;
-const instance = await wasm.instance;
+const [accessor, instance] = await Promise.all([
+  wasm.accessor(),
+  wasm.instance(),
+]);
 
 class Number extends Accessor {
   #intrnl = /** @type Internal */ ({});

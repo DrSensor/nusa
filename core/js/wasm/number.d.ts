@@ -9,7 +9,7 @@ export interface Instance extends WebAssembly.Exports {
   "num.allocateAUTO"(type: i8, nullable: boolean): [ptr: number, length: u16];
   "num.cABIallocateAUTO"(type: i8, nullable: boolean): i64;
 }
-export const instance: Promise<Instance>;
+export const instance: () => Promise<Instance>;
 
 export interface Accessor extends WebAssembly.Exports {
   at(index: i32): void;
@@ -18,7 +18,7 @@ export interface Accessor extends WebAssembly.Exports {
   "num.get"(getter: fn): number;
   "num.set"(setter: fn, value: number): void;
 }
-export const accessor: Promise<Accessor>;
+export const accessor: () => Promise<Accessor>;
 
 export interface FastOps extends WebAssembly.Exports {
   "num.bulk.noop"(): void;
@@ -39,4 +39,4 @@ export interface FastOps extends WebAssembly.Exports {
     value: number,
   ): void;
 }
-export const fastops: Promise<FastOps>;
+export const fastops: () => Promise<FastOps>;
