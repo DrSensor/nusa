@@ -33,7 +33,7 @@ function bind(pc, attrs, scope, get) {
     attr.value.split(" ").forEach((propName) => {
       accessor_override(propName, descs, members, attr, id);
       (descs[propName] ? accessors : properties).add(propName);
-    }),
+    })
   );
 
   if (notCached && accessors.size) Object.defineProperties(pc, descs);

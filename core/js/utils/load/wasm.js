@@ -7,7 +7,7 @@ const exports = (instance) => instance.exports;
 /** @type $["instantiate"] */
 export const instantiate = (url, imports) =>
   WebAssembly.instantiateStreaming(fetch(url), imports).then((wasm) =>
-    exports(wasm.instance),
+    exports(wasm.instance)
   );
 
 /** @type $["compile"] */
@@ -18,10 +18,10 @@ export const compile = (url, imports) =>
         module,
         typeof imports === "function"
           ? imports(
-              () => WebAssembly.Module.imports(module),
-              () => WebAssembly.Module.exports(module),
-            )
+            () => WebAssembly.Module.imports(module),
+            () => WebAssembly.Module.exports(module),
+          )
           : imports,
-      ),
+      )
     )
     .then(exports);

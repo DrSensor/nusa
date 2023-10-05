@@ -26,7 +26,7 @@ export default function (Class, callback, { controller }) {
   dedupeUpdate = task.render(() => {
     for (const accessor of accessors) {
       // if (skipAccess.has(accessor)) continue; // TODO: skip render update of specific accessor
-      for (let i = length, limit = skips.pop(); i--; ) {
+      for (let i = length, limit = skips.pop(); i--;) {
         if (i === limit) {
           limit = skips.pop();
           continue;
@@ -85,8 +85,9 @@ export class IterateController {
         let index = ++/** @type number */ (this.#index);
         length > index && this.#stopAt > index;
         index = ++/** @type number */ (this.#index)
-      )
+      ) {
         callback(index, this.#access);
+      }
       this.#index = undefined; //━┳╸reset
       this.#stopAt = Infinity; //━┛
       return new Set(this.#skipAt); //━╸dedupe skipped indexes

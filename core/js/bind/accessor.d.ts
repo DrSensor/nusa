@@ -1,7 +1,8 @@
 import type { AccessorBinder } from "../registry.js";
 import type { Instance } from "../types.d.ts";
 
-declare const mark: "This is `unique symbol` but typescript coerce it to `symbol` when used in JSDoc 😞";
+declare const mark:
+  "This is `unique symbol` but typescript coerce it to `symbol` when used in JSDoc 😞";
 
 /** Override accessor behaviour described in {@link descs}
 After override, you still need to apply it via {@link Object.defineProperties}

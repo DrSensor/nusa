@@ -68,7 +68,7 @@ export function listen(scope, script) {
 
     /** @type $["__listen__"]["handle"] */
     const handle = (node, methods, options = config) => {
-      if (methods.size)
+      if (methods.size) {
         node.addEventListener(
           event,
           (e) => {
@@ -79,7 +79,7 @@ export function listen(scope, script) {
             const render = task.prepare(() => {
               setCurrentEvent(e);
               methods.forEach((methodName) =>
-                /** @type VoidFunction */ (script[methodName])(),
+                /** @type VoidFunction */ (script[methodName])()
               );
             });
             cancel = /** @type {() => VoidFunction} */ (render());
@@ -87,6 +87,7 @@ export function listen(scope, script) {
           },
           options,
         );
+      }
     };
 
     targetMap.forEach((prefix, element) => {

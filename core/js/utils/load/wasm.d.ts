@@ -10,7 +10,7 @@ export function compile(
   imports?:
     | WebAssembly.Imports
     | ((
-        getImports: () => WebAssembly.ModuleImportDescriptor[],
-        getExports: () => WebAssembly.ModuleExportDescriptor[],
-      ) => WebAssembly.Imports),
+      getImports: () => WebAssembly.ModuleImportDescriptor[],
+      getExports: () => WebAssembly.ModuleExportDescriptor[],
+    ) => WebAssembly.Imports),
 ): Promise<WebAssembly.Exports>;
