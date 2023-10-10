@@ -15,13 +15,16 @@ macro_rules! bridge {
             const TYPE_ID: primitive::i8 = Type::$Ty as primitive::i8;
             type Accessor = (host::num::Getter, host::num::Setter);
             unsafe fn accessor() -> Self::Accessor {
-                unsafe { host::num::accessor(Type::$Ty as primitive::i8).into() }
+                host::num::accessor_noop();
+                host::num::accessor(Type::$Ty as primitive::i8).into()
             }
             unsafe fn allocate(len: host::Len) -> usize {
+                host::num::alloc_noop();
                 let ptr = host::num::allocate(Type::$Ty as primitive::i8, len, false);
                 ptr.addr
             }
             unsafe fn auto_allocate() -> (usize, host::Len) {
+                host::num::alloc_noop();
                 let (ptr, len) = host::num::allocateAUTO(Type::$Ty as primitive::i8, false).into();
                 (ptr.addr, len)
             }

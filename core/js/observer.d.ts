@@ -9,6 +9,12 @@ declare let module: Promise<{
 
 /** fetch and run module runtime for binding along with user linked modules then bind all linked modules */
 declare function lazyBind(shadow: ShadowRoot, queue: Queue): void;
+declare namespace __lazyBind__ {
+  const insertIf: (
+    importName: string,
+    loadWasm: () => Promise<WebAssembly.ModuleImports>,
+  ) => void;
+}
 
 /** observe viewport intersection
 @see https://web.dev/intersectionobserver-v2

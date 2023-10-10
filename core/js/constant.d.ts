@@ -1,5 +1,9 @@
-import type * as accessor from "./bind/accessor.js";
+// BUG(deno-lint): import type treated as unused-vars even though it's used in declared/exported namespace
+// deno-lint-ignore no-unused-vars
+import type * as accessor from "./bind/accessor.js"; // deno-lint-ignore no-unused-vars
 import type * as listener from "./bind/listener.js";
+
+export * as Wasm from "./constant/wasm.js";
 
 export enum Flags {
   none = 0,

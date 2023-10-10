@@ -5,6 +5,9 @@ mod types;
 use core::arch::wasm32::{memory_grow, memory_size};
 use types::{number::Type, Null, Number, C, PAGE};
 
+#[export_name = "num.arr.noop"]
+fn noop() {}
+
 #[export_name = "num.allocate"]
 #[inline(never)]
 unsafe fn array_of(ty: Type, len: u16, nullable: bool) -> Number {

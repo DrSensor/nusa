@@ -15,11 +15,11 @@ export const instantiate = (url, imports) => async () => // @ts-expect-error aut
 /** @type $["compile"] */
 export const compile = (url, imports) => async () => // @ts-expect-error auto url.toString()
   cache[url] ??= await WebAssembly.compileStreaming(fetch(url))
-    .then((module) =>
+    .then(async (module) =>
       WebAssembly.instantiate(
         module,
         typeof imports === "function"
-          ? imports(
+          ? await imports(
             () => WebAssembly.Module.imports(module),
             () => WebAssembly.Module.exports(module),
           )

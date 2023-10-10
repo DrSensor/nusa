@@ -33,6 +33,9 @@ pub mod num {
 
     #[link(wasm_import_module = "nusa")]
     extern "C" {
+        #[link_name = "num.arr.noop"]
+        pub fn alloc_noop();
+
         #[link_name = "num.allocate"]
         pub fn allocate(ty: TypeId, len: Len, nullable: bool) -> Number;
 
@@ -47,6 +50,9 @@ pub mod num {
 
     #[link(wasm_import_module = "nusa")]
     extern "C" {
+        #[link_name = "num.acc.noop"]
+        pub fn accessor_noop();
+
         #[cfg(target_feature = "multivalue")]
         #[link_name = "num.accessor"]
         pub fn accessor(ty: TypeId) -> (Getter, Setter);

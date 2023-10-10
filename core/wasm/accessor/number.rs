@@ -10,6 +10,9 @@ type Setter = unsafe fn(Number, JSNumber);
 C::fn_Item!(Getter);
 C::fn_Item!(Setter);
 
+#[export_name = "num.acc.noop"]
+fn noop() {}
+
 #[export_name = "num.accessor"] // WARNING: this func not inlined inside alloc() because rust wasm +multivalue can only return at most 2 value
 fn accessor(ty: Type) -> (Getter, Setter) {
     use Type::*;

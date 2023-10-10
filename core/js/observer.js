@@ -1,7 +1,8 @@
 /// <reference types="./observer.d.ts" />
 /** @typedef {import("./observer.js")} $ */
 /** @typedef {import("./query.js").Queue} Queue */
-import { Flags } from "./constant.js";
+import { Flags, Wasm } from "./constant.js";
+import * as load from "./utils/load.js";
 
 /** @type $["registry"] */
 const registry = new WeakMap();
@@ -11,9 +12,8 @@ let module; // Promise
 
 /** @type $["lazyBind"] */
 function lazyBind(shadow, queue) {
-  //@ts-ignore BUG(typescript): can't narrow type in Promise.all().then(...)
-  const { scripts_ } = queue.module_;
-  if (scripts_) {
+  const { js_, wasm_ } = queue.module_;
+  if (wasm_ || js_) {
     import("./registry.js");
     if (queue.flags_ & (Flags.hasBinding | Flags.hasListener)) {
       import("./utils/task.js");
@@ -34,9 +34,47 @@ function lazyBind(shadow, queue) {
         module.listen,
       ]),
     ]).then(([bind_, ...features_]) => ({ bind_, features_ }));
-
-    scripts_.forEach(async (script) =>
-      import(script).then(
+  }
+  if (wasm_) {
+    wasm_.forEach(async (url) =>
+      load.wasm.compile(url, async (getImports) => {
+        const imports = new Set(
+          getImports()
+            .flatMap((the) => the.module === "nusa" ? [the.name] : []),
+        );
+        if (imports.size) {
+          const nusa = /** @type WebAssembly.ModuleImports */ ({});
+          const queue = /** @type Promise<unknown>[] */ ([]);
+          const insertIfHas = /** @type $["__lazyBind__"]["insertIf"] */
+            (importName, loadWasm) => {
+              if (imports.has(importName)) {
+                queue.push(
+                  loadWasm().then((require) => {
+                    for (const importName in require) {
+                      nusa[importName] = require[importName];
+                    }
+                  }),
+                );
+              }
+            };
+          for (const dt of Wasm.dataTypes) {
+            for (const mod of Wasm.modNames) {
+              insertIfHas(`${dt}.${mod}.noop`, Wasm.load[dt][mod]);
+              insertIfHas(`${dt}.${mod}.noop`, Wasm.load[dt][mod]);
+              insertIfHas(`${dt}.${mod}.noop`, Wasm.load[dt][mod]);
+            }
+          }
+          await Promise.all(queue);
+          return { nusa };
+        } else return /** @type {{}} */ ({});
+      })().then( // TODO: update ./bind.js
+        (await module).bind_((await module).features_, queue.attrs_, shadow),
+      )
+    );
+  }
+  if (js_) {
+    js_.forEach(async (url) =>
+      import(url).then(
         (await module).bind_((await module).features_, queue.attrs_, shadow),
       )
     );
