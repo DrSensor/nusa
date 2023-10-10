@@ -20,7 +20,6 @@ with lib; {
   pre-commit = mkIf (!env ? CI) {
     hooks.editorconfig-checker.enable = true;
     hooks.clippy.enable = true;
-    hooks.rustfmt.enable = true;
   };
 
   enterShell = mkIf (!env ? CI) ''
