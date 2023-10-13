@@ -29,5 +29,6 @@ pub trait Build {
     unsafe fn accessor() -> Self::Accessor;
     unsafe fn allocate(len: host::Len) -> usize;
     unsafe fn auto_allocate() -> (usize, host::Len);
+    unsafe fn prop_allocate(prop_name: &str) -> (usize, host::Len);
     unsafe fn build(len: host::Len, addr: usize, accessor: Self::Accessor) -> Self;
 }

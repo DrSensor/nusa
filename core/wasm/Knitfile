@@ -78,6 +78,9 @@ opt := $opt -Oz
 opt := $opt $(concat(prefix(feats.binaryen, "--enable-"), " "))
 if cli.debug > 0 then
   opt := $opt -g
+  if cli.debug < 2 then
+    opt := $opt --strip-dwarf
+  end
 end
 --
 

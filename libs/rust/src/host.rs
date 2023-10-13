@@ -1,3 +1,5 @@
+#![allow(improper_ctypes)]
+
 pub type Len = u16;
 pub type TypeId = i8;
 
@@ -46,6 +48,14 @@ pub mod num {
         #[cfg(not(target_feature = "multivalue"))]
         #[link_name = "num.cABIallocateAUTO"]
         pub fn allocateAUTO(ty: TypeId, nullable: bool) -> C::Tuple<Number, Len>;
+
+        #[cfg(target_feature = "multivalue")]
+        #[link_name = "num.allocatePROP"]
+        pub fn allocatePROP(prop_name: &str, ty: TypeId, nullable: bool) -> (Number, Len);
+        // WARN: Currently `&str` transformed into `param i32 i32` but in the future it might be `stringref`
+        #[cfg(not(target_feature = "multivalue"))]
+        #[link_name = "num.cABIallocatePROP"]
+        pub fn allocatePROP(prop_name: &str, ty: TypeId, nullable: bool) -> C::Tuple<Number, Len>;
     }
 
     #[link(wasm_import_module = "nusa")]

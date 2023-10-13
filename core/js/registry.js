@@ -1,24 +1,23 @@
 /// <reference types="./registry.d.ts" />
 /** @typedef {import("./registry.js")} $ */
 
+/** @type $["event"] */ export let event;
 /** @type $["setCurrentEvent"] */
 export const setCurrentEvent = (event_) => {
   event = event_;
 };
 
-/** @type $["event"] */
-export let event;
-
+/** @type $["value"] */ export let value;
 /** @type $["setCurrentValue"] */
 export const setCurrentValue = (value_) => {
   value = value_;
 };
 
-/** @type $["value"] */
-export let value;
+/** @type $["module"] */ export let module;
+/** @type $["setCurrentModule"] */
+export const setCurrentmodule = (module_) => {
+  module = module_;
+};
 
-/** @type $["index"] */
 export const index = Symbol();
-
-/** @type $["default"] */
 export default new WeakMap();

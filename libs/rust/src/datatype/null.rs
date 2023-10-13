@@ -1,7 +1,8 @@
 use crate::{host, types, Accessor, Build, Series};
+use types::BitSet;
 
 pub struct Null<T: Build> {
-    ptr: types::Null, // TODO: pass this on every *fastops/number.wasm* functions
+    ptr: types::Null,
     data: T,
 }
 
@@ -16,7 +17,14 @@ impl<T: Build> Build for self::Null<T> {
         ptr.addr - types::Null::byte(len)
     }
     unsafe fn auto_allocate() -> (usize, host::Len) {
+        host::null::noop();
         let (ptr, len) = host::num::allocateAUTO(T::TYPE_ID, true).into(); // BUG: `host::num`? What if `T` is `str`
+        let addr = ptr.addr - types::Null::byte(len);
+        (addr, len)
+    }
+    unsafe fn prop_allocate(prop_name: &str) -> (usize, host::Len) {
+        host::num::alloc_noop();
+        let (ptr, len) = host::num::allocatePROP(prop_name, T::TYPE_ID, false).into();
         let addr = ptr.addr - types::Null::byte(len);
         (addr, len)
     }
@@ -38,6 +46,12 @@ impl<T: Build> Default for Null<T> {
 }
 
 impl<T: Build> self::Null<T> {
+    pub fn prop_name(name: impl Into<&'static str>) -> Self {
+        unsafe {
+            let (addr, len) = Self::prop_allocate(name.into());
+            Self::build(len, addr, Self::accessor())
+        }
+    }
     pub fn new(len: host::Len) -> Self {
         unsafe { Self::build(len, Self::allocate(len), T::accessor()) }
     }

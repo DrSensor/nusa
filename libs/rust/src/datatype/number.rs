@@ -28,6 +28,12 @@ macro_rules! bridge {
                 let (ptr, len) = host::num::allocateAUTO(Type::$Ty as primitive::i8, false).into();
                 (ptr.addr, len)
             }
+            unsafe fn prop_allocate(prop_name: &str) -> (usize, host::Len) {
+                host::num::alloc_noop();
+                let (ptr, len) =
+                    host::num::allocatePROP(prop_name, Type::$Ty as primitive::i8, false).into();
+                (ptr.addr, len)
+            }
             unsafe fn build(len: host::Len, addr: usize, accr: Self::Accessor) -> Self {
                 let ptr = types::Number { addr };
                 $ty { len, ptr, accr }
@@ -44,6 +50,12 @@ macro_rules! bridge {
         }
 
         impl self::$ty {
+            pub fn prop_name(name: impl Into<&'static str>) -> Self {
+                unsafe {
+                    let (addr, len) = Self::prop_allocate(name.into());
+                    Self::build(len, addr, Self::accessor())
+                }
+            }
             pub fn new(len: host::Len) -> Self {
                 unsafe { Self::build(len, Self::allocate(len), Self::accessor()) }
             }
