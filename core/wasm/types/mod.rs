@@ -32,6 +32,15 @@ macro_rules! convert_ptr {
 }
 pub(crate) use convert_ptr;
 
+pub trait BitSet {
+    /// length of null count in byte
+    fn byte(len: u16) -> usize {
+        (len as f32 / byte::BITS as f32).ceil() as usize
+    }
+    /// minimum bits (can be used to determine alignment)
+    const BITS: u32 = u8::BITS;
+}
+
 #[repr(transparent)]
 #[derive(Clone, Copy)]
 pub struct Buffer {
@@ -46,14 +55,16 @@ pub struct Null {
     pub addr: usize,
 }
 convert_ptr!(Null);
-impl Null {
-    /// length of null count in byte
-    pub fn byte(len: u16) -> usize {
-        (len as f32 / byte::BITS as f32).ceil() as usize
-    }
-    /// minimum bits (can be used to determine alignment)
-    pub const BITS: u32 = u8::BITS;
+impl BitSet for Null {}
+
+#[repr(transparent)]
+#[derive(Clone, Copy)]
+/// Bits that represent which accessor where the value has changed
+pub struct Change {
+    pub addr: usize,
 }
+convert_ptr!(Change);
+impl BitSet for Change {}
 
 pub trait Layout
 where

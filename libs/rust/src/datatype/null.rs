@@ -12,6 +12,9 @@ impl<T: Build> Build for self::Null<T> {
     unsafe fn accessor() -> Self::Accessor {
         T::accessor()
     }
+    fn diff(addr: usize, len: host::Len) -> usize {
+        addr - types::Null::byte(len) - types::Change::byte(len)
+    }
     unsafe fn allocate(len: host::Len) -> usize {
         let ptr = host::num::allocate(T::TYPE_ID, len, true); // BUG: `host::num`? What if `T` is `str`
         ptr.addr - types::Null::byte(len)
@@ -28,11 +31,19 @@ impl<T: Build> Build for self::Null<T> {
         let addr = ptr.addr - types::Null::byte(len);
         (addr, len)
     }
-    unsafe fn build(len: host::Len, addr: usize, accessor: Self::Accessor) -> Self {
+    unsafe fn build(
+        len: host::Len,
+        addr: usize,
+        accessor: Self::Accessor,
+        diff_addr: Option<usize>,
+    ) -> Self {
         host::null::noop();
-        let data = T::build(len, addr + types::Null::byte(len), accessor);
-        let ptr = types::Null { addr };
-        self::Null { ptr, data }
+        self::Null {
+            ptr: types::Null {
+                addr: addr - types::Null::byte(len),
+            },
+            data: T::build(len, addr + types::Null::byte(len), accessor, diff_addr),
+        }
     }
 }
 
@@ -40,24 +51,23 @@ impl<T: Build> Default for Null<T> {
     fn default() -> Self {
         unsafe {
             let (addr, len) = Self::auto_allocate();
-            Self::build(len, addr, T::accessor())
+            Self::build(len, addr, Self::accessor(), Some(Self::diff(addr, len)))
         }
     }
 }
-
 impl<T: Build> self::Null<T> {
     pub fn prop_name(name: impl Into<&'static str>) -> Self {
         unsafe {
             let (addr, len) = Self::prop_allocate(name.into());
-            Self::build(len, addr, Self::accessor())
+            Self::build(len, addr, Self::accessor(), Some(Self::diff(addr, len)))
         }
     }
     pub fn new(len: host::Len) -> Self {
-        unsafe { Self::build(len, Self::allocate(len), T::accessor()) }
+        unsafe { Self::build(len, Self::allocate(len), Self::accessor(), None) }
     }
 }
 
-impl<T: Series + Build> Series for self::Null<T> {
+impl<T: Build + Series> Series for self::Null<T> {
     const TYPE_ID: i8 = <T as Series>::TYPE_ID;
     fn addr(&self) -> usize {
         self.data.addr()
@@ -70,9 +80,9 @@ impl<T: Series + Build> Series for self::Null<T> {
 impl<T: Build + Accessor> Accessor for self::Null<T> {
     type Type = Option<T::Type>;
     fn set(&self, value: Self::Type) {
-        if let Some(val) = value {
+        if let Some(value) = value {
             unsafe { host::null::clr(self.ptr) };
-            self.data.set(val);
+            self.data.set(value)
         } else {
             unsafe { host::null::set(self.ptr) };
         }

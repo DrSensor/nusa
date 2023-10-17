@@ -3,7 +3,7 @@ mod scope;
 mod types;
 
 use core::arch::wasm32::{memory_grow, memory_size};
-use types::{number::Type, Null, Number, C, PAGE};
+use types::{number::Type, BitSet, Change, Null, Number, C, PAGE};
 
 extern "C" {
     // WARN: Currently `&str` transformed into `param i32 i32` but in the future it might be `stringref`
@@ -48,7 +48,7 @@ unsafe fn array_new(ty: Type, len: u16, nullable: bool) -> Number {
 #[export_name = "num.allocateAUTO"]
 unsafe fn array_construct(ty: Type, nullable: bool) -> (Number, u16) {
     let len = scope::size();
-    let addr = if nullable { Null::byte(len) } else { 0 } + offset::get();
+    let addr = Change::byte(len) + if nullable { Null::byte(len) } else { 0 } + offset::get();
     (allocate_at(addr, ty, len), len)
 }
 

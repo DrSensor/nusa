@@ -27,8 +27,14 @@ pub trait Build {
     const TYPE_ID: primitive::i8;
     type Accessor;
     unsafe fn accessor() -> Self::Accessor;
+    fn diff(addr: usize, len: host::Len) -> usize;
     unsafe fn allocate(len: host::Len) -> usize;
     unsafe fn auto_allocate() -> (usize, host::Len);
     unsafe fn prop_allocate(prop_name: &str) -> (usize, host::Len);
-    unsafe fn build(len: host::Len, addr: usize, accessor: Self::Accessor) -> Self;
+    unsafe fn build(
+        len: host::Len,
+        addr: usize,
+        accessor: Self::Accessor,
+        diff_addr: Option<usize>,
+    ) -> Self;
 }

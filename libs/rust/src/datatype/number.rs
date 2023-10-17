@@ -1,6 +1,8 @@
+extern crate alloc;
 use crate::{host, types, Accessor, Build, Series};
 use core::primitive;
 use types::number::{JSNumber, Type};
+use types::BitSet;
 
 macro_rules! bridge {
     ($ty:ident, $Ty:ident) => {
@@ -8,6 +10,7 @@ macro_rules! bridge {
         pub struct $ty {
             len: host::Len,
             ptr: types::Number,
+            diff: Option<types::Change>, // WARN: Unfortunaly the compiler can't optimize this even when initialize as None
             accr: (host::num::Getter, host::num::Setter),
         }
 
@@ -17,6 +20,9 @@ macro_rules! bridge {
             unsafe fn accessor() -> Self::Accessor {
                 host::num::accessor_noop();
                 host::num::accessor(Type::$Ty as primitive::i8).into()
+            }
+            fn diff(addr: usize, len: host::Len) -> usize {
+                addr - types::Change::byte(len)
             }
             unsafe fn allocate(len: host::Len) -> usize {
                 host::num::alloc_noop();
@@ -34,9 +40,18 @@ macro_rules! bridge {
                     host::num::allocatePROP(prop_name, Type::$Ty as primitive::i8, false).into();
                 (ptr.addr, len)
             }
-            unsafe fn build(len: host::Len, addr: usize, accr: Self::Accessor) -> Self {
-                let ptr = types::Number { addr };
-                $ty { len, ptr, accr }
+            unsafe fn build(
+                len: host::Len,
+                addr: usize,
+                accr: Self::Accessor,
+                diff_addr: Option<usize>,
+            ) -> Self {
+                $ty {
+                    len,
+                    ptr: types::Number { addr },
+                    diff: diff_addr.map(|addr| types::Change { addr }),
+                    accr,
+                }
             }
         }
 
@@ -44,20 +59,19 @@ macro_rules! bridge {
             fn default() -> Self {
                 unsafe {
                     let (addr, len) = Self::auto_allocate();
-                    Self::build(len, addr, Self::accessor())
+                    Self::build(len, addr, Self::accessor(), Some(Self::diff(addr, len)))
                 }
             }
         }
-
         impl self::$ty {
             pub fn prop_name(name: impl Into<&'static str>) -> Self {
                 unsafe {
                     let (addr, len) = Self::prop_allocate(name.into());
-                    Self::build(len, addr, Self::accessor())
+                    Self::build(len, addr, Self::accessor(), Some(Self::diff(addr, len)))
                 }
             }
             pub fn new(len: host::Len) -> Self {
-                unsafe { Self::build(len, Self::allocate(len), Self::accessor()) }
+                unsafe { Self::build(len, Self::allocate(len), Self::accessor(), None) }
             }
         }
 
@@ -74,8 +88,13 @@ macro_rules! bridge {
         impl Accessor for self::$ty {
             type Type = primitive::$ty;
             fn set(&self, value: Self::Type) {
-                let (_, setter) = self.accr;
-                unsafe { host::num::set(setter, self.ptr, value as JSNumber) }
+                let value = value as JSNumber;
+                let (getter, setter) = self.accr;
+                if let Some(diff) = self.diff {
+                    unsafe { host::num::exchange(getter, setter, diff, self.ptr, value) }
+                } else {
+                    unsafe { host::num::set(setter, self.ptr, value) }
+                }
             }
             fn get(&self) -> Self::Type {
                 let (getter, _) = self.accr;

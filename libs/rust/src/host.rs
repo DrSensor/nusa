@@ -1,4 +1,5 @@
 #![allow(improper_ctypes)]
+#![allow(dead_code)]
 
 pub type Len = u16;
 pub type TypeId = i8;
@@ -13,6 +14,8 @@ pub mod null {
 
         #[link_name = "null.set"]
         pub fn set(ptr: Null);
+        #[link_name = "null.tgl"]
+        pub fn tgl(ptr: Null);
         #[link_name = "null.clr"]
         pub fn clr(ptr: Null);
         #[link_name = "null.chk"]
@@ -25,7 +28,7 @@ C::Item_primitive!(Len);
 
 pub mod num {
     use super::{Len, TypeId};
-    use crate::types::{JSNumber, Number, C};
+    use crate::types::{Change, JSNumber, Number, C};
 
     pub type Setter = extern "C" fn(Number, JSNumber);
     pub type Getter = extern "C" fn(Number) -> JSNumber;
@@ -70,6 +73,9 @@ pub mod num {
         #[cfg(not(target_feature = "multivalue"))]
         #[link_name = "num.cABIaccessor"]
         pub fn accessor(ty: TypeId) -> C::Tuple<Getter, Setter>;
+
+        #[link_name = "num.xchg"]
+        pub fn exchange(getter: Getter, setter: Setter, diff: Change, ptr: Number, value: JSNumber);
 
         #[link_name = "num.set"]
         pub fn set(setter: Setter, ptr: Number, value: JSNumber);

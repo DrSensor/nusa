@@ -2,7 +2,7 @@ mod index;
 mod types;
 
 use index::current as index;
-use types::{number::Type, JSNumber, Number, C};
+use types::{number::Type, Change, JSNumber, Number, C};
 
 type Getter = unsafe fn(Number) -> JSNumber;
 type Setter = unsafe fn(Number, JSNumber);
@@ -40,6 +40,20 @@ fn c_accessor(ty: Type) -> C::Tuple<Getter, Setter> {
     C::Tuple::from((getter, setter))
 }
 
+#[export_name = "num.xchg"]
+unsafe fn exchange(
+    get: fn(Number) -> JSNumber,
+    set: fn(Number, JSNumber),
+    diff: Change,
+    this: Number,
+    val: JSNumber,
+) {
+    if get(this) != val {
+        set_diff(diff);
+        set(this, val)
+    }
+}
+
 #[export_name = "num.set"]
 fn set(set: fn(Number, JSNumber), this: Number, val: JSNumber) {
     set(this, val)
@@ -48,6 +62,12 @@ fn set(set: fn(Number, JSNumber), this: Number, val: JSNumber) {
 #[export_name = "num.get"]
 fn get(get: fn(Number) -> JSNumber, this: Number) -> JSNumber {
     get(this)
+}
+
+unsafe fn set_diff(diff: Change) {
+    let diff_offset = (index() as f32 / isize::BITS as f32).floor() as usize;
+    let diff_ptr = (diff.addr as *mut isize).add(diff_offset);
+    *diff_ptr |= 1 << index();
 }
 
 unsafe fn ptr<T>(this: Number) -> *mut T {
