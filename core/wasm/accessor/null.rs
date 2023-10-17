@@ -12,6 +12,11 @@ unsafe fn set_null(this: Null) {
     *nullptr(this) |= 1 << index()
 }
 
+#[export_name = "null.tgl"]
+unsafe fn toggle_null(this: Null) {
+    *nullptr(this) ^= 1 << index()
+}
+
 #[export_name = "null.clr"]
 unsafe fn clear_null(this: Null) {
     *nullptr(this) &= !(1 << index())
