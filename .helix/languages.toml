@@ -1,0 +1,13 @@
+[language-server.rust-analyzer]
+command = "rust-analyzer"
+config.cargo.target = "wasm32-unknown-unknown"
+config.check.overrideCommand = [
+  "cargo",
+  "clippy",
+  "--target=wasm32-unknown-unknown",
+  "--examples",
+  "--bins",
+  "--lib",
+  "--workspace",
+  "--message-format=json",
+]
